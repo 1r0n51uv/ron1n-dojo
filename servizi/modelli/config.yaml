@@ -25,10 +25,18 @@ model_list:
       model: openrouter/anthropic/claude-sonnet-4.6
       api_key: os.environ/OPENROUTER_API_KEY
 
-  # Piani free: digest, riassunti, cron. Limiti di richieste bassi.
+  # Piani free: digest, riassunti, cron e prove senza spendere. Limiti di
+  # richieste bassi, e i modelli `:free` di OpenRouter cambiano spesso: se
+  # uno risponde 404 si sostituisce con uno della lista di openrouter.ai/models
+  # (filtro "free" e "tools"). Servono comunque una chiave OpenRouter con
+  # limite maggiore di 0.
   - model_name: gratis
     litellm_params:
-      model: openrouter/inclusionai/ring-2.6-1t:free
+      model: openrouter/google/gemma-4-31b-it:free
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: gratis-nemotron
+    litellm_params:
+      model: openrouter/nvidia/nemotron-3-ultra-550b-a55b:free
       api_key: os.environ/OPENROUTER_API_KEY
   - model_name: gratis-groq
     litellm_params:
@@ -50,9 +58,10 @@ model_list:
 router_settings:
   num_retries: 1
   fallbacks:
-    - forte: [forte-riserva, veloce, veloce-riserva, gratis, gratis-groq, gratis-gemini, locale]
-    - veloce: [veloce-riserva, gratis, gratis-groq, gratis-gemini, locale]
-    - gratis: [gratis-groq, gratis-gemini, locale]
+    - forte:
+        [forte-riserva, veloce, veloce-riserva, gratis, gratis-nemotron, gratis-groq, gratis-gemini, locale]
+    - veloce: [veloce-riserva, gratis, gratis-nemotron, gratis-groq, gratis-gemini, locale]
+    - gratis: [gratis-nemotron, gratis-groq, gratis-gemini, locale]
 
 litellm_settings:
   drop_params: true
