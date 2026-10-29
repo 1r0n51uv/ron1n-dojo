@@ -61,6 +61,20 @@ tutti i profili (multiplexing) e il dispatcher Kanban.
 | `takumi` (Edward)    | implementazione con test, `npm run check`, PR con `Closes #N` | file, terminal, code_execution, kanban, clarify | contents, pull requests: scrittura          |
 | `shinpan` (L)        | review contro specifica e regole, segnala la PR pronta        | terminal, kanban, clarify, skills               | contents: lettura; pull requests: scrittura |
 
+## Modelli
+
+Le stanze non parlano direttamente con i provider: passano dal gateway
+[`servizi/modelli/`](../servizi/modelli/compose.yaml), un LiteLLM con le
+chiavi vere. Ogni stanza ha una chiave virtuale con budget mensile e una
+rete sua verso il gateway. Gli agenti chiedono un nome logico:
+
+| Nome     | Provider, in ordine                            | Per                        |
+| -------- | ---------------------------------------------- | -------------------------- |
+| `forte`  | Anthropic Opus, OpenRouter, poi `veloce`       | specifiche, codice, review |
+| `veloce` | Anthropic Sonnet, OpenRouter, poi `gratis`     | lavoro di tutti i giorni   |
+| `gratis` | OpenRouter `:free`, Groq, Gemini, poi `locale` | digest, riassunti, cron    |
+| `locale` | Ollama sul mini PC (spento di default)         | lavori leggeri e privati   |
+
 ## Canali
 
 - **Telegram** per iniziare: un bot per agente. WhatsApp è supportato da

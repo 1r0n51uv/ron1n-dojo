@@ -1,8 +1,12 @@
 # Profilo default della stanza: non parla con nessuno (niente bot), ospita il
 # gateway che serve tutti i profili e il dispatcher del board Kanban.
 model:
-  provider: "anthropic"
-  default: "claude-haiku-5-5"
+  # Nome logico del gateway dei modelli (servizi/modelli/config.yaml).
+  provider: "custom"
+  base_url: "http://litellm:4000/v1"
+  key_env: LITELLM_API_KEY
+  default: "veloce"
+  context_length: 200000
 
 gateway:
   multiplex_profiles: true

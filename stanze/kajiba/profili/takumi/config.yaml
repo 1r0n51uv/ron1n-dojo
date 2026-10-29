@@ -1,8 +1,12 @@
 # Takumi (Edward Elric): prende una issue, la implementa con i test in un branch suo e
 # apre la PR con `Closes #N`. Non fa merge e non tocca la specifica.
 model:
-  provider: "anthropic"
-  default: "claude-sonnet-5-5"
+  # Nome logico del gateway dei modelli (servizi/modelli/config.yaml).
+  provider: "custom"
+  base_url: "http://litellm:4000/v1"
+  key_env: LITELLM_API_KEY
+  default: "forte"
+  context_length: 200000
 
 platform_toolsets:
   telegram: [file, terminal, code_execution, kanban, clarify, skills, todo, memory]

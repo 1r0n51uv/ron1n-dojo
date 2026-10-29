@@ -19,7 +19,7 @@ services:
       # Tutto il traffico esce dal proxy con l'allowlist.
       HTTPS_PROXY: http://uscita:3128
       HTTP_PROXY: http://uscita:3128
-      NO_PROXY: localhost,127.0.0.1
+      NO_PROXY: localhost,127.0.0.1,litellm
       # Gli IP di riserva di Telegram scavalcano i nomi a dominio: il proxy
       # li rifiuterebbe.
       HERMES_TELEGRAM_DISABLE_FALLBACK_IPS: "true"
@@ -32,6 +32,8 @@ services:
       - ../../flussi:/opt/dojo/flussi:ro
     networks:
       - interna
+      # Solo verso il gateway dei modelli (servizi/modelli).
+      - modelli
     mem_limit: 3g
     cpus: 2
     pids_limit: 512
@@ -58,3 +60,6 @@ networks:
   interna:
     internal: true
   esterna: {}
+  modelli:
+    name: dojo-kajiba-modelli
+    external: true

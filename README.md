@@ -12,20 +12,32 @@ requisiti in [`docs/specs/`](docs/specs/README.md).
 
 ## Struttura
 
-| Cartella                           | Cosa contiene                                                     |
-| ---------------------------------- | ----------------------------------------------------------------- |
-| [`stanze/`](stanze/)               | una stanza = un container Hermes con i suoi profili, rete e proxy |
-| [`stanze/kajiba/`](stanze/kajiba/) | sviluppo: `gunshi`, `takumi`, `shinpan`                           |
-| [`flussi/`](flussi/README.md)      | skill Hermes dei flussi, montate in sola lettura nelle stanze     |
-| [`scripts/`](scripts/)             | `dojo.sh` (up, down, status, sync) e la validazione               |
+| Cartella                               | Cosa contiene                                                     |
+| -------------------------------------- | ----------------------------------------------------------------- |
+| [`stanze/`](stanze/)                   | una stanza = un container Hermes con i suoi profili, rete e proxy |
+| [`stanze/kajiba/`](stanze/kajiba/)     | sviluppo: `gunshi`, `takumi`, `shinpan`                           |
+| [`servizi/modelli/`](servizi/modelli/) | gateway dei modelli LiteLLM: cloud, piani free, Ollama            |
+| [`flussi/`](flussi/README.md)          | skill Hermes dei flussi, montate in sola lettura nelle stanze     |
+| [`scripts/`](scripts/)                 | `dojo.sh` (up, down, status, sync) e la validazione               |
 
 ## Avvio di una stanza
 
-Sul server, con Docker:
+Sul server, con Docker. Prima il gateway dei modelli:
+
+```sh
+cd servizi/modelli
+cp .env.example .env                      # master key, password del DB, chiavi dei provider
+chmod 600 .env
+cd ../..
+scripts/dojo.sh up                        # crea le reti e accende il gateway
+scripts/dojo.sh chiave kajiba             # stampa LITELLM_API_KEY per la stanza
+```
+
+Poi la stanza:
 
 ```sh
 cd stanze/kajiba
-cp .env.example .env                      # chiave del modello e tuo user ID Telegram
+cp .env.example .env                      # LITELLM_API_KEY e tuo user ID Telegram
 for p in gunshi takumi shinpan; do
   cp profili/$p/.env.example profili/$p/.env   # bot Telegram e token GitHub dell'agente
 done

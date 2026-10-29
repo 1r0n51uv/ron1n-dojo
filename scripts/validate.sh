@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Valida le stanze: `docker compose config` su ogni compose.yaml e, per ogni
-# profilo, la presenza di config.yaml, SOUL.md e .env.example. Non serve il
-# demone Docker.
+# Valida stanze e servizi: `docker compose config` su ogni compose.yaml (i
+# servizi con i valori di .env.example) e, per ogni profilo, la presenza di
+# config.yaml, SOUL.md e .env.example. Non serve il demone Docker.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -24,6 +24,22 @@ for compose in stanze/*/compose.yaml; do
       fi
     done
   done
+done
+
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+for compose in servizi/*/compose.yaml; do
+  dir=$(dirname "$compose")
+  work="$tmp/$(basename "$dir")"
+  cp -r "$dir" "$work"
+  # env_file: .env non è versionato: al suo posto .env.example.
+  cp "$work/.env.example" "$work/.env"
+  if docker compose --project-directory "$work" -f "$work/compose.yaml" --env-file "$work/.env" config --quiet; then
+    echo "ok   $compose"
+  else
+    echo "FAIL $compose"
+    status=1
+  fi
 done
 
 for skill in flussi/*/; do

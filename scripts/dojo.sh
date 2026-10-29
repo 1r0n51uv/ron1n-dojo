@@ -6,6 +6,12 @@
 #   scripts/dojo.sh status [stanza...]  stato dei container
 #   scripts/dojo.sh sync <stanza>       copia config, SOUL e .env dei profili
 #                                      nel volume della stanza e riavvia il gateway
+#   scripts/dojo.sh chiave <stanza> [budget]
+#                                      crea la chiave virtuale della stanza sul
+#                                      gateway dei modelli (budget in dollari, 20)
+#
+# Senza nomi, up e down includono il gateway dei modelli (servizi/modelli):
+# acceso per primo, spento per ultimo.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -37,6 +43,45 @@ compose() {
   docker compose --project-directory "$radice/stanze/$stanza" -f "$radice/stanze/$stanza/compose.yaml" "$@"
 }
 
+modelli() {
+  docker compose --project-directory "$radice/servizi/modelli" -f "$radice/servizi/modelli/compose.yaml" "$@"
+}
+
+# Ogni stanza ha una rete sua verso il gateway dei modelli, senza internet:
+# così le stanze non si vedono fra loro.
+crea_reti() {
+  local s
+  for s in $(stanze_valide); do
+    docker network inspect "dojo-$s-modelli" >/dev/null 2>&1 ||
+      docker network create --internal "dojo-$s-modelli" >/dev/null
+  done
+}
+
+# Chiave virtuale LiteLLM per una stanza: solo i nomi logici, con un budget
+# che si azzera ogni mese. La stampa: va nel .env della stanza.
+chiave() {
+  local stanza=$1 budget=${2:-20}
+  modelli exec -T litellm python3 - "$stanza" "$budget" <<'PY'
+import json, os, sys, urllib.request
+stanza, budget = sys.argv[1], float(sys.argv[2])
+corpo = {
+    "key_alias": f"stanza-{stanza}",
+    "models": ["forte", "veloce", "gratis", "locale"],
+    "max_budget": budget,
+    "budget_duration": "30d",
+}
+req = urllib.request.Request(
+    "http://localhost:4000/key/generate",
+    data=json.dumps(corpo).encode(),
+    headers={
+        "Authorization": "Bearer " + os.environ["LITELLM_MASTER_KEY"],
+        "Content-Type": "application/json",
+    },
+)
+print("LITELLM_API_KEY=" + json.load(urllib.request.urlopen(req))["key"])
+PY
+}
+
 # Cartella del profilo dentro il volume: il default è la radice di HERMES_HOME.
 dir_profilo() {
   if [[ $1 == default ]]; then echo /opt/data; else echo "/opt/data/profiles/$1"; fi
@@ -48,6 +93,7 @@ sync_stanza() {
   tmp=$(mktemp -d)
   trap 'rm -rf "$tmp"' RETURN
 
+  crea_reti
   compose "$stanza" up -d --build
   compose "$stanza" exec -T hermes mkdir -p /opt/data/lavori
 
@@ -80,12 +126,17 @@ comando=${1:-}
 [[ $# -gt 0 ]] && shift
 case $comando in
   up)
+    crea_reti
+    [[ $# -gt 0 ]] || modelli up -d
     for c in $(scegli_stanze "$@"); do compose "$c" up -d --build; done
     ;;
   down)
     for c in $(scegli_stanze "$@"); do compose "$c" down; done
+    [[ $# -gt 0 ]] || modelli down
     ;;
   status)
+    echo "== modelli"
+    modelli ps
     for c in $(scegli_stanze "$@"); do
       echo "== $c"
       compose "$c" ps
@@ -96,8 +147,13 @@ case $comando in
     scegli_stanze "$1" >/dev/null
     sync_stanza "$1"
     ;;
+  chiave)
+    [[ $# -ge 1 && $# -le 2 ]] || die "uso: dojo.sh chiave <stanza> [budget]"
+    scegli_stanze "$1" >/dev/null
+    chiave "$@"
+    ;;
   *)
-    sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'
     [[ -z $comando ]] || exit 1
     ;;
 esac
