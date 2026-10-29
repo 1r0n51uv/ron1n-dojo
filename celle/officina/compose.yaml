@@ -1,0 +1,60 @@
+# Cella officina: gli agenti di sviluppo (architetto, fabbro, revisore) in un
+# solo container Hermes, un profilo per agente. Il container è il confine di
+# sicurezza: niente docker.sock, niente porte pubblicate, uscita solo verso i
+# domini di uscita/allowlist.conf. Spec: docs/specs/celle.md.
+name: dojo-officina
+
+services:
+  hermes:
+    build:
+      context: .
+      args:
+        HERMES_VERSION: v0.22.5
+    image: dojo-officina:v0.22.5
+    restart: unless-stopped
+    command: ["gateway", "run"]
+    environment:
+      HERMES_UID: ${HERMES_UID:-10000}
+      HERMES_GID: ${HERMES_GID:-10000}
+      # Tutto il traffico esce dal proxy con l'allowlist.
+      HTTPS_PROXY: http://uscita:3128
+      HTTP_PROXY: http://uscita:3128
+      NO_PROXY: localhost,127.0.0.1
+      # Gli IP di riserva di Telegram scavalcano i nomi a dominio: il proxy
+      # li rifiuterebbe.
+      HERMES_TELEGRAM_DISABLE_FALLBACK_IPS: "true"
+      # Dashboard solo dentro il container: si raggiunge con
+      # `docker compose exec` o tunnel SSH, mai da rete.
+      HERMES_DASHBOARD: "0"
+    volumes:
+      - dati:/opt/data
+      # Flussi in sola lettura: gli agenti li usano ma non li modificano.
+      - ../../flussi:/opt/dojo/flussi:ro
+    networks:
+      - interna
+    mem_limit: 3g
+    cpus: 2
+    pids_limit: 512
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      - uscita
+
+  uscita:
+    image: ubuntu/squid:6.10-24.04_edge
+    restart: unless-stopped
+    volumes:
+      - ./uscita/allowlist.conf:/etc/squid/conf.d/dojo.conf:ro
+    networks:
+      - interna
+      - esterna
+    mem_limit: 256m
+
+volumes:
+  dati:
+
+networks:
+  # Nessuna rotta verso internet: Hermes esce solo passando da uscita.
+  interna:
+    internal: true
+  esterna: {}

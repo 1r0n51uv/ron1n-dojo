@@ -1,0 +1,36 @@
+# Fabbro: prende una issue, la implementa con i test in un branch suo e
+# apre la PR con `Closes #N`. Non fa merge e non tocca la specifica.
+model:
+  provider: "anthropic"
+  default: "claude-sonnet-5-5"
+
+platform_toolsets:
+  telegram: [file, terminal, code_execution, kanban, clarify, skills, todo, memory]
+  cli: [file, terminal, code_execution, kanban, clarify, skills, todo, memory]
+
+terminal:
+  backend: "local"
+  cwd: "/opt/data/lavori"
+  env_passthrough: [GH_TOKEN]
+
+skills:
+  external_dirs:
+    - /opt/dojo/flussi
+
+kanban:
+  dispatch_in_gateway: false
+
+approvals:
+  mode: manual
+  cron_mode: deny
+  unattended_mode: deny
+  # Mai, nemmeno con approvazione: il merge e le operazioni distruttive
+  # restano tue.
+  deny:
+    - "gh pr merge*"
+    - "gh repo delete*"
+    - "gh api * -X DELETE*"
+    - "git push --force*"
+    - "git push -f*"
+    - "git push * main"
+    - "git push origin HEAD:main*"

@@ -1,0 +1,36 @@
+# Architetto: da un'idea scrive la specifica, apre la PR `spec` e, dopo il
+# merge, crea le issue con label. Non scrive codice delle app.
+model:
+  provider: "anthropic"
+  default: "claude-opus-5-5"
+
+platform_toolsets:
+  telegram: [file, terminal, kanban, clarify, skills, todo, memory]
+  cli: [file, terminal, kanban, clarify, skills, todo, memory]
+
+terminal:
+  backend: "local"
+  cwd: "/opt/data/lavori"
+  env_passthrough: [GH_TOKEN]
+
+skills:
+  external_dirs:
+    - /opt/dojo/flussi
+
+kanban:
+  dispatch_in_gateway: false
+
+approvals:
+  mode: manual
+  cron_mode: deny
+  unattended_mode: deny
+  # Mai, nemmeno con approvazione: il merge e le operazioni distruttive
+  # restano tue.
+  deny:
+    - "gh pr merge*"
+    - "gh repo delete*"
+    - "gh api * -X DELETE*"
+    - "git push --force*"
+    - "git push -f*"
+    - "git push * main"
+    - "git push origin HEAD:main*"

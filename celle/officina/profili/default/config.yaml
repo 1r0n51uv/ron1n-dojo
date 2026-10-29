@@ -1,0 +1,19 @@
+# Profilo default della cella: non parla con nessuno (niente bot), ospita il
+# gateway che serve tutti i profili e il dispatcher del board Kanban.
+model:
+  provider: "anthropic"
+  default: "claude-haiku-5-5"
+
+gateway:
+  multiplex_profiles: true
+
+kanban:
+  dispatch_in_gateway: true
+
+platform_toolsets:
+  cli: [kanban, clarify]
+
+approvals:
+  mode: manual
+  cron_mode: deny
+  unattended_mode: deny
