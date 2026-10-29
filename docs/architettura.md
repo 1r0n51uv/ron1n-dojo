@@ -48,8 +48,8 @@ condividono nulla.
 
 ## Stanze
 
-Il dojo ha una stanza per area. Ogni agente è un personaggio, uno per
-anime, con il nome del ruolo in inglese.
+Il dojo ha una stanza per area. Ogni agente è un personaggio di un anime, con il
+nome del ruolo in inglese.
 
 | Stanza                | Agenti (ruolo · personaggio)                                                                                                                                                 | Può                                                         | Non può                               |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------- |
