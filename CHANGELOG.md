@@ -6,6 +6,7 @@ merge.
 
 ## 2026-10-29
 
+- `dojo.sh budget lab` trova anche la chiave `stanza-kajiba` della migrazione e la rinomina ([#4](https://github.com/1r0n51uv/ron1n-dojo/pull/4))
 - `dojo.sh segreto` imposta token del bot e `GH_TOKEN` di un agente con input nascosto ([#3](https://github.com/1r0n51uv/ron1n-dojo/pull/3))
 - Ruoli in inglese (Strategist, Builder, Reviewer, Concierge, Companion, Captain), stanza `lab` al posto di `kajiba` e nuovi agenti Designer (Bulma) e Concierge (Nico Robin) ([#2](https://github.com/1r0n51uv/ron1n-dojo/pull/2))
 - `dojo.sh provider` ricollega LiteLLM alle stanze dopo il riavvio ([#1](https://github.com/1r0n51uv/ron1n-dojo/pull/1))
