@@ -7,6 +7,8 @@
 #   scripts/dojo.sh sync <stanza>       copia config, SOUL e .env dei profili
 #                                      nel volume della stanza e riavvia il gateway
 #   scripts/dojo.sh up-modelli         avvia solo il gateway dei modelli
+#   scripts/dojo.sh provider <nome>    imposta la chiave di un provider (anthropic,
+#                                      openrouter, groq, gemini), input nascosto
 #   scripts/dojo.sh budget <stanza> <dollari>
 #                                      cambia il budget mensile della chiave
 #   scripts/dojo.sh chiave <stanza> [budget]
@@ -135,6 +137,36 @@ for k in chiavi:
 PY
 }
 
+# Chiave di un provider nel .env del gateway, chiesta con input nascosto e
+# senza passare dalla riga di comando né dalla cronologia. Poi riavvia solo
+# LiteLLM: le stanze non si accorgono di nulla.
+provider() {
+  local nome=$1 var f="$radice/servizi/modelli/.env" valore tmp
+  case $nome in
+    anthropic) var=ANTHROPIC_API_KEY ;;
+    openrouter) var=OPENROUTER_API_KEY ;;
+    groq) var=GROQ_API_KEY ;;
+    gemini) var=GEMINI_API_KEY ;;
+    *) die "provider sconosciuto: $nome (validi: anthropic openrouter groq gemini)" ;;
+  esac
+  [[ -f $f ]] || die "manca $f: lancia prima scripts/install.sh"
+  printf '%s: ' "$var" >/dev/tty
+  IFS= read -rs valore </dev/tty
+  printf '\n' >/dev/tty
+  [[ -n $valore ]] || die "valore vuoto, non cambio nulla"
+  tmp=$(mktemp)
+  chmod 600 "$tmp"
+  # Sostituisce la riga se c'è, altrimenti la aggiunge. Il valore passa
+  # dall'ambiente di awk, non dalla riga di comando.
+  VALORE=$valore awk -v var="$var" 'BEGIN { FS = OFS = "="; fatto = 0 }
+    $1 == var { print var "=" ENVIRON["VALORE"]; fatto = 1; next }
+    { print }
+    END { if (!fatto) print var "=" ENVIRON["VALORE"] }' "$f" >"$tmp"
+  mv "$tmp" "$f"
+  modelli up -d litellm
+  echo "$var aggiornata, LiteLLM riavviato"
+}
+
 # Cartella del profilo dentro il volume: il default è la radice di HERMES_HOME.
 dir_profilo() {
   if [[ $1 == default ]]; then echo /opt/data; else echo "/opt/data/profiles/$1"; fi
@@ -229,6 +261,10 @@ case $comando in
   up-modelli)
     up_modelli
     ;;
+  provider)
+    [[ $# -eq 1 ]] || die "uso: dojo.sh provider <anthropic|openrouter|groq|gemini>"
+    provider "$1"
+    ;;
   budget)
     [[ $# -eq 2 ]] || die "uso: dojo.sh budget <stanza> <dollari>"
     scegli_stanze "$1" >/dev/null
@@ -240,7 +276,7 @@ case $comando in
     chiave "$@"
     ;;
   *)
-    sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'
     [[ -z $comando ]] || exit 1
     ;;
 esac

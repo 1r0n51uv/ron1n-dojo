@@ -58,6 +58,21 @@ Accettazione:
       stanza no.
 - [ ] Il gateway non pubblica porte sull'host.
 
+### MODELLI-004 · Chiavi dei provider senza toccare i file
+
+Stato: proposto
+
+Una chiave si aggiunge o si cambia con un comando, senza aprire il `.env` e
+senza riavviare le stanze.
+
+Accettazione:
+
+- [ ] `scripts/dojo.sh provider <anthropic|openrouter|groq|gemini>` chiede la
+      chiave con input nascosto: non passa dalla riga di comando.
+- [ ] Aggiorna la riga in `servizi/modelli/.env` (permessi 600) e riavvia solo
+      LiteLLM.
+- [ ] Un valore vuoto non cambia nulla.
+
 ## Note
 
 - I nomi dei modelli sui provider cambiano: si verificano in
