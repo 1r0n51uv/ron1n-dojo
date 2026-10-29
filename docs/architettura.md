@@ -48,17 +48,16 @@ condividono nulla.
 
 ## Stanze
 
-Il dojo ha una stanza per area. Ogni agente è un personaggio, uno per
-anime, con il nome del ruolo in giapponese.
+Il dojo ha una stanza per area. Ogni agente è un personaggio di un anime, con il
+nome del ruolo in inglese.
 
-| Stanza              | Agenti (ruolo · personaggio)                                                                       | Può                                                         | Non può                               |
-| ------------------- | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------- |
-| `kajiba`, la forgia | Gunshi · Shikamaru (Naruto), Takumi · Edward Elric (Fullmetal Alchemist), Shinpan · L (Death Note) | shell nel container, git, `gh`, npm; PR sui repo app        | merge, admin dei repo, server, docker |
-| personale (dopo)    | Nakama · Chopper (One Piece)                                                                       | promemoria, note, brief del mattino; MCP di ron1nOS         | shell, GitHub, file                   |
-| lavoro (dopo)       | Taichō · Levi (L'attacco dei giganti)                                                              | come la stanza personale, con memoria e credenziali proprie | vedere le altre stanze                |
-| ingresso (forse)    | Shihan · Aizawa (My Hero Academia)                                                                 | smistare le richieste alle stanze, creare cron              | lavorare da sé                        |
+| Stanza                | Agenti (ruolo · personaggio)                                                                                                                                                 | Può                                                         | Non può                               |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------- |
+| `lab`, il laboratorio | Strategist · Shikamaru (Naruto), Designer · Bulma (Dragon Ball), Concierge · Nico Robin (One Piece), Builder · Edward Elric (Fullmetal Alchemist), Reviewer · L (Death Note) | shell nel container, git, `gh`, npm; PR sui repo app        | merge, admin dei repo, server, docker |
+| personale (dopo)      | Companion · Chopper (One Piece)                                                                                                                                              | promemoria, note, brief del mattino; MCP di ron1nOS         | shell, GitHub, file                   |
+| lavoro (dopo)         | Captain · Levi (L'attacco dei giganti)                                                                                                                                       | come la stanza personale, con memoria e credenziali proprie | vedere le altre stanze                |
 
-I nomi delle stanze personale, lavoro e ingresso si decidono quando
+I nomi delle stanze personale e lavoro si decidono quando
 arrivano.
 
 Ogni stanza: immagine Hermes a versione fissata, volume dati suo, limiti di
@@ -68,13 +67,14 @@ CPU e memoria, rete `interna` più proxy `uscita`, nessuna porta pubblicata
 In una stanza il profilo `default` non ha bot: ospita il gateway che serve
 tutti i profili (multiplexing) e il dispatcher Kanban.
 
-### Kajiba
+### Lab
 
-| Agente               | Ruolo                                                         | Toolset                                         | Token GitHub                                |
-| -------------------- | ------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------- |
-| `gunshi` (Shikamaru) | specifica, PR `spec`, issue con label, card per Edward        | file, terminal, kanban, clarify, skills         | contents, pull requests, issues: scrittura  |
-| `takumi` (Edward)    | implementazione con test, `npm run check`, PR con `Closes #N` | file, terminal, code_execution, kanban, clarify | contents, pull requests: scrittura          |
-| `shinpan` (L)        | review contro specifica e regole, segnala la PR pronta        | terminal, kanban, clarify, skills               | contents: lettura; pull requests: scrittura |
+| Agente                   | Ruolo                                                                                                    | Toolset                                         | Token GitHub                                |
+| ------------------------ | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------- |
+| `strategist` (Shikamaru) | specifica, PR `spec`, issue con label, card per Edward                                                   | file, terminal, kanban, clarify, skills         | contents, pull requests, issues: scrittura  |
+| `designer` (Bulma)       | flussi, mockup e specifiche UI/UX in `docs/design/`, review di progetti, issue per Edward; niente codice | file, terminal, vision, kanban, clarify, skills | contents, pull requests, issues: scrittura  |
+| `builder` (Edward)       | implementazione con test, `npm run check`, PR con `Closes #N`                                            | file, terminal, code_execution, kanban, clarify | contents, pull requests: scrittura          |
+| `reviewer` (L)           | review contro specifica e regole, segnala la PR pronta                                                   | terminal, kanban, clarify, skills               | contents: lettura; pull requests: scrittura |
 
 ## Modelli
 
@@ -106,18 +106,18 @@ Skill Hermes in [`flussi/`](../flussi/README.md), montate in sola lettura.
 Ogni passaggio fra agenti è una card Kanban; le card PR hanno un contratto
 di completamento, quindi si chiudono solo con i check richiesti verdi.
 
-1. **Nuova feature**: gunshi (specifica, issue) → takumi (PR) →
-   shinpan (review) → merge tuo.
-2. **Nuovo progetto**: gunshi prepara specifica e template; repo e
+1. **Nuova feature**: strategist (specifica, issue) → designer (mockup,
+   se c'è interfaccia) → builder (PR) → reviewer (review) → merge tuo.
+2. **Nuovo progetto**: strategist prepara specifica e template; repo e
    branch protection li crei tu; PR sul hub per README e `infra/<app>/`.
 3. **Personale**, **lavoro**, **ricorrenti** (digest di PR e issue, CI
    rossa su `main`, dipendenze): con le stanze della fase 2.
 
 ## Fasi
 
-1. **Fase 0**: questo repo, specifiche, stanza `kajiba`, flussi in bozza.
-2. **Fase 1**: `kajiba` sul mini PC con Telegram, prova di
-   `nuova-feature` su un repo vero; stack `infra/dojo-kajiba/` in ron1n.
+1. **Fase 0**: questo repo, specifiche, stanza `lab`, flussi in bozza.
+2. **Fase 1**: `lab` sul mini PC con Telegram, prova di
+   `nuova-feature` su un repo vero; stack `infra/dojo-lab/` in ron1n.
 3. **Fase 2**: stanza `personale`, cron, webhook GitHub via Tunnel.
 4. **Fase 3**: stanza `lavoro`, server MCP per ron1n (stato degli stack,
    log, API di ron1nOS) con filtri per server nelle stanze.

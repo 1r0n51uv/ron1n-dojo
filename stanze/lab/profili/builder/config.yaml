@@ -1,4 +1,4 @@
-# Takumi (Edward Elric): prende una issue, la implementa con i test in un branch suo e
+# Builder (Edward Elric): prende una issue, la implementa con i test in un branch suo e
 # apre la PR con `Closes #N`. Non fa merge e non tocca la specifica.
 model:
   # Nome logico del gateway dei modelli (servizi/modelli/config.yaml).

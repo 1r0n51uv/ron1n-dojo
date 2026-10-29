@@ -51,12 +51,12 @@ Accettazione:
 - [ ] I toolset di ogni profilo sono elencati in `platform_toolsets`; un
       profilo senza `file` non scrive file con i tool di Hermes.
 - [ ] Token GitHub fine-grained dell'account degli agenti, uno per
-      agente, limitati ai repo app: gunshi con contents, pull requests
-      e issues in scrittura; takumi con contents e pull requests in
-      scrittura; shinpan con contents in lettura e pull requests in
+      agente, limitati ai repo app: strategist e designer con contents, pull
+      requests e issues in scrittura; builder con contents e pull requests in
+      scrittura; reviewer con contents in lettura e pull requests in
       scrittura. Nessuno ha administration.
 - [ ] `gh pr merge`, push forzati e push su `main` sono bloccati da
-      `approvals.deny` in ogni profilo della kajiba.
+      `approvals.deny` in ogni profilo della lab.
 - [ ] I flussi sono montati in sola lettura.
 
 ### STANZA-004 · Gestire le stanze con un comando

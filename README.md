@@ -12,13 +12,13 @@ requisiti in [`docs/specs/`](docs/specs/README.md).
 
 ## Struttura
 
-| Cartella                               | Cosa contiene                                                     |
-| -------------------------------------- | ----------------------------------------------------------------- |
-| [`stanze/`](stanze/)                   | una stanza = un container Hermes con i suoi profili, rete e proxy |
-| [`stanze/kajiba/`](stanze/kajiba/)     | sviluppo: `gunshi`, `takumi`, `shinpan`                           |
-| [`servizi/modelli/`](servizi/modelli/) | gateway dei modelli LiteLLM: cloud, piani free, Ollama            |
-| [`flussi/`](flussi/README.md)          | skill Hermes dei flussi, montate in sola lettura nelle stanze     |
-| [`scripts/`](scripts/)                 | `dojo.sh` (up, down, status, sync) e la validazione               |
+| Cartella                               | Cosa contiene                                                          |
+| -------------------------------------- | ---------------------------------------------------------------------- |
+| [`stanze/`](stanze/)                   | una stanza = un container Hermes con i suoi profili, rete e proxy      |
+| [`stanze/lab/`](stanze/lab/)           | sviluppo: `concierge`, `strategist`, `designer`, `builder`, `reviewer` |
+| [`servizi/modelli/`](servizi/modelli/) | gateway dei modelli LiteLLM: cloud, piani free, Ollama                 |
+| [`flussi/`](flussi/README.md)          | skill Hermes dei flussi, montate in sola lettura nelle stanze          |
+| [`scripts/`](scripts/)                 | `dojo.sh` (up, down, status, sync) e la validazione                    |
 
 ## Installazione
 
@@ -35,8 +35,8 @@ Si può rilanciare per attivare altri agenti; i `.env` esistenti restano.
 
 Dopo: `scripts/dojo.sh status`, `up`, `down`, `sync <stanza>`.
 
-La dashboard di Hermes della kajiba è su <http://127.0.0.1:9119> (solo dal
-tuo PC). Utente `dojo`, password in `stanze/kajiba/pannello.env`.
+La dashboard di Hermes della lab è su <http://127.0.0.1:9119> (solo dal
+tuo PC). Utente `dojo`, password in `stanze/lab/pannello.env`.
 
 ## Sviluppo
 

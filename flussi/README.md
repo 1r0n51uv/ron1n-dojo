@@ -8,4 +8,4 @@ flusso si modifica con una PR su questo repo.
 | Flusso                                    | Chi lo avvia | Agenti                 | Stato |
 | ----------------------------------------- | ------------ | ---------------------- | ----- |
 | [nuova-feature](nuova-feature/SKILL.md)   | tu, Telegram | Shikamaru → Edward → L | bozza |
-| [nuovo-progetto](nuovo-progetto/SKILL.md) | tu, Telegram | gunshi                 | bozza |
+| [nuovo-progetto](nuovo-progetto/SKILL.md) | tu, Telegram | strategist             | bozza |

@@ -21,7 +21,7 @@ Accettazione:
       CHANGELOG) e manda il link; non procede prima del merge.
 - [ ] Dopo il merge crea una issue per requisito, con titolo
       `[PRE-NNN] ...`, criteri copiati e label, e una card Kanban per il
-      takumi.
+      builder.
 - [ ] Edward apre una PR per issue con `Closes #N`, test, CHANGELOG e
       stato del requisito a `fatto`, dopo `npm run check` verde.
 - [ ] L lascia una review; se chiede modifiche la card torna a Edward,
