@@ -23,6 +23,7 @@ approvals:
   unattended_mode: deny
 
 # Riepilogo su Telegram quando una card parte, finisce o si blocca
-# (rooms/lab/plugins/kanban-telegram).
+# (rooms/lab/plugins/kanban-telegram) e chat che passa all'agente che prende
+# la card (rooms/lab/plugins/handoff, solo qui: gira nel dispatcher).
 plugins:
-  enabled: [kanban-telegram]
+  enabled: [kanban-telegram, handoff]
