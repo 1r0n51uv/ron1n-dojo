@@ -5,6 +5,21 @@ un ruolo, strumenti e credenziali minimi; si parla con loro da Telegram;
 lavorano su richiesta, a orario (cron) o su evento (webhook). Gira sul
 mini PC di ron1n accanto agli altri stack.
 
+## Principi
+
+- **Plug and play**: un comando installa tutto
+  (`scripts/install.sh`), chiede solo i valori che mancano e si può
+  rilanciare.
+- **Modulare**: una stanza è una cartella in `stanze/`; reti, chiavi e
+  avvio la trovano da sola. Un agente si attiva quando gli dai un `.env`.
+- **Zero trust**: nessun agente si fida degli altri né della rete. Ogni
+  stanza è un container senza porte e senza internet, esce solo verso i
+  domini permessi; ogni agente ha i suoi token minimi; le chiavi dei
+  provider stanno solo nel gateway; il merge è sempre tuo.
+- **Free**: tutto è open source e gira anche solo con modelli gratuiti
+  (OpenRouter `:free`, Groq, Gemini) o locali (Ollama); trascrizione e voci
+  hanno opzioni gratuite e locali. I modelli a pagamento sono un'aggiunta.
+
 ## Cosa isola davvero
 
 - Un **profilo** Hermes è un agente con config, SOUL, memoria, skill, cron

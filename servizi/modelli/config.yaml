@@ -45,11 +45,13 @@ model_list:
       model: ollama_chat/qwen3:8b
       api_base: http://ollama:11434
 
+# Catene complete: con le sole chiavi gratuite (OpenRouter, Groq, Gemini) o
+# solo Ollama il dojo funziona lo stesso, più lento e meno preciso.
 router_settings:
   num_retries: 1
   fallbacks:
-    - forte: [forte-riserva, veloce]
-    - veloce: [veloce-riserva, gratis]
+    - forte: [forte-riserva, veloce, veloce-riserva, gratis, gratis-groq, gratis-gemini, locale]
+    - veloce: [veloce-riserva, gratis, gratis-groq, gratis-gemini, locale]
     - gratis: [gratis-groq, gratis-gemini, locale]
 
 litellm_settings:

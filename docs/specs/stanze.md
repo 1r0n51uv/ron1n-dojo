@@ -71,7 +71,30 @@ Accettazione:
 - [ ] `sync <stanza>` crea i profili mancanti, copia `config.yaml`,
       `SOUL.md` e il `.env` (comune più agente, permessi 600) nel volume e
       riavvia il gateway; memoria e sessioni restano.
-- [ ] Senza `.env` della stanza o di un agente si ferma e dice quale manca.
+- [ ] Senza `.env` della stanza si ferma e lo dice; un agente senza `.env`
+      viene saltato, così si può attivare un agente alla volta.
+
+### STANZA-005 · Installare il dojo con un comando
+
+Stato: proposto
+
+Su una macchina con Docker un solo comando porta da zero agli agenti
+avviati, come il bootstrap di ron1n.
+
+Accettazione:
+
+- [ ] `curl -fsSL .../scripts/install.sh | bash` clona o aggiorna il repo
+      (`DOJO_DIR`, `DOJO_RAMO`) e funziona anche lanciato da un checkout.
+- [ ] Chiede i valori dei `.env` che mancano: password e master key
+      casuali, token e chiavi nascosti, invio = vuoto o default.
+- [ ] Accende il gateway dei modelli, aspetta che sia pronto e crea la
+      chiave virtuale di ogni stanza con il budget scelto.
+- [ ] Per ogni agente chiede se attivarlo; quelli attivati partono con
+      `dojo.sh sync`.
+- [ ] Si può rilanciare: i `.env` esistenti non si toccano, gli agenti
+      spenti si possono attivare dopo.
+- [ ] Se mancano git, Docker o compose, o Docker non risponde, si ferma
+      subito e dice cosa fare.
 
 ## Note
 

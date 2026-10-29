@@ -6,6 +6,7 @@
 #   scripts/dojo.sh status [stanza...]  stato dei container
 #   scripts/dojo.sh sync <stanza>       copia config, SOUL e .env dei profili
 #                                      nel volume della stanza e riavvia il gateway
+#   scripts/dojo.sh up-modelli         avvia solo il gateway dei modelli
 #   scripts/dojo.sh chiave <stanza> [budget]
 #                                      crea la chiave virtuale della stanza sul
 #                                      gateway dei modelli (budget in dollari, 20)
@@ -48,17 +49,28 @@ modelli() {
 }
 
 # Ogni stanza ha una rete sua verso il gateway dei modelli, senza internet:
-# così le stanze non si vedono fra loro.
+# così le stanze non si vedono fra loro. Le reti nascono dalle cartelle in
+# stanze/ e il gateway, se è acceso, si collega a ognuna.
 crea_reti() {
-  local s
+  local s id
   for s in $(stanze_valide); do
     docker network inspect "dojo-$s-modelli" >/dev/null 2>&1 ||
       docker network create --internal "dojo-$s-modelli" >/dev/null
   done
+  id=$(modelli ps -q litellm 2>/dev/null) || id=
+  [[ -n $id ]] || return 0
+  for s in $(stanze_valide); do
+    docker network connect --alias litellm "dojo-$s-modelli" "$id" 2>/dev/null || true
+  done
 }
 
-# Chiave virtuale LiteLLM per una stanza: solo i nomi logici, con un budget
-# che si azzera ogni mese. La stampa: va nel .env della stanza.
+up_modelli() {
+  modelli up -d
+  crea_reti
+}
+
+# Chiave virtuale LiteLLM per una stanza, con un budget che si azzera ogni
+# mese. Vale per tutti i modelli del gateway, riserve comprese. La stampa: va nel .env della stanza.
 chiave() {
   local stanza=$1 budget=${2:-20}
   modelli exec -T litellm python3 - "$stanza" "$budget" <<'PY'
@@ -66,7 +78,6 @@ import json, os, sys, urllib.request
 stanza, budget = sys.argv[1], float(sys.argv[2])
 corpo = {
     "key_alias": f"stanza-{stanza}",
-    "models": ["forte", "veloce", "gratis", "locale"],
     "max_budget": budget,
     "budget_duration": "30d",
 }
@@ -100,17 +111,18 @@ sync_stanza() {
   for dir in "$base"/profili/*/; do
     p=$(basename "$dir")
     dest=$(dir_profilo "$p")
+    # Un agente senza .env non si attiva ancora: si può partire da uno solo.
+    if [[ $p != default && ! -f "$dir/.env" ]]; then
+      echo "salto $stanza/$p: manca ${dir}.env"
+      continue
+    fi
     if [[ $p != default ]] && ! compose "$stanza" exec -T hermes test -f "$dest/SOUL.md"; then
       # Profili stretti: nessuna skill inclusa, solo i flussi del dojo.
       compose "$stanza" exec -T hermes hermes profile create "$p" --no-skills
     fi
     # .env del profilo = valori comuni della stanza + quelli dell'agente.
     cat "$base/.env" >"$tmp/$p.env"
-    if [[ -f "$dir/.env" ]]; then
-      cat "$dir/.env" >>"$tmp/$p.env"
-    elif [[ $p != default ]]; then
-      die "manca $dir.env: copia $dir.env.example e compilalo"
-    fi
+    [[ ! -f "$dir/.env" ]] || cat "$dir/.env" >>"$tmp/$p.env"
     compose "$stanza" cp "$dir/config.yaml" "hermes:$dest/config.yaml"
     compose "$stanza" cp "$dir/SOUL.md" "hermes:$dest/SOUL.md"
     compose "$stanza" cp "$tmp/$p.env" "hermes:$dest/.env"
@@ -126,8 +138,7 @@ comando=${1:-}
 [[ $# -gt 0 ]] && shift
 case $comando in
   up)
-    crea_reti
-    [[ $# -gt 0 ]] || modelli up -d
+    if [[ $# -eq 0 ]]; then up_modelli; else crea_reti; fi
     for c in $(scegli_stanze "$@"); do compose "$c" up -d --build; done
     ;;
   down)
@@ -147,13 +158,16 @@ case $comando in
     scegli_stanze "$1" >/dev/null
     sync_stanza "$1"
     ;;
+  up-modelli)
+    up_modelli
+    ;;
   chiave)
     [[ $# -ge 1 && $# -le 2 ]] || die "uso: dojo.sh chiave <stanza> [budget]"
     scegli_stanze "$1" >/dev/null
     chiave "$@"
     ;;
   *)
-    sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'
     [[ -z $comando ]] || exit 1
     ;;
 esac

@@ -19,8 +19,8 @@ services:
     networks:
       - db
       - esterna
-      # Una rete per stanza: aggiungi qui la rete di ogni stanza nuova.
-      - dojo-kajiba-modelli
+      # Le reti delle stanze (dojo-<stanza>-modelli) le collega dojo.sh
+      # all'avvio: una stanza nuova non richiede modifiche qui.
     mem_limit: 1g
     depends_on:
       db:
@@ -76,5 +76,3 @@ networks:
   db:
     internal: true
   esterna: {}
-  dojo-kajiba-modelli:
-    external: true

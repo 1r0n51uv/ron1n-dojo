@@ -20,35 +20,20 @@ requisiti in [`docs/specs/`](docs/specs/README.md).
 | [`flussi/`](flussi/README.md)          | skill Hermes dei flussi, montate in sola lettura nelle stanze     |
 | [`scripts/`](scripts/)                 | `dojo.sh` (up, down, status, sync) e la validazione               |
 
-## Avvio di una stanza
+## Installazione
 
-Sul server, con Docker. Prima il gateway dei modelli:
-
-```sh
-cd servizi/modelli
-cp .env.example .env                      # master key, password del DB, chiavi dei provider
-chmod 600 .env
-cd ../..
-scripts/dojo.sh up                        # crea le reti e accende il gateway
-scripts/dojo.sh chiave kajiba             # stampa LITELLM_API_KEY per la stanza
-```
-
-Poi la stanza:
+Su una macchina con Docker (il mini PC, un portatile, WSL), un comando:
 
 ```sh
-cd stanze/kajiba
-cp .env.example .env                      # LITELLM_API_KEY e tuo user ID Telegram
-for p in gunshi takumi shinpan; do
-  cp profili/$p/.env.example profili/$p/.env   # bot Telegram e token GitHub dell'agente
-done
-chmod 600 .env profili/*/.env
-cd ../..
-scripts/dojo.sh sync kajiba             # avvia, crea i profili, copia config e segreti
-scripts/dojo.sh status
+curl -fsSL https://raw.githubusercontent.com/1r0n51uv/ron1n-dojo/main/scripts/install.sh | bash
 ```
 
-Poi scrivi al bot di Shikamaru su Telegram, per esempio
-`/nuova-feature ron1nOS <idea>`.
+Clona il repo in `~/ron1n-dojo` (o `DOJO_DIR`), chiede le chiavi dei
+provider (ne basta uno, anche gratuito), il tuo user ID Telegram e, agente
+per agente, se attivarlo con il suo bot e token GitHub. Poi accende tutto.
+Si può rilanciare per attivare altri agenti; i `.env` esistenti restano.
+
+Dopo: `scripts/dojo.sh status`, `up`, `down`, `sync <stanza>`.
 
 ## Sviluppo
 
