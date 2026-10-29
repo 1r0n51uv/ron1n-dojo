@@ -6,15 +6,15 @@
 #
 # Clona o aggiorna il repo, chiede i valori dei .env che mancano (invio =
 # default, password casuali), accende il gateway dei modelli, crea le chiavi
-# delle stanze, attiva gli agenti scelti e li avvia. Si può rilanciare: i .env
-# che esistono già non si toccano. Spec: docs/specs/stanze.md (STANZA-005).
+# delle rooms, attiva gli agenti scelti e li avvia. Si può rilanciare: i .env
+# che esistono già non si toccano. Spec: docs/specs/rooms.md (ROOM-005).
 #
-# Variabili: DOJO_DIR (cartella, default ~/ron1n-dojo), DOJO_RAMO (ramo da
+# Variabili: DOJO_DIR (cartella, default ~/ron1n-dojo), DOJO_BRANCH (ramo da
 # installare, default main).
 set -euo pipefail
 
 REPO=https://github.com/1r0n51uv/ron1n-dojo.git
-RAMO=${DOJO_RAMO:-main}
+BRANCH=${DOJO_BRANCH:-main}
 
 step() { printf '\n\033[1;31m==>\033[0m \033[1m%s\033[0m\n' "$*"; }
 info() { printf '    %s\n' "$*"; }
@@ -35,21 +35,21 @@ ask_secret() {
   IFS= read -rs REPLY </dev/tty || REPLY=
   printf '\n' >/dev/tty
 }
-ask_si() {
+ask_yes() {
   ask "$1 (s/n)" "${2:-s}"
   [[ $REPLY == [sSyY]* ]]
 }
 
 rand() { od -An -N24 -tx1 /dev/urandom | tr -d ' \n'; }
 
-# Il commento sopra una chiave nel .env.example, come aiuto alla domanda.
-aiuto() {
+# Il commento sopra una chiave nel .env.example, come help_text alla domanda.
+help_text() {
   awk -v k="$2" '/^#/ { c = c "    " $0 "\n"; next } $0 ~ "^" k "=" { printf "%s", c; exit } { c = "" }' "$1" >/dev/tty
 }
 
 # Scrive un .env a partire dal suo .env.example, una domanda per chiave.
 # $1 file .env.example, $2 file .env, poi coppie CHIAVE=valore già decise.
-scrivi_env() {
+write_env() {
   local esempio=$1 dest=$2 tmp key val fisso
   shift 2
   tmp=$(mktemp)
@@ -65,7 +65,7 @@ scrivi_env() {
       fi
     done
     if [[ -z $fisso ]]; then
-      aiuto "$esempio" "$key"
+      help_text "$esempio" "$key"
       case $key in
         *PASSWORD* | *MASTER_KEY*)
           val=$(rand)
@@ -91,7 +91,7 @@ scrivi_env() {
 
 env_get() { sed -n "s/^$2=//p" "$1" | tail -1; }
 
-controlla() {
+check() {
   step "Controllo"
   command -v git >/dev/null || die "manca git"
   command -v docker >/dev/null || die "manca Docker: installalo (sul mini PC lo fa il bootstrap di ron1n)"
@@ -112,27 +112,27 @@ repo() {
   fi
   DIR=${DOJO_DIR:-$HOME/ron1n-dojo}
   if [[ -d $DIR/.git ]]; then
-    git -C "$DIR" fetch -q origin "$RAMO"
-    git -C "$DIR" checkout -q "$RAMO"
-    git -C "$DIR" pull -q --ff-only origin "$RAMO"
-    info "aggiornato $DIR ($RAMO)"
+    git -C "$DIR" fetch -q origin "$BRANCH"
+    git -C "$DIR" checkout -q "$BRANCH"
+    git -C "$DIR" pull -q --ff-only origin "$BRANCH"
+    info "aggiornato $DIR ($BRANCH)"
   else
-    git clone -q --branch "$RAMO" "$REPO" "$DIR"
-    info "clonato in $DIR ($RAMO)"
+    git clone -q --branch "$BRANCH" "$REPO" "$DIR"
+    info "clonato in $DIR ($BRANCH)"
   fi
 }
 
-modelli() {
-  local base=$DIR/servizi/modelli
+models() {
+  local base=$DIR/services/models
   step "Gateway dei modelli"
   if [[ -f $base/.env ]]; then
     info "$base/.env c'è già"
   else
     info "Basta un provider: Anthropic o OpenRouter per i modelli forti,"
     info "OpenRouter, Groq o Gemini per quelli gratis."
-    scrivi_env "$base/.env.example" "$base/.env"
+    write_env "$base/.env.example" "$base/.env"
   fi
-  "$DIR/scripts/dojo.sh" up-modelli
+  "$DIR/scripts/dojo.sh" up-models
   info "attendo che LiteLLM sia pronto (al primo avvio prepara il database)"
   local _
   for _ in $(seq 1 60); do
@@ -144,30 +144,30 @@ modelli() {
     fi
     sleep 5
   done
-  die "LiteLLM non risponde dopo 5 minuti: scripts/dojo.sh status e docker compose logs in servizi/modelli"
+  die "LiteLLM non risponde dopo 5 minuti: scripts/dojo.sh status e docker compose logs in services/models"
 }
 
-stanza() {
-  local s=$1 base=$DIR/stanze/$1 chiave budget telegram dir p attivi=0
+room() {
+  local s=$1 base=$DIR/rooms/$1 api_key budget telegram dir p attivi=0
   step "Stanza $s"
   if [[ -f $base/.env ]]; then
     info "$base/.env c'è già"
   else
     while :; do
-      ask "Budget mensile della stanza sul gateway, in dollari (maggiore di 0)" 20
+      ask "Budget mensile della room sul gateway, in dollari (maggiore di 0)" 20
       budget=$REPLY
       awk -v b="$budget" 'BEGIN { exit !(b ~ /^[0-9]+([.][0-9]+)?$/ && b + 0 > 0) }' && break
       info "serve un numero maggiore di 0: con 0 ogni richiesta verrebbe rifiutata"
     done
-    chiave=$("$DIR/scripts/dojo.sh" chiave "$s" "$budget" | sed -n 's/^LITELLM_API_KEY=//p')
-    [[ -n $chiave ]] || die "chiave della stanza non creata"
+    api_key=$("$DIR/scripts/dojo.sh" key "$s" "$budget" | sed -n 's/^LITELLM_API_KEY=//p')
+    [[ -n $api_key ]] || die "chiave della room non creata"
     info "chiave virtuale creata"
-    scrivi_env "$base/.env.example" "$base/.env" "LITELLM_API_KEY=$chiave"
+    write_env "$base/.env.example" "$base/.env" "LITELLM_API_KEY=$api_key"
   fi
   telegram=$(env_get "$base/.env" TELEGRAM_ALLOWED_USERS)
   [[ -n $telegram ]] || info "TELEGRAM_ALLOWED_USERS è vuoto: gli agenti non risponderanno a nessuno"
 
-  for dir in "$base"/profili/*/; do
+  for dir in "$base"/profiles/*/; do
     p=$(basename "$dir")
     [[ $p != default ]] || continue
     if [[ -f $dir.env ]]; then
@@ -176,8 +176,8 @@ stanza() {
     fi
     echo >/dev/tty
     info "$(sed -n '1s/^# //p' "${dir}SOUL.md")"
-    if ask_si "Attivare $p adesso?" s; then
-      scrivi_env "${dir}.env.example" "${dir}.env"
+    if ask_yes "Attivare $p adesso?" s; then
+      write_env "${dir}.env.example" "${dir}.env"
       attivi=$((attivi + 1))
     else
       info "$p resta spento: rilancia l'installazione per attivarlo"
@@ -196,18 +196,18 @@ stanza() {
 # /dev/null; le domande vanno comunque a /dev/tty.
 main() {
   exec </dev/null
-  controlla
+  check
   repo
-  modelli
+  models
   local c
-  for c in "$DIR"/stanze/*/compose.yaml; do
-    stanza "$(basename "$(dirname "$c")")"
+  for c in "$DIR"/rooms/*/compose.yaml; do
+    room "$(basename "$(dirname "$c")")"
   done
 
   step "Fatto"
   info "Stato: $DIR/scripts/dojo.sh status"
-  info "Segreti: i .env in $DIR/servizi/modelli e $DIR/stanze/*/ (permessi 600)"
-  info "Scrivi ai bot su Telegram: per esempio /nuova-feature <repo> <idea> a Shikamaru"
+  info "Segreti: i .env in $DIR/services/models e $DIR/rooms/*/ (permessi 600)"
+  info "Scrivi ai bot su Telegram: per esempio /new-feature <repo> <idea> a Shikamaru"
 }
 
 main "$@"

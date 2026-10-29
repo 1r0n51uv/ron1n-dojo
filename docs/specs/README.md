@@ -6,10 +6,10 @@ di accettazione, stato.
 
 ## Moduli
 
-| Modulo | File                   | Prefisso ID | Label        |
-| ------ | ---------------------- | ----------- | ------------ |
-| Stanze | [stanze.md](stanze.md) | `STANZA`    | `mod:stanze` |
-| Flussi | [flussi.md](flussi.md) | `FLUSSO`    | `mod:flussi` |
+| Modulo | File                 | Prefisso ID | Label       |
+| ------ | -------------------- | ----------- | ----------- |
+| Stanze | [rooms.md](rooms.md) | `STANZA`    | `mod:rooms` |
+| Flussi | [flows.md](flows.md) | `FLUSSO`    | `mod:flows` |
 
 ## Stati dei requisiti
 

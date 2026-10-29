@@ -1,5 +1,5 @@
 # Verifica di ogni PR sul dojo: formato e lint dei documenti, script shell,
-# stanze e flussi, workflow. Il job ci è il check richiesto.
+# rooms e flows, workflow. Il job ci è il check richiesto.
 name: ci
 
 on:

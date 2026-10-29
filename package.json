@@ -1,7 +1,7 @@
 {
   "name": "ron1n-dojo",
   "private": true,
-  "description": "Dojo ron1n: agenti Hermes in Docker, stanze, profili e flussi",
+  "description": "Dojo ron1n: agenti Hermes in Docker, rooms, profiles e flows",
   "scripts": {
     "format": "prettier --config .prettierrc.json --write .",
     "format:check": "prettier --config .prettierrc.json --check .",
