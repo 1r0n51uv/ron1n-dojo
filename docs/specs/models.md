@@ -75,6 +75,31 @@ Accettazione:
       LiteLLM.
 - [ ] Un valore vuoto non cambia nulla.
 
+### MODELS-005 · Abbonamento ChatGPT al posto delle API key
+
+Stato: proposto
+
+Con un abbonamento ChatGPT (Plus o Pro) `strong` e `fast` usano GPT
+attraverso il provider `chatgpt/` di LiteLLM, senza API key e senza
+toccare le rooms. Finita la quota dell'abbonamento si scende sulle riserve.
+
+Accettazione:
+
+- [ ] `scripts/dojo.sh chatgpt` fa il login con codice dispositivo in un
+      container usa e getta del gateway, poi passa LiteLLM a
+      `config.chatgpt.yaml` (`LITELLM_CONFIG` nel `.env`) e lo riavvia.
+- [ ] Il token sta solo nel volume `chatgpt` del gateway; le rooms non lo
+      vedono e non hanno domini OpenAI nell'allowlist.
+- [ ] Senza login il gateway resta su `config.yaml`: nessuna richiesta
+      aspetta un codice dispositivo.
+- [ ] Un 429 di quota finita passa a `strong-backup` e poi ai free, come
+      per gli altri provider.
+- [ ] `scripts/dojo.sh chatgpt off` torna a `config.yaml`.
+- [ ] L'installazione chiede se collegare l'abbonamento (default no) e
+      non lo richiede se è già collegato.
+- [ ] `config.chatgpt.yaml` è uguale a `config.yaml` dai piani free in
+      giù: lo controlla `scripts/validate.sh`.
+
 ## Note
 
 - I nomi dei modelli sui provider cambiano: si verificano in
@@ -82,5 +107,8 @@ Accettazione:
 - Un modello Claude nuovo vuole una versione di LiteLLM che lo conosca:
   con una troppo vecchia LiteLLM manda `temperature` e `budget_tokens`, che
   Claude 5.x rifiuta con 400, e `strong` scivola sui modelli free.
+- I nomi dei modelli GPT dell'abbonamento (`chatgpt/gpt-6.1-sol` per
+  `strong`, `chatgpt/gpt-6-luna` per `fast`) cambiano con i piani di
+  OpenAI: si verificano dopo il login.
 - I modelli free sbagliano spesso le chiamate agli strumenti: vanno bene
   per riassunti e lavori a orario, non per specifiche e codice.

@@ -147,6 +147,21 @@ models() {
   die "LiteLLM non risponde dopo 5 minuti: scripts/dojo.sh status e docker compose logs in services/models"
 }
 
+# Abbonamento ChatGPT per strong e fast, se c'è: login con codice dispositivo.
+# Se il gateway lo usa già non chiede nulla.
+chatgpt() {
+  local f=$DIR/services/models/.env
+  [[ $(env_get "$f" LITELLM_CONFIG) != config.chatgpt.yaml ]] || return 0
+  step "Abbonamento ChatGPT"
+  info "Con ChatGPT Plus o Pro strong e fast usano GPT, senza API key;"
+  info "finita la quota si scende su OpenRouter e sui modelli gratis."
+  if ask_yes "Collegare un abbonamento ChatGPT adesso?" n; then
+    "$DIR/scripts/dojo.sh" chatgpt </dev/tty
+  else
+    info "più avanti: $DIR/scripts/dojo.sh chatgpt"
+  fi
+}
+
 room() {
   local s=$1 base=$DIR/rooms/$1 api_key budget telegram dir p attivi=0
   step "Stanza $s"
@@ -199,6 +214,7 @@ main() {
   check
   repo
   models
+  chatgpt
   local c
   for c in "$DIR"/rooms/*/compose.yaml; do
     room "$(basename "$(dirname "$c")")"

@@ -1,0 +1,82 @@
+# Variante di config.yaml con l'abbonamento ChatGPT (Plus o Pro) davanti a
+# `strong` e `fast`. La sceglie `scripts/dojo.sh chatgpt`, dopo il login,
+# con LITELLM_CONFIG nel .env: senza login LiteLLM aspetterebbe un codice
+# dispositivo a ogni richiesta, per questo non sta nel file di default.
+#
+# Il token (auth.json) sta nel volume `chatgpt`, solo nel gateway: le rooms
+# non lo vedono. La quota è quella di Codex dell'abbonamento, ogni 5 ore e
+# settimanale; finita, si scende su Claude via OpenRouter e poi sui free.
+#
+# Cambia solo il primo modello di `strong` e `fast`; il resto (OpenRouter,
+# free, local, impostazioni) è uguale a config.yaml e una modifica lì va
+# ripetuta qui (scripts/validate.sh lo controlla).
+
+model_list:
+  # Per specifiche, codice e review.
+  - model_name: strong
+    litellm_params:
+      model: chatgpt/gpt-6.1-sol
+  - model_name: strong-backup
+    litellm_params:
+      model: openrouter/anthropic/claude-opus-4.8
+      api_key: os.environ/OPENROUTER_API_KEY
+
+  # Per il lavoro di tutti i giorni.
+  - model_name: fast
+    litellm_params:
+      model: chatgpt/gpt-6-luna
+  - model_name: fast-backup
+    litellm_params:
+      model: openrouter/anthropic/claude-sonnet-4.6
+      api_key: os.environ/OPENROUTER_API_KEY
+
+  # Piani free: digest, riassunti, cron e prove senza spendere. Limiti di
+  # richieste bassi, e i modelli `:free` di OpenRouter cambiano spesso: se
+  # uno risponde 404 si sostituisce con uno della lista di openrouter.ai/models
+  # (filtro "free" e "tools"). Servono comunque una chiave OpenRouter con
+  # limite maggiore di 0.
+  - model_name: free
+    litellm_params:
+      model: openrouter/google/gemma-4-31b-it:free
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: free-nemotron
+    litellm_params:
+      model: openrouter/nvidia/nemotron-3-ultra-550b-a55b:free
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: free-groq
+    litellm_params:
+      model: groq/llama-3.3-70b-versatile
+      api_key: os.environ/GROQ_API_KEY
+  - model_name: free-gemini
+    litellm_params:
+      model: gemini/gemini-2.5-flash
+      api_key: os.environ/GEMINI_API_KEY
+
+  # Ollama sul mini PC (profile `local` del compose).
+  - model_name: local
+    litellm_params:
+      model: ollama_chat/qwen3:8b
+      api_base: http://ollama:11434
+
+# Catene complete: con le sole chiavi gratuite (OpenRouter, Groq, Gemini) o
+# solo Ollama il dojo funziona lo stesso, più lento e meno preciso. Gemini
+# sta in fondo ai free: la quota gratuita finisce presto (429) e, finita,
+# lo salta il cooldown. Le catene si leggono da sinistra a destra.
+router_settings:
+  num_retries: 1
+  # Due errori di fila e il modello resta fuori per 5 minuti: con la quota
+  # finita non si riprova a ogni messaggio.
+  allowed_fails: 1
+  cooldown_time: 300
+  # La catena di strong ha 8 passi; il default di LiteLLM si ferma a 5.
+  max_fallbacks: 10
+  fallbacks:
+    - strong: [strong-backup, fast, fast-backup, free, free-nemotron, free-groq, free-gemini, local]
+    - fast: [fast-backup, free, free-nemotron, free-groq, free-gemini, local]
+    - free: [free-nemotron, free-groq, free-gemini, local]
+
+litellm_settings:
+  drop_params: true
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY

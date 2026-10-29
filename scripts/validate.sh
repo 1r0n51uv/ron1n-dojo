@@ -43,6 +43,16 @@ for compose in services/*/compose.yaml; do
   fi
 done
 
+# config.chatgpt.yaml cambia solo il primo modello di strong e fast: dai
+# piani free in giù è identico a config.yaml.
+m=services/models
+if ! diff <(sed -n '/# Piani free/,$p' $m/config.yaml) <(sed -n '/# Piani free/,$p' $m/config.chatgpt.yaml) >/dev/null; then
+  echo "FAIL $m/config.chatgpt.yaml diverso da config.yaml dai piani free in giù"
+  status=1
+else
+  echo "ok   $m/config.chatgpt.yaml"
+fi
+
 for skill in flows/*/ skills/*/; do
   if ! head -1 "${skill}SKILL.md" 2>/dev/null | grep -qx -- '---'; then
     echo "FAIL ${skill}SKILL.md mancante o senza frontmatter"

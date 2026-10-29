@@ -11,14 +11,19 @@ services:
     # fallback anche quando Gemini dà 429 a stream già aperto.
     image: ghcr.io/berriai/litellm:v1.105.7
     restart: unless-stopped
-    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    # config.chatgpt.yaml solo dopo `dojo.sh chatgpt` (LITELLM_CONFIG nel .env).
+    command: ["--config", "/app/${LITELLM_CONFIG:-config.yaml}", "--port", "4000"]
     env_file: .env
     environment:
+      # Token dell'abbonamento ChatGPT (auth.json), scritto dal login.
+      CHATGPT_TOKEN_DIR: /app/chatgpt
       DATABASE_URL: postgresql://litellm:${POSTGRES_PASSWORD}@db:5432/litellm
       # Modelli e chiavi si gestiscono da config.yaml e dall'API, non dalla UI.
       STORE_MODEL_IN_DB: "False"
     volumes:
       - ./config.yaml:/app/config.yaml:ro
+      - ./config.chatgpt.yaml:/app/config.chatgpt.yaml:ro
+      - chatgpt:/app/chatgpt
     networks:
       - db
       - external
@@ -74,6 +79,7 @@ services:
 volumes:
   db:
   ollama:
+  chatgpt:
 
 networks:
   db:
