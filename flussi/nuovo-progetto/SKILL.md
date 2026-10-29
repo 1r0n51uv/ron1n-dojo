@@ -18,14 +18,14 @@ amministratore li fa 1ron51uv.
 
 ## Passi
 
-1. **Idea** (architetto): chiede nome, descrizione, stack e primo modulo.
+1. **Idea** (gunshi): chiede nome, descrizione, stack e primo modulo.
 2. **Repo** (1ron51uv): crea il repo su GitHub e lo rende visibile al
-   token degli agenti. L'architetto non crea repo.
-3. **Template** (architetto): copia `templates/app/` di ron1n nel repo,
+   token degli agenti. Shikamaru non crea repo.
+3. **Template** (gunshi): copia `templates/app/` di ron1n nel repo,
    compila `docs/specs/README.md` e il primo `docs/specs/<modulo>.md`, apre
    la PR.
 4. **Branch protection** (1ron51uv): PR obbligatoria, check `ci`, solo
    squash.
-5. **Hub** (architetto): PR su `1r0n51uv/ron1n` con la riga nella tabella
+5. **Hub** (gunshi): PR su `1r0n51uv/ron1n` con la riga nella tabella
    del README e lo stack `infra/<app>/` dal template.
 6. Da qui ogni requisito segue il flusso `nuova-feature`.

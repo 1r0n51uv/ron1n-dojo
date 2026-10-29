@@ -1,4 +1,4 @@
-# Profilo default della cella: non parla con nessuno (niente bot), ospita il
+# Profilo default della stanza: non parla con nessuno (niente bot), ospita il
 # gateway che serve tutti i profili e il dispatcher del board Kanban.
 model:
   provider: "anthropic"

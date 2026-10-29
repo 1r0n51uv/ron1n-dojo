@@ -1,12 +1,13 @@
-# Fabbro: prende una issue, la implementa con i test in un branch suo e
-# apre la PR con `Closes #N`. Non fa merge e non tocca la specifica.
+# Shinpan (L): rivede le PR contro la specifica e le regole del flusso, e
+# commenta o chiede modifiche. Niente toolset `file`, e il suo token GitHub
+# ha i contenuti in sola lettura: non può cambiare il codice né fare merge.
 model:
   provider: "anthropic"
-  default: "claude-sonnet-5-5"
+  default: "claude-opus-5-5"
 
 platform_toolsets:
-  telegram: [file, terminal, code_execution, kanban, clarify, skills, todo, memory]
-  cli: [file, terminal, code_execution, kanban, clarify, skills, todo, memory]
+  telegram: [terminal, kanban, clarify, skills, todo, memory]
+  cli: [terminal, kanban, clarify, skills, todo, memory]
 
 terminal:
   backend: "local"

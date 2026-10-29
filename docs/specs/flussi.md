@@ -17,15 +17,15 @@ pronta per il merge, seguendo il flusso di ron1n.
 
 Accettazione:
 
-- [ ] L'architetto apre la PR di specifica (label `spec`, `type:docs`,
+- [ ] Shikamaru apre la PR di specifica (label `spec`, `type:docs`,
       CHANGELOG) e manda il link; non procede prima del merge.
 - [ ] Dopo il merge crea una issue per requisito, con titolo
       `[PRE-NNN] ...`, criteri copiati e label, e una card Kanban per il
-      fabbro.
-- [ ] Il fabbro apre una PR per issue con `Closes #N`, test, CHANGELOG e
+      takumi.
+- [ ] Edward apre una PR per issue con `Closes #N`, test, CHANGELOG e
       stato del requisito a `fatto`, dopo `npm run check` verde.
-- [ ] Il revisore lascia una review; se chiede modifiche la card torna al
-      fabbro, se è pronta l'utente riceve il link su Telegram.
+- [ ] L lascia una review; se chiede modifiche la card torna a Edward,
+      se è pronta l'utente riceve il link su Telegram.
 - [ ] Nessun agente fa merge o spinge su `main`.
 
 ### FLUSSO-002 · Nuovo progetto
@@ -37,8 +37,8 @@ requisito.
 
 Accettazione:
 
-- [ ] L'architetto raccoglie nome, descrizione, stack e primo modulo.
-- [ ] Dopo che l'utente ha creato il repo, l'architetto apre la PR con il
+- [ ] Shikamaru raccoglie nome, descrizione, stack e primo modulo.
+- [ ] Dopo che l'utente ha creato il repo, Shikamaru apre la PR con il
       template di ron1n e le prime specifiche.
 - [ ] Apre la PR sul hub ron1n con la riga del README e lo stack
       `infra/<app>/`.
@@ -57,4 +57,4 @@ Accettazione:
 
 ## Note
 
-- Flussi personali e di lavoro con le celle della fase 2 e 3.
+- Flussi personali e di lavoro con le stanze della fase 2 e 3.

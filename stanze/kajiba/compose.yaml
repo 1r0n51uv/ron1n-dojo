@@ -1,8 +1,8 @@
-# Cella officina: gli agenti di sviluppo (architetto, fabbro, revisore) in un
+# stanza kajiba: gli agenti di sviluppo (gunshi, takumi, shinpan) in un
 # solo container Hermes, un profilo per agente. Il container è il confine di
 # sicurezza: niente docker.sock, niente porte pubblicate, uscita solo verso i
-# domini di uscita/allowlist.conf. Spec: docs/specs/celle.md.
-name: dojo-officina
+# domini di uscita/allowlist.conf. Spec: docs/specs/stanze.md.
+name: dojo-kajiba
 
 services:
   hermes:
@@ -10,7 +10,7 @@ services:
       context: .
       args:
         HERMES_VERSION: v0.22.5
-    image: dojo-officina:v0.22.5
+    image: dojo-kajiba:v0.22.5
     restart: unless-stopped
     command: ["gateway", "run"]
     environment:

@@ -12,33 +12,33 @@ requisiti in [`docs/specs/`](docs/specs/README.md).
 
 ## Struttura
 
-| Cartella                             | Cosa contiene                                                    |
-| ------------------------------------ | ---------------------------------------------------------------- |
-| [`celle/`](celle/)                   | una cella = un container Hermes con i suoi profili, rete e proxy |
-| [`celle/officina/`](celle/officina/) | sviluppo: `architetto`, `fabbro`, `revisore`                     |
-| [`flussi/`](flussi/README.md)        | skill Hermes dei flussi, montate in sola lettura nelle celle     |
-| [`scripts/`](scripts/)               | `dojo.sh` (up, down, status, sync) e la validazione              |
+| Cartella                           | Cosa contiene                                                     |
+| ---------------------------------- | ----------------------------------------------------------------- |
+| [`stanze/`](stanze/)               | una stanza = un container Hermes con i suoi profili, rete e proxy |
+| [`stanze/kajiba/`](stanze/kajiba/) | sviluppo: `gunshi`, `takumi`, `shinpan`                           |
+| [`flussi/`](flussi/README.md)      | skill Hermes dei flussi, montate in sola lettura nelle stanze     |
+| [`scripts/`](scripts/)             | `dojo.sh` (up, down, status, sync) e la validazione               |
 
-## Avvio di una cella
+## Avvio di una stanza
 
 Sul server, con Docker:
 
 ```sh
-cd celle/officina
+cd stanze/kajiba
 cp .env.example .env                      # chiave del modello e tuo user ID Telegram
-for p in architetto fabbro revisore; do
+for p in gunshi takumi shinpan; do
   cp profili/$p/.env.example profili/$p/.env   # bot Telegram e token GitHub dell'agente
 done
 chmod 600 .env profili/*/.env
 cd ../..
-scripts/dojo.sh sync officina             # avvia, crea i profili, copia config e segreti
+scripts/dojo.sh sync kajiba             # avvia, crea i profili, copia config e segreti
 scripts/dojo.sh status
 ```
 
-Poi scrivi al bot dell'architetto su Telegram, per esempio
+Poi scrivi al bot di Shikamaru su Telegram, per esempio
 `/nuova-feature ron1nOS <idea>`.
 
 ## Sviluppo
 
 `npm run check` prima di consegnare: Prettier, markdownlint, shellcheck e
-validazione delle celle. La CI fa lo stesso più actionlint.
+validazione delle stanze. La CI fa lo stesso più actionlint.

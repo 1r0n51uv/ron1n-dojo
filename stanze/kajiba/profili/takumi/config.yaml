@@ -1,12 +1,12 @@
-# Architetto: da un'idea scrive la specifica, apre la PR `spec` e, dopo il
-# merge, crea le issue con label. Non scrive codice delle app.
+# Takumi (Edward Elric): prende una issue, la implementa con i test in un branch suo e
+# apre la PR con `Closes #N`. Non fa merge e non tocca la specifica.
 model:
   provider: "anthropic"
-  default: "claude-opus-5-5"
+  default: "claude-sonnet-5-5"
 
 platform_toolsets:
-  telegram: [file, terminal, kanban, clarify, skills, todo, memory]
-  cli: [file, terminal, kanban, clarify, skills, todo, memory]
+  telegram: [file, terminal, code_execution, kanban, clarify, skills, todo, memory]
+  cli: [file, terminal, code_execution, kanban, clarify, skills, todo, memory]
 
 terminal:
   backend: "local"

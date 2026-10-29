@@ -1,4 +1,4 @@
-# Immagine Hermes dell'officina: quella ufficiale più la CLI di GitHub, che
+# Immagine Hermes della kajiba: quella ufficiale più la CLI di GitHub, che
 # serve per issue, PR e review. La versione si fissa in compose.yaml.
 ARG HERMES_VERSION
 FROM nousresearch/hermes-agent:${HERMES_VERSION}

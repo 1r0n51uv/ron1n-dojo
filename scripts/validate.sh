@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Valida le celle: `docker compose config` su ogni compose.yaml e, per ogni
+# Valida le stanze: `docker compose config` su ogni compose.yaml e, per ogni
 # profilo, la presenza di config.yaml, SOUL.md e .env.example. Non serve il
 # demone Docker.
 set -euo pipefail
@@ -7,7 +7,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 status=0
 
-for compose in celle/*/compose.yaml; do
+for compose in stanze/*/compose.yaml; do
   dir=$(dirname "$compose")
   if docker compose --project-directory "$dir" -f "$compose" config --quiet; then
     echo "ok   $compose"

@@ -8,7 +8,7 @@ di accettazione, stato.
 
 | Modulo | File                   | Prefisso ID | Label        |
 | ------ | ---------------------- | ----------- | ------------ |
-| Celle  | [celle.md](celle.md)   | `CELLA`     | `mod:celle`  |
+| Stanze | [stanze.md](stanze.md) | `STANZA`    | `mod:stanze` |
 | Flussi | [flussi.md](flussi.md) | `FLUSSO`    | `mod:flussi` |
 
 ## Stati dei requisiti

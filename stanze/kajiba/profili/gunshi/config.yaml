@@ -1,13 +1,12 @@
-# Revisore: rivede le PR contro la specifica e le regole del flusso, e
-# commenta o chiede modifiche. Niente toolset `file`, e il suo token GitHub
-# ha i contenuti in sola lettura: non può cambiare il codice né fare merge.
+# Gunshi (Shikamaru): da un'idea scrive la specifica, apre la PR `spec` e, dopo il
+# merge, crea le issue con label. Non scrive codice delle app.
 model:
   provider: "anthropic"
   default: "claude-opus-5-5"
 
 platform_toolsets:
-  telegram: [terminal, kanban, clarify, skills, todo, memory]
-  cli: [terminal, kanban, clarify, skills, todo, memory]
+  telegram: [file, terminal, kanban, clarify, skills, todo, memory]
+  cli: [file, terminal, kanban, clarify, skills, todo, memory]
 
 terminal:
   backend: "local"

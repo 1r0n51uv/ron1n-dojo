@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Gestione delle celle del dojo (spec docs/specs/celle.md).
+# Gestione delle stanze del dojo (spec docs/specs/stanze.md).
 #
-#   scripts/dojo.sh up [cella...]      avvia le celle (tutte senza nomi)
-#   scripts/dojo.sh down [cella...]    spegne le celle, i dati restano
-#   scripts/dojo.sh status [cella...]  stato dei container
-#   scripts/dojo.sh sync <cella>       copia config, SOUL e .env dei profili
-#                                      nel volume della cella e riavvia il gateway
+#   scripts/dojo.sh up [stanza...]      avvia le stanze (tutte senza nomi)
+#   scripts/dojo.sh down [stanza...]    spegne le stanze, i dati restano
+#   scripts/dojo.sh status [stanza...]  stato dei container
+#   scripts/dojo.sh sync <stanza>       copia config, SOUL e .env dei profili
+#                                      nel volume della stanza e riavvia il gateway
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -16,25 +16,25 @@ die() {
   exit 1
 }
 
-celle_valide() {
-  for c in celle/*/compose.yaml; do basename "$(dirname "$c")"; done
+stanze_valide() {
+  for c in stanze/*/compose.yaml; do basename "$(dirname "$c")"; done
 }
 
-scegli_celle() {
+scegli_stanze() {
   if [[ $# -eq 0 ]]; then
-    celle_valide
+    stanze_valide
     return
   fi
   for c in "$@"; do
-    [[ -f "celle/$c/compose.yaml" ]] || die "cella sconosciuta: $c (valide: $(celle_valide | tr '\n' ' '))"
+    [[ -f "stanze/$c/compose.yaml" ]] || die "stanza sconosciuta: $c (valide: $(stanze_valide | tr '\n' ' '))"
     echo "$c"
   done
 }
 
 compose() {
-  local cella=$1
+  local stanza=$1
   shift
-  docker compose --project-directory "$radice/celle/$cella" -f "$radice/celle/$cella/compose.yaml" "$@"
+  docker compose --project-directory "$radice/stanze/$stanza" -f "$radice/stanze/$stanza/compose.yaml" "$@"
 }
 
 # Cartella del profilo dentro il volume: il default è la radice di HERMES_HOME.
@@ -42,59 +42,59 @@ dir_profilo() {
   if [[ $1 == default ]]; then echo /opt/data; else echo "/opt/data/profiles/$1"; fi
 }
 
-sync_cella() {
-  local cella=$1 base="celle/$1" tmp p dest
+sync_stanza() {
+  local stanza=$1 base="stanze/$1" tmp p dest
   [[ -f "$base/.env" ]] || die "manca $base/.env: copia $base/.env.example e compilalo"
   tmp=$(mktemp -d)
   trap 'rm -rf "$tmp"' RETURN
 
-  compose "$cella" up -d --build
-  compose "$cella" exec -T hermes mkdir -p /opt/data/lavori
+  compose "$stanza" up -d --build
+  compose "$stanza" exec -T hermes mkdir -p /opt/data/lavori
 
   for dir in "$base"/profili/*/; do
     p=$(basename "$dir")
     dest=$(dir_profilo "$p")
-    if [[ $p != default ]] && ! compose "$cella" exec -T hermes test -f "$dest/SOUL.md"; then
+    if [[ $p != default ]] && ! compose "$stanza" exec -T hermes test -f "$dest/SOUL.md"; then
       # Profili stretti: nessuna skill inclusa, solo i flussi del dojo.
-      compose "$cella" exec -T hermes hermes profile create "$p" --no-skills
+      compose "$stanza" exec -T hermes hermes profile create "$p" --no-skills
     fi
-    # .env del profilo = valori comuni della cella + quelli dell'agente.
+    # .env del profilo = valori comuni della stanza + quelli dell'agente.
     cat "$base/.env" >"$tmp/$p.env"
     if [[ -f "$dir/.env" ]]; then
       cat "$dir/.env" >>"$tmp/$p.env"
     elif [[ $p != default ]]; then
       die "manca $dir.env: copia $dir.env.example e compilalo"
     fi
-    compose "$cella" cp "$dir/config.yaml" "hermes:$dest/config.yaml"
-    compose "$cella" cp "$dir/SOUL.md" "hermes:$dest/SOUL.md"
-    compose "$cella" cp "$tmp/$p.env" "hermes:$dest/.env"
-    compose "$cella" exec -T hermes chmod 600 "$dest/.env"
-    echo "ok   $cella/$p"
+    compose "$stanza" cp "$dir/config.yaml" "hermes:$dest/config.yaml"
+    compose "$stanza" cp "$dir/SOUL.md" "hermes:$dest/SOUL.md"
+    compose "$stanza" cp "$tmp/$p.env" "hermes:$dest/.env"
+    compose "$stanza" exec -T hermes chmod 600 "$dest/.env"
+    echo "ok   $stanza/$p"
   done
 
-  compose "$cella" exec -T hermes chown -R hermes:hermes /opt/data
-  compose "$cella" exec -T hermes hermes gateway restart
+  compose "$stanza" exec -T hermes chown -R hermes:hermes /opt/data
+  compose "$stanza" exec -T hermes hermes gateway restart
 }
 
 comando=${1:-}
 [[ $# -gt 0 ]] && shift
 case $comando in
   up)
-    for c in $(scegli_celle "$@"); do compose "$c" up -d --build; done
+    for c in $(scegli_stanze "$@"); do compose "$c" up -d --build; done
     ;;
   down)
-    for c in $(scegli_celle "$@"); do compose "$c" down; done
+    for c in $(scegli_stanze "$@"); do compose "$c" down; done
     ;;
   status)
-    for c in $(scegli_celle "$@"); do
+    for c in $(scegli_stanze "$@"); do
       echo "== $c"
       compose "$c" ps
     done
     ;;
   sync)
-    [[ $# -eq 1 ]] || die "uso: dojo.sh sync <cella>"
-    scegli_celle "$1" >/dev/null
-    sync_cella "$1"
+    [[ $# -eq 1 ]] || die "uso: dojo.sh sync <stanza>"
+    scegli_stanze "$1" >/dev/null
+    sync_stanza "$1"
     ;;
   *)
     sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//'

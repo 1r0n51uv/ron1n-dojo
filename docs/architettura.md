@@ -26,34 +26,40 @@ mini PC di ron1n accanto agli altri stack.
   limitato ai repo app; la branch protection impedisce merge senza
   approvazione.
 
-Da qui due livelli: **celle** (container) come confine di sicurezza,
-**profili** dentro la cella come ruoli. Agenti nella stessa cella
-condividono il board Kanban e si passano il lavoro; celle diverse non
+Da qui due livelli: **stanze** (container) come confine di sicurezza,
+**profili** dentro la stanza come ruoli. Agenti nella stessa stanza
+condividono il board Kanban e si passano il lavoro; stanze diverse non
 condividono nulla.
 
-## Celle
+## Stanze
 
-| Cella              | Agenti                             | Può                                                  | Non può                               |
-| ------------------ | ---------------------------------- | ---------------------------------------------------- | ------------------------------------- |
-| `officina`         | `architetto`, `fabbro`, `revisore` | shell nel container, git, `gh`, npm; PR sui repo app | merge, admin dei repo, server, docker |
-| `personale` (dopo) | `assistente`                       | promemoria, note, brief del mattino; MCP di ron1nOS  | shell, GitHub, file                   |
-| `lavoro` (dopo)    | `collega`                          | come `personale`, con memoria e credenziali proprie  | vedere le altre celle                 |
-| `sensei` (forse)   | `sensei`                           | smistare le richieste alle celle, creare cron        | lavorare da sé                        |
+Il dojo ha una stanza per area. Ogni agente è un personaggio, uno per
+anime, con il nome del ruolo in giapponese.
 
-Ogni cella: immagine Hermes a versione fissata, volume dati suo, limiti di
+| Stanza              | Agenti (ruolo · personaggio)                                                                       | Può                                                         | Non può                               |
+| ------------------- | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------- |
+| `kajiba`, la forgia | Gunshi · Shikamaru (Naruto), Takumi · Edward Elric (Fullmetal Alchemist), Shinpan · L (Death Note) | shell nel container, git, `gh`, npm; PR sui repo app        | merge, admin dei repo, server, docker |
+| personale (dopo)    | Nakama · Chopper (One Piece)                                                                       | promemoria, note, brief del mattino; MCP di ron1nOS         | shell, GitHub, file                   |
+| lavoro (dopo)       | Taichō · Levi (L'attacco dei giganti)                                                              | come la stanza personale, con memoria e credenziali proprie | vedere le altre stanze                |
+| ingresso (forse)    | Shihan · da scegliere (Gojo, Netero, ...)                                                          | smistare le richieste alle stanze, creare cron              | lavorare da sé                        |
+
+I nomi delle stanze personale, lavoro e ingresso si decidono quando
+arrivano. Shinpan potrebbe diventare Aizawa (My Hero Academia).
+
+Ogni stanza: immagine Hermes a versione fissata, volume dati suo, limiti di
 CPU e memoria, rete `interna` più proxy `uscita`, nessuna porta pubblicata
 (Telegram in polling), dashboard spenta o solo su `127.0.0.1`.
 
-In una cella il profilo `default` non ha bot: ospita il gateway che serve
+In una stanza il profilo `default` non ha bot: ospita il gateway che serve
 tutti i profili (multiplexing) e il dispatcher Kanban.
 
-### Officina
+### Kajiba
 
-| Agente       | Ruolo                                                         | Toolset                                         | Token GitHub                                |
-| ------------ | ------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------- |
-| `architetto` | specifica, PR `spec`, issue con label, card per il fabbro     | file, terminal, kanban, clarify, skills         | contents, pull requests, issues: scrittura  |
-| `fabbro`     | implementazione con test, `npm run check`, PR con `Closes #N` | file, terminal, code_execution, kanban, clarify | contents, pull requests: scrittura          |
-| `revisore`   | review contro specifica e regole, segnala la PR pronta        | terminal, kanban, clarify, skills               | contents: lettura; pull requests: scrittura |
+| Agente               | Ruolo                                                         | Toolset                                         | Token GitHub                                |
+| -------------------- | ------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------- |
+| `gunshi` (Shikamaru) | specifica, PR `spec`, issue con label, card per Edward        | file, terminal, kanban, clarify, skills         | contents, pull requests, issues: scrittura  |
+| `takumi` (Edward)    | implementazione con test, `npm run check`, PR con `Closes #N` | file, terminal, code_execution, kanban, clarify | contents, pull requests: scrittura          |
+| `shinpan` (L)        | review contro specifica e regole, segnala la PR pronta        | terminal, kanban, clarify, skills               | contents: lettura; pull requests: scrittura |
 
 ## Canali
 
@@ -71,21 +77,21 @@ Skill Hermes in [`flussi/`](../flussi/README.md), montate in sola lettura.
 Ogni passaggio fra agenti è una card Kanban; le card PR hanno un contratto
 di completamento, quindi si chiudono solo con i check richiesti verdi.
 
-1. **Nuova feature**: architetto (specifica, issue) → fabbro (PR) →
-   revisore (review) → merge tuo.
-2. **Nuovo progetto**: architetto prepara specifica e template; repo e
+1. **Nuova feature**: gunshi (specifica, issue) → takumi (PR) →
+   shinpan (review) → merge tuo.
+2. **Nuovo progetto**: gunshi prepara specifica e template; repo e
    branch protection li crei tu; PR sul hub per README e `infra/<app>/`.
 3. **Personale**, **lavoro**, **ricorrenti** (digest di PR e issue, CI
-   rossa su `main`, dipendenze): con le celle della fase 2.
+   rossa su `main`, dipendenze): con le stanze della fase 2.
 
 ## Fasi
 
-1. **Fase 0**: questo repo, specifiche, cella `officina`, flussi in bozza.
-2. **Fase 1**: `officina` sul mini PC con Telegram, prova di
-   `nuova-feature` su un repo vero; stack `infra/dojo-officina/` in ron1n.
-3. **Fase 2**: cella `personale`, cron, webhook GitHub via Tunnel.
-4. **Fase 3**: cella `lavoro`, server MCP per ron1n (stato degli stack,
-   log, API di ron1nOS) con filtri per server nelle celle.
+1. **Fase 0**: questo repo, specifiche, stanza `kajiba`, flussi in bozza.
+2. **Fase 1**: `kajiba` sul mini PC con Telegram, prova di
+   `nuova-feature` su un repo vero; stack `infra/dojo-kajiba/` in ron1n.
+3. **Fase 2**: stanza `personale`, cron, webhook GitHub via Tunnel.
+4. **Fase 3**: stanza `lavoro`, server MCP per ron1n (stato degli stack,
+   log, API di ron1nOS) con filtri per server nelle stanze.
 
 ## Riferimenti
 
