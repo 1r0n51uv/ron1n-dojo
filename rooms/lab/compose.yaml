@@ -34,6 +34,8 @@ services:
       - data:/opt/data
       # Flussi in sola lettura: gli agenti li usano ma non li modificano.
       - ../../flows:/opt/dojo/flows:ro
+      # Skill di supporto (per esempio grilling), anche queste in sola lettura.
+      - ../../skills:/opt/dojo/skills:ro
     networks:
       - internal
       # Solo verso il gateway dei modelli (services/models).

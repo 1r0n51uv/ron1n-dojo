@@ -103,6 +103,9 @@ rete sua verso il gateway. Gli agenti chiedono un nome logico:
 ## Flussi
 
 Skill Hermes in [`flows/`](../flows/README.md), montate in sola lettura.
+Accanto ai flussi, [`skills/`](../skills/README.md) contiene skill di
+supporto, anch'esse in sola lettura: la Concierge usa `grilling` per
+chiarire una richiesta, a turni di domande, prima di creare la card.
 Ogni passaggio fra agenti è una card Kanban; le card PR hanno un contratto
 di completamento, quindi si chiudono solo con i check richiesti verdi.
 

@@ -18,6 +18,7 @@ requisiti in [`docs/specs/`](docs/specs/README.md).
 | [`rooms/lab/`](rooms/lab/)             | sviluppo: `concierge`, `strategist`, `designer`, `builder`, `reviewer` |
 | [`services/models/`](services/models/) | gateway dei modelli LiteLLM: cloud, piani free, Ollama                 |
 | [`flows/`](flows/README.md)            | skill Hermes dei flows, montate in sola lettura nelle rooms            |
+| [`skills/`](skills/README.md)          | skill Hermes di supporto (`grilling`), in sola lettura nelle rooms     |
 | [`scripts/`](scripts/)                 | `dojo.sh` (up, down, status, sync) e la validazione                    |
 
 ## Installazione
