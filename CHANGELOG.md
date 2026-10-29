@@ -6,6 +6,7 @@ merge.
 
 ## 2026-10-29
 
+- SOUL degli agenti della lab con storia, modo di parlare e ruolo dei personaggi; nuova cartella `skills/` con `grilling`, che Nico Robin usa per chiarire una richiesta prima di smistarla ([#7](https://github.com/1r0n51uv/ron1n-dojo/pull/7))
 - Nomi in inglese: cartelle `rooms/`, `services/`, `flows/`, comandi `dojo.sh key`/`secret`/`up-models`, servizi `egress` e `dashboard`, modelli `strong`/`fast`/`free`/`local`, ID `ROOM`/`FLOW`/`MODELS` ([#6](https://github.com/1r0n51uv/ron1n-dojo/pull/6))
 - Gemini passa in testa ai modelli gratuiti del gateway: più veloce e più affidabile con i tool ([#5](https://github.com/1r0n51uv/ron1n-dojo/pull/5))
 - `dojo.sh budget lab` trova anche la chiave `stanza-kajiba` della migrazione e la rinomina ([#4](https://github.com/1r0n51uv/ron1n-dojo/pull/4))
