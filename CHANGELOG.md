@@ -6,7 +6,7 @@ merge.
 
 ## 2026-10-29
 
-- Lab: patch dell'immagine Hermes che rende stabile l'identità dei processi worker quando l'orologio di WSL2/Docker Desktop oscilla; le card Kanban non crashano più con `permission_denied` ("Kanban owner refused") ([#9](https://github.com/1r0n51uv/ron1n-dojo/pull/9))
+- Lab: patch dell'immagine Hermes che rende stabile l'identità dei processi worker quando l'orologio di WSL2/Docker Desktop oscilla; le card Kanban non crashano più con `permission_denied` ("Kanban owner refused") ([#10](https://github.com/1r0n51uv/ron1n-dojo/pull/10))
 - Gateway su LiteLLM 1.105.7: `strong` e `fast` tornano a usare Claude (Opus 5.5 e Sonnet 5.5) e il 429 di Gemini non ferma più i fallback; Gemini passa in fondo ai free, con cooldown di 5 minuti ([#8](https://github.com/1r0n51uv/ron1n-dojo/pull/8))
 - SOUL degli agenti della lab con storia, modo di parlare e ruolo dei personaggi; nuova cartella `skills/` con `grilling`, che Nico Robin usa per chiarire una richiesta prima di smistarla ([#7](https://github.com/1r0n51uv/ron1n-dojo/pull/7))
 - Nomi in inglese: cartelle `rooms/`, `services/`, `flows/`, comandi `dojo.sh key`/`secret`/`up-models`, servizi `egress` e `dashboard`, modelli `strong`/`fast`/`free`/`local`, ID `ROOM`/`FLOW`/`MODELS` ([#6](https://github.com/1r0n51uv/ron1n-dojo/pull/6))
