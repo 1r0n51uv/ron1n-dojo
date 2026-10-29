@@ -203,9 +203,16 @@ chatgpt() {
     return
   fi
   echo "Apri il link, accedi con l'account ChatGPT e inserisci il codice."
+  # Un tentativo lasciato a metà (senza token) farebbe aspettare a LiteLLM 5
+  # minuti in silenzio prima di chiedere un codice nuovo: si azzera.
   models run --rm --no-deps --entrypoint python3 litellm -c '
+import os
 from litellm.llms.chatgpt.authenticator import Authenticator
 a = Authenticator()
+dati = a._read_auth_file() or {}
+if not dati.get("access_token") and os.path.exists(a.auth_file):
+    os.remove(a.auth_file)
+    print("tentativo di login precedente azzerato")
 a.get_access_token()
 print("login ChatGPT ok, account", a.get_account_id())
 '
