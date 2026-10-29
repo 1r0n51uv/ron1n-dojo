@@ -38,6 +38,8 @@ Accettazione:
 - [ ] Oltre il budget la stanza riceve un errore, non spende altro.
 - [ ] Un budget a 0, negativo o non numerico è rifiutato da `dojo.sh chiave` e
       dall'installazione, che lo richiede finché è valido.
+- [ ] `scripts/dojo.sh budget <stanza> <dollari>` cambia il budget della
+      chiave esistente, senza toccare i `.env` né riavviare nulla.
 - [ ] Le stanze non hanno `api.anthropic.com` né altri provider
       nell'allowlist di `uscita`.
 

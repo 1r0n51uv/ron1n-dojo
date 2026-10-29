@@ -7,6 +7,8 @@
 #   scripts/dojo.sh sync <stanza>       copia config, SOUL e .env dei profili
 #                                      nel volume della stanza e riavvia il gateway
 #   scripts/dojo.sh up-modelli         avvia solo il gateway dei modelli
+#   scripts/dojo.sh budget <stanza> <dollari>
+#                                      cambia il budget mensile della chiave
 #   scripts/dojo.sh chiave <stanza> [budget]
 #                                      crea la chiave virtuale della stanza sul
 #                                      gateway dei modelli (budget in dollari, 20)
@@ -96,6 +98,43 @@ print("LITELLM_API_KEY=" + json.load(urllib.request.urlopen(req))["key"])
 PY
 }
 
+# Cambia il budget mensile della chiave di una stanza. Non cambia la chiave:
+# i .env e i container restano come sono.
+budget() {
+  local stanza=$1 importo=$2
+  awk -v b="$importo" 'BEGIN { exit !(b ~ /^[0-9]+([.][0-9]+)?$/ && b + 0 > 0) }' ||
+    die "budget non valido: $importo (serve un numero maggiore di 0, in dollari)"
+  modelli exec -T litellm python3 - "$stanza" "$importo" <<'PY'
+import json, os, sys, urllib.parse, urllib.request
+stanza, importo = sys.argv[1], float(sys.argv[2])
+base = "http://localhost:4000"
+testa = {
+    "Authorization": "Bearer " + os.environ["LITELLM_MASTER_KEY"],
+    "Content-Type": "application/json",
+}
+
+
+def chiama(percorso, corpo=None):
+    req = urllib.request.Request(
+        base + percorso,
+        data=None if corpo is None else json.dumps(corpo).encode(),
+        headers=testa,
+    )
+    return json.load(urllib.request.urlopen(req))
+
+
+q = urllib.parse.urlencode({"key_alias": f"stanza-{stanza}", "return_full_object": "true"})
+chiavi = chiama("/key/list?" + q).get("keys", [])
+if not chiavi:
+    sys.exit(f"nessuna chiave stanza-{stanza}: usa dojo.sh chiave {stanza}")
+for k in chiavi:
+    token = k["token"] if isinstance(k, dict) else k
+    chiama("/key/update", {"key": token, "max_budget": importo})
+    info = chiama("/key/info?" + urllib.parse.urlencode({"key": token}))["info"]
+    print(f"stanza-{stanza}: max_budget {info.get('max_budget')}, spesa {info.get('spend')}")
+PY
+}
+
 # Cartella del profilo dentro il volume: il default è la radice di HERMES_HOME.
 dir_profilo() {
   if [[ $1 == default ]]; then echo /opt/data; else echo "/opt/data/profiles/$1"; fi
@@ -169,13 +208,18 @@ case $comando in
   up-modelli)
     up_modelli
     ;;
+  budget)
+    [[ $# -eq 2 ]] || die "uso: dojo.sh budget <stanza> <dollari>"
+    scegli_stanze "$1" >/dev/null
+    budget "$1" "$2"
+    ;;
   chiave)
     [[ $# -ge 1 && $# -le 2 ]] || die "uso: dojo.sh chiave <stanza> [budget]"
     scegli_stanze "$1" >/dev/null
     chiave "$@"
     ;;
   *)
-    sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'
     [[ -z $comando ]] || exit 1
     ;;
 esac
