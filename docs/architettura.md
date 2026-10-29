@@ -51,11 +51,11 @@ condividono nulla.
 Il dojo ha una stanza per area. Ogni agente è un personaggio, uno per
 anime, con il nome del ruolo in inglese.
 
-| Stanza                | Agenti (ruolo · personaggio)                                                                                                                                                    | Può                                                         | Non può                               |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------- |
-| `lab`, il laboratorio | Strategist · Shikamaru (Naruto), Designer · Bulma (Dragon Ball), Concierge · Aizawa (My Hero Academia), Builder · Edward Elric (Fullmetal Alchemist), Reviewer · L (Death Note) | shell nel container, git, `gh`, npm; PR sui repo app        | merge, admin dei repo, server, docker |
-| personale (dopo)      | Companion · Chopper (One Piece)                                                                                                                                                 | promemoria, note, brief del mattino; MCP di ron1nOS         | shell, GitHub, file                   |
-| lavoro (dopo)         | Captain · Levi (L'attacco dei giganti)                                                                                                                                          | come la stanza personale, con memoria e credenziali proprie | vedere le altre stanze                |
+| Stanza                | Agenti (ruolo · personaggio)                                                                                                                                                 | Può                                                         | Non può                               |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------- |
+| `lab`, il laboratorio | Strategist · Shikamaru (Naruto), Designer · Bulma (Dragon Ball), Concierge · Nico Robin (One Piece), Builder · Edward Elric (Fullmetal Alchemist), Reviewer · L (Death Note) | shell nel container, git, `gh`, npm; PR sui repo app        | merge, admin dei repo, server, docker |
+| personale (dopo)      | Companion · Chopper (One Piece)                                                                                                                                              | promemoria, note, brief del mattino; MCP di ron1nOS         | shell, GitHub, file                   |
+| lavoro (dopo)         | Captain · Levi (L'attacco dei giganti)                                                                                                                                       | come la stanza personale, con memoria e credenziali proprie | vedere le altre stanze                |
 
 I nomi delle stanze personale e lavoro si decidono quando
 arrivano.

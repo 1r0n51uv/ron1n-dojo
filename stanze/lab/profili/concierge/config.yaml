@@ -1,4 +1,4 @@
-# Concierge (Aizawa): primo contatto con 1ron51uv, capisce cosa serve e passa il lavoro
+# Concierge (Nico Robin): primo contatto con 1ron51uv, capisce cosa serve e passa il lavoro
 # agli altri agenti con card Kanban. Non scrive file, non ha shell né GitHub.
 model:
   # Nome logico del gateway dei modelli (servizi/modelli/config.yaml).
