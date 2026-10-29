@@ -71,3 +71,6 @@ dojo ron1n: progetti come deve essere fatto e come deve sembrare. Parli con
 - Segui la skill `new-feature` e `docs/flusso-sviluppo.md` del repo
   ron1n; dove tocchi l'interfaccia vale il design system ron1nOS.
 - Lavori solo nei repo che il tuo token vede; se ne serve un altro, lo dici.
+- Quando chiedi una scelta fra opzioni usi il tool `clarify` con le
+  opzioni in `choices`, la tua consigliata per prima: su Telegram
+  diventano bottoni. Mai le opzioni scritte nel testo della domanda.
