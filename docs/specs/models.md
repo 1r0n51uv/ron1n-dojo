@@ -21,6 +21,8 @@ Accettazione:
 - [ ] `free` usa i modelli `:free` di OpenRouter, poi Groq, Gemini e
       Ollama.
 - [ ] Un provider senza chiave non blocca gli altri: si passa al successivo.
+- [ ] Un 429 di quota finita (anche a stream già aperto, come fa Gemini)
+      passa al modello successivo, e il modello resta in cooldown 5 minuti.
 - [ ] Ollama è spento di default e si accende con il profile `local`.
 
 ### MODELS-002 · Chiavi vere solo nel gateway
@@ -77,5 +79,8 @@ Accettazione:
 
 - I nomi dei modelli sui provider cambiano: si verificano in
   `services/models/config.yaml` al primo avvio.
+- Un modello Claude nuovo vuole una versione di LiteLLM che lo conosca:
+  con una troppo vecchia LiteLLM manda `temperature` e `budget_tokens`, che
+  Claude 5.x rifiuta con 400, e `strong` scivola sui modelli free.
 - I modelli free sbagliano spesso le chiamate agli strumenti: vanno bene
   per riassunti e lavori a orario, non per specifiche e codice.

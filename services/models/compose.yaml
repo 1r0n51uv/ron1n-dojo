@@ -6,7 +6,10 @@ name: dojo-models
 
 services:
   litellm:
-    image: ghcr.io/berriai/litellm:main-v1.83.14-stable
+    # Dalla 1.105 LiteLLM conosce Opus 5.5 e Sonnet 5.5 (niente
+    # temperature né budget_tokens, che Claude 5.x rifiuta) e prosegue nei
+    # fallback anche quando Gemini dà 429 a stream già aperto.
+    image: ghcr.io/berriai/litellm:v1.105.7
     restart: unless-stopped
     command: ["--config", "/app/config.yaml", "--port", "4000"]
     env_file: .env

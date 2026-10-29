@@ -54,13 +54,21 @@ model_list:
       api_base: http://ollama:11434
 
 # Catene complete: con le sole chiavi gratuite (OpenRouter, Groq, Gemini) o
-# solo Ollama il dojo funziona lo stesso, più lento e meno preciso.
+# solo Ollama il dojo funziona lo stesso, più lento e meno preciso. Gemini
+# sta in fondo ai free: la quota gratuita finisce presto (429) e, finita,
+# lo salta il cooldown. Le catene si leggono da sinistra a destra.
 router_settings:
   num_retries: 1
+  # Due errori di fila e il modello resta fuori per 5 minuti: con la quota
+  # finita non si riprova a ogni messaggio.
+  allowed_fails: 1
+  cooldown_time: 300
+  # La catena di strong ha 8 passi; il default di LiteLLM si ferma a 5.
+  max_fallbacks: 10
   fallbacks:
-    - strong: [strong-backup, fast, fast-backup, free-gemini, free, free-nemotron, free-groq, local]
-    - fast: [fast-backup, free-gemini, free, free-nemotron, free-groq, local]
-    - free: [free-gemini, free-nemotron, free-groq, local]
+    - strong: [strong-backup, fast, fast-backup, free, free-nemotron, free-groq, free-gemini, local]
+    - fast: [fast-backup, free, free-nemotron, free-groq, free-gemini, local]
+    - free: [free-nemotron, free-groq, free-gemini, local]
 
 litellm_settings:
   drop_params: true
