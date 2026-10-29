@@ -72,6 +72,9 @@ Accettazione:
 - [ ] `sync <stanza>` crea i profili mancanti, copia `config.yaml`,
       `SOUL.md` e il `.env` (comune più agente, permessi 600) nel volume e
       riavvia il gateway; memoria e sessioni restano.
+- [ ] `segreto <stanza> <agente> <CHIAVE>` imposta un valore (token del bot,
+      `GH_TOKEN`) nel `.env` dell'agente con input nascosto, senza passarlo
+      dalla riga di comando, e poi fa il `sync`.
 - [ ] Senza `.env` della stanza si ferma e lo dice; un agente senza `.env`
       viene saltato, così si può attivare un agente alla volta.
 

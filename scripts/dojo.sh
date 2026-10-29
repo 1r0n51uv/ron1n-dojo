@@ -9,6 +9,10 @@
 #   scripts/dojo.sh up-modelli         avvia solo il gateway dei modelli
 #   scripts/dojo.sh provider <nome>    imposta la chiave di un provider (anthropic,
 #                                      openrouter, groq, gemini), input nascosto
+#   scripts/dojo.sh segreto <stanza> <agente> <CHIAVE>
+#                                      imposta un valore (per esempio GH_TOKEN o
+#                                      TELEGRAM_BOT_TOKEN) nel .env di un agente,
+#                                      input nascosto, poi sync della stanza
 #   scripts/dojo.sh budget <stanza> <dollari>
 #                                      cambia il budget mensile della chiave
 #   scripts/dojo.sh chiave <stanza> [budget]
@@ -167,6 +171,32 @@ provider() {
   echo "$var aggiornata, LiteLLM riavviato e ricollegato alle stanze"
 }
 
+# Un valore nel .env di un agente (token del bot, GH_TOKEN), chiesto con input
+# nascosto: non passa dalla riga di comando né dalla cronologia. Se il .env
+# non c'è lo crea dal .env.example. Poi allinea la stanza.
+segreto() {
+  local stanza=$1 agente=$2 var=$3 dir="$radice/stanze/$1/profili/$2" f valore tmp
+  [[ -d $dir && $agente != default ]] || die "agente sconosciuto: $agente"
+  [[ $var =~ ^[A-Z][A-Z0-9_]*$ ]] || die "nome non valido: $var"
+  grep -q "^$var=" "$dir/.env.example" 2>/dev/null ||
+    die "$var non è nel .env.example di $agente"
+  f=$dir/.env
+  [[ -f $f ]] || install -m 600 "$dir/.env.example" "$f"
+  printf '%s di %s: ' "$var" "$agente" >/dev/tty
+  IFS= read -rs valore </dev/tty
+  printf '\n' >/dev/tty
+  [[ -n $valore ]] || die "valore vuoto, non cambio nulla"
+  tmp=$(mktemp)
+  chmod 600 "$tmp"
+  VALORE=$valore awk -v var="$var" 'BEGIN { FS = OFS = "="; fatto = 0 }
+    $1 == var { print var "=" ENVIRON["VALORE"]; fatto = 1; next }
+    { print }
+    END { if (!fatto) print var "=" ENVIRON["VALORE"] }' "$f" >"$tmp"
+  mv "$tmp" "$f"
+  echo "$var di $agente aggiornato"
+  sync_stanza "$stanza"
+}
+
 # Cartella del profilo dentro il volume: il default è la radice di HERMES_HOME.
 dir_profilo() {
   if [[ $1 == default ]]; then echo /opt/data; else echo "/opt/data/profiles/$1"; fi
@@ -265,6 +295,11 @@ case $comando in
     [[ $# -eq 1 ]] || die "uso: dojo.sh provider <anthropic|openrouter|groq|gemini>"
     provider "$1"
     ;;
+  segreto)
+    [[ $# -eq 3 ]] || die "uso: dojo.sh segreto <stanza> <agente> <CHIAVE>"
+    scegli_stanze "$1" >/dev/null
+    segreto "$@"
+    ;;
   budget)
     [[ $# -eq 2 ]] || die "uso: dojo.sh budget <stanza> <dollari>"
     scegli_stanze "$1" >/dev/null
@@ -276,7 +311,7 @@ case $comando in
     chiave "$@"
     ;;
   *)
-    sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,24p' "$0" | sed 's/^# \{0,1\}//'
     [[ -z $comando ]] || exit 1
     ;;
 esac
