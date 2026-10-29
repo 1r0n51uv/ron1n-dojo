@@ -67,6 +67,12 @@ CPU e memoria, rete `internal` più proxy `egress`, nessuna porta pubblicata
 In una room il profile `default` non ha bot: ospita il gateway che serve
 tutti i profiles (multiplexing) e il dispatcher Kanban.
 
+L'immagine della lab applica una patch a Hermes (`rooms/lab/patches/`): su
+WSL2/Docker Desktop il btime del kernel oscilla e Hermes, che riconosce i
+worker delle card Kanban dall'ora di avvio del processo, li rifiutava con
+`permission_denied`. A ogni aggiornamento di Hermes la build verifica che la
+patch si applichi ancora.
+
 ### Lab
 
 | Agente                   | Ruolo                                                                                                   | Toolset                                         | Token GitHub                                |
