@@ -39,3 +39,8 @@ approvals:
     - "git push -f*"
     - "git push * main"
     - "git push origin HEAD:main*"
+
+# Riepilogo su Telegram quando una card parte, finisce o si blocca
+# (rooms/lab/plugins/kanban-telegram).
+plugins:
+  enabled: [kanban-telegram]
