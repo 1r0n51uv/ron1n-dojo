@@ -186,14 +186,24 @@ stanza() {
   "$DIR/scripts/dojo.sh" sync "$s"
 }
 
-controlla
-repo
-modelli
-for c in "$DIR"/stanze/*/compose.yaml; do
-  stanza "$(basename "$(dirname "$c")")"
-done
+# Tutto dentro main: con `curl | bash` lo script arriva da stdin, e un
+# comando figlio che legge stdin (docker compose exec) ne mangerebbe il
+# resto. Così bash lo legge tutto prima di eseguire, e i figli leggono da
+# /dev/null; le domande vanno comunque a /dev/tty.
+main() {
+  exec </dev/null
+  controlla
+  repo
+  modelli
+  local c
+  for c in "$DIR"/stanze/*/compose.yaml; do
+    stanza "$(basename "$(dirname "$c")")"
+  done
 
-step "Fatto"
-info "Stato: $DIR/scripts/dojo.sh status"
-info "Segreti: i .env in $DIR/servizi/modelli e $DIR/stanze/*/ (permessi 600)"
-info "Scrivi ai bot su Telegram: per esempio /nuova-feature <repo> <idea> a Shikamaru"
+  step "Fatto"
+  info "Stato: $DIR/scripts/dojo.sh status"
+  info "Segreti: i .env in $DIR/servizi/modelli e $DIR/stanze/*/ (permessi 600)"
+  info "Scrivi ai bot su Telegram: per esempio /nuova-feature <repo> <idea> a Shikamaru"
+}
+
+main "$@"
