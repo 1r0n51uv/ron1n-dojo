@@ -178,7 +178,7 @@ segreto() {
   local stanza=$1 agente=$2 var=$3 dir="$radice/stanze/$1/profili/$2" f valore tmp
   [[ -d $dir && $agente != default ]] || die "agente sconosciuto: $agente"
   [[ $var =~ ^[A-Z][A-Z0-9_]*$ ]] || die "nome non valido: $var"
-  [[ -f $dir/.env.example ]] && grep -q "^$var=" "$dir/.env.example" ||
+  grep -q "^$var=" "$dir/.env.example" 2>/dev/null ||
     die "$var non è nel .env.example di $agente"
   f=$dir/.env
   [[ -f $f ]] || install -m 600 "$dir/.env.example" "$f"
