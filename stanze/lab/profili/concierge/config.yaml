@@ -1,5 +1,5 @@
-# Takumi (Edward Elric): prende una issue, la implementa con i test in un branch suo e
-# apre la PR con `Closes #N`. Non fa merge e non tocca la specifica.
+# Concierge (Aizawa): primo contatto con 1ron51uv, capisce cosa serve e passa il lavoro
+# agli altri agenti con card Kanban. Non scrive file, non ha shell né GitHub.
 model:
   # Nome logico del gateway dei modelli (servizi/modelli/config.yaml).
   provider: "custom"
@@ -9,13 +9,8 @@ model:
   context_length: 200000
 
 platform_toolsets:
-  telegram: [file, terminal, code_execution, kanban, clarify, skills, todo, memory]
-  cli: [file, terminal, code_execution, kanban, clarify, skills, todo, memory]
-
-terminal:
-  backend: "local"
-  cwd: "/opt/data/lavori"
-  env_passthrough: [GH_TOKEN]
+  telegram: [kanban, clarify, skills, todo, memory]
+  cli: [kanban, clarify, skills, todo, memory]
 
 skills:
   external_dirs:

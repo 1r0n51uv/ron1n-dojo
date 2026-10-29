@@ -1,9 +1,9 @@
-# stanza kajiba: gli agenti di sviluppo (gunshi, takumi, shinpan) in un
+# stanza lab: gli agenti di sviluppo (strategist, builder, reviewer) in un
 # solo container Hermes, un profilo per agente. Il container è il confine di
 # sicurezza: niente docker.sock, uscita solo verso i domini di
 # uscita/allowlist.conf, nessuna porta pubblicata tranne la dashboard su
 # 127.0.0.1 (servizio pannello). Spec: docs/specs/stanze.md.
-name: dojo-kajiba
+name: dojo-lab
 
 services:
   hermes:
@@ -11,7 +11,7 @@ services:
       context: .
       args:
         HERMES_VERSION: v0.22.5
-    image: dojo-kajiba:v0.22.5
+    image: dojo-lab:v0.22.5
     restart: unless-stopped
     command: ["gateway", "run"]
     # Dashboard di Hermes: si accende solo se esiste pannello.env, che dojo.sh
@@ -87,5 +87,5 @@ networks:
   # Solo per pubblicare la porta della dashboard su 127.0.0.1.
   pannello: {}
   modelli:
-    name: dojo-kajiba-modelli
+    name: dojo-lab-modelli
     external: true
