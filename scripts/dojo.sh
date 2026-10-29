@@ -1,25 +1,25 @@
 #!/usr/bin/env bash
-# Gestione delle stanze del dojo (spec docs/specs/stanze.md).
+# Gestione delle rooms del dojo (spec docs/specs/rooms.md).
 #
-#   scripts/dojo.sh up [stanza...]      avvia le stanze (tutte senza nomi)
-#   scripts/dojo.sh down [stanza...]    spegne le stanze, i dati restano
-#   scripts/dojo.sh status [stanza...]  stato dei container
-#   scripts/dojo.sh sync <stanza>       copia config, SOUL e .env dei profili
-#                                      nel volume della stanza e riavvia il gateway
-#   scripts/dojo.sh up-modelli         avvia solo il gateway dei modelli
+#   scripts/dojo.sh up [room...]      avvia le rooms (tutte senza nomi)
+#   scripts/dojo.sh down [room...]    spegne le rooms, i dati restano
+#   scripts/dojo.sh status [room...]  stato dei container
+#   scripts/dojo.sh sync <room>       copia config, SOUL e .env dei profiles
+#                                      nel volume della room e riavvia il gateway
+#   scripts/dojo.sh up-models         avvia solo il gateway dei modelli
 #   scripts/dojo.sh provider <nome>    imposta la chiave di un provider (anthropic,
 #                                      openrouter, groq, gemini), input nascosto
-#   scripts/dojo.sh segreto <stanza> <agente> <CHIAVE>
+#   scripts/dojo.sh secret <room> <agente> <CHIAVE>
 #                                      imposta un valore (per esempio GH_TOKEN o
 #                                      TELEGRAM_BOT_TOKEN) nel .env di un agente,
-#                                      input nascosto, poi sync della stanza
-#   scripts/dojo.sh budget <stanza> <dollari>
+#                                      input nascosto, poi sync della room
+#   scripts/dojo.sh budget <room> <dollari>
 #                                      cambia il budget mensile della chiave
-#   scripts/dojo.sh chiave <stanza> [budget]
-#                                      crea la chiave virtuale della stanza sul
+#   scripts/dojo.sh key <room> [budget]
+#                                      crea la chiave virtuale della room sul
 #                                      gateway dei modelli (budget in dollari, 20)
 #
-# Senza nomi, up e down includono il gateway dei modelli (servizi/modelli):
+# Senza nomi, up e down includono il gateway dei modelli (services/models):
 # acceso per primo, spento per ultimo.
 set -euo pipefail
 
@@ -31,64 +31,64 @@ die() {
   exit 1
 }
 
-stanze_valide() {
-  for c in stanze/*/compose.yaml; do basename "$(dirname "$c")"; done
+valid_rooms() {
+  for c in rooms/*/compose.yaml; do basename "$(dirname "$c")"; done
 }
 
-scegli_stanze() {
+pick_rooms() {
   if [[ $# -eq 0 ]]; then
-    stanze_valide
+    valid_rooms
     return
   fi
   for c in "$@"; do
-    [[ -f "stanze/$c/compose.yaml" ]] || die "stanza sconosciuta: $c (valide: $(stanze_valide | tr '\n' ' '))"
+    [[ -f "rooms/$c/compose.yaml" ]] || die "room sconosciuta: $c (valide: $(valid_rooms | tr '\n' ' '))"
     echo "$c"
   done
 }
 
 compose() {
-  local stanza=$1
+  local room=$1
   shift
-  docker compose --project-directory "$radice/stanze/$stanza" -f "$radice/stanze/$stanza/compose.yaml" "$@"
+  docker compose --project-directory "$radice/rooms/$room" -f "$radice/rooms/$room/compose.yaml" "$@"
 }
 
-modelli() {
-  docker compose --project-directory "$radice/servizi/modelli" -f "$radice/servizi/modelli/compose.yaml" "$@"
+models() {
+  docker compose --project-directory "$radice/services/models" -f "$radice/services/models/compose.yaml" "$@"
 }
 
-# Ogni stanza ha una rete sua verso il gateway dei modelli, senza internet:
-# così le stanze non si vedono fra loro. Le reti nascono dalle cartelle in
-# stanze/ e il gateway, se è acceso, si collega a ognuna.
-crea_reti() {
+# Ogni room ha una rete sua verso il gateway dei modelli, senza internet:
+# così le rooms non si vedono fra loro. Le reti nascono dalle cartelle in
+# rooms/ e il gateway, se è acceso, si collega a ognuna.
+create_networks() {
   local s id
-  for s in $(stanze_valide); do
-    docker network inspect "dojo-$s-modelli" >/dev/null 2>&1 ||
-      docker network create --internal "dojo-$s-modelli" >/dev/null
+  for s in $(valid_rooms); do
+    docker network inspect "dojo-$s-models" >/dev/null 2>&1 ||
+      docker network create --internal "dojo-$s-models" >/dev/null
   done
-  id=$(modelli ps -q litellm 2>/dev/null) || id=
+  id=$(models ps -q litellm 2>/dev/null) || id=
   [[ -n $id ]] || return 0
-  for s in $(stanze_valide); do
-    docker network connect --alias litellm "dojo-$s-modelli" "$id" 2>/dev/null || true
+  for s in $(valid_rooms); do
+    docker network connect --alias litellm "dojo-$s-models" "$id" 2>/dev/null || true
   done
 }
 
-up_modelli() {
-  modelli up -d
-  crea_reti
+up_models() {
+  models up -d
+  create_networks
 }
 
-# Chiave virtuale LiteLLM per una stanza, con un budget che si azzera ogni
-# mese. Vale per tutti i modelli del gateway, riserve comprese. La stampa: va nel .env della stanza.
-chiave() {
-  local stanza=$1 budget=${2:-20}
-  # Un budget a 0 o non numerico blocca ogni richiesta della stanza.
+# Chiave virtuale LiteLLM per una room, con un budget che si azzera ogni
+# mese. Vale per tutti i modelli del gateway, riserve comprese. La stampa: va nel .env della room.
+key() {
+  local room=$1 budget=${2:-20}
+  # Un budget a 0 o non numerico blocca ogni richiesta della room.
   awk -v b="$budget" 'BEGIN { exit !(b ~ /^[0-9]+([.][0-9]+)?$/ && b + 0 > 0) }' ||
     die "budget non valido: $budget (serve un numero maggiore di 0, in dollari)"
-  modelli exec -T litellm python3 - "$stanza" "$budget" <<'PY'
+  models exec -T litellm python3 - "$room" "$budget" <<'PY'
 import json, os, sys, urllib.request
-stanza, budget = sys.argv[1], float(sys.argv[2])
+room, budget = sys.argv[1], float(sys.argv[2])
 corpo = {
-    "key_alias": f"stanza-{stanza}",
+    "key_alias": f"room-{room}",
     "max_budget": budget,
     "budget_duration": "30d",
 }
@@ -104,15 +104,15 @@ print("LITELLM_API_KEY=" + json.load(urllib.request.urlopen(req))["key"])
 PY
 }
 
-# Cambia il budget mensile della chiave di una stanza. Non cambia la chiave:
+# Cambia il budget mensile della chiave di una room. Non cambia la chiave:
 # i .env e i container restano come sono.
 budget() {
-  local stanza=$1 importo=$2
+  local room=$1 importo=$2
   awk -v b="$importo" 'BEGIN { exit !(b ~ /^[0-9]+([.][0-9]+)?$/ && b + 0 > 0) }' ||
     die "budget non valido: $importo (serve un numero maggiore di 0, in dollari)"
-  modelli exec -T litellm python3 - "$stanza" "$importo" <<'PY'
+  models exec -T litellm python3 - "$room" "$importo" <<'PY'
 import json, os, sys, urllib.parse, urllib.request
-stanza, importo = sys.argv[1], float(sys.argv[2])
+room, importo = sys.argv[1], float(sys.argv[2])
 base = "http://localhost:4000"
 testa = {
     "Authorization": "Bearer " + os.environ["LITELLM_MASTER_KEY"],
@@ -134,25 +134,29 @@ def cerca(alias):
     return chiama("/key/list?" + q).get("keys", [])
 
 
-chiavi = cerca(f"stanza-{stanza}")
-# La stanza lab si chiamava kajiba: la sua chiave ha ancora il vecchio nome.
-if not chiavi and stanza == "lab":
-    chiavi = cerca("stanza-kajiba")
+chiavi = cerca(f"room-{room}")
+# La room lab si chiamava kajiba e le room stanze: la sua chiave può avere
+# ancora un nome vecchio, che qui viene rinominato.
 if not chiavi:
-    sys.exit(f"nessuna chiave stanza-{stanza}: usa dojo.sh chiave {stanza}")
+    for vecchio in (f"stanza-{room}", "stanza-kajiba"):
+        chiavi = cerca(vecchio)
+        if chiavi:
+            break
+if not chiavi:
+    sys.exit(f"nessuna chiave room-{room}: usa dojo.sh key {room}")
 for k in chiavi:
     token = k["token"] if isinstance(k, dict) else k
-    chiama("/key/update", {"key": token, "max_budget": importo, "key_alias": f"stanza-{stanza}"})
+    chiama("/key/update", {"key": token, "max_budget": importo, "key_alias": f"room-{room}"})
     info = chiama("/key/info?" + urllib.parse.urlencode({"key": token}))["info"]
-    print(f"stanza-{stanza}: max_budget {info.get('max_budget')}, spesa {info.get('spend')}")
+    print(f"room-{room}: max_budget {info.get('max_budget')}, spesa {info.get('spend')}")
 PY
 }
 
 # Chiave di un provider nel .env del gateway, chiesta con input nascosto e
 # senza passare dalla riga di comando né dalla cronologia. Poi riavvia solo
-# LiteLLM: le stanze non si accorgono di nulla.
+# LiteLLM: le rooms non si accorgono di nulla.
 provider() {
-  local nome=$1 var f="$radice/servizi/modelli/.env" valore tmp
+  local nome=$1 var f="$radice/services/models/.env" valore tmp
   case $nome in
     anthropic) var=ANTHROPIC_API_KEY ;;
     openrouter) var=OPENROUTER_API_KEY ;;
@@ -174,15 +178,15 @@ provider() {
     { print }
     END { if (!fatto) print var "=" ENVIRON["VALORE"] }' "$f" >"$tmp"
   mv "$tmp" "$f"
-  up_modelli
-  echo "$var aggiornata, LiteLLM riavviato e ricollegato alle stanze"
+  up_models
+  echo "$var aggiornata, LiteLLM riavviato e ricollegato alle rooms"
 }
 
 # Un valore nel .env di un agente (token del bot, GH_TOKEN), chiesto con input
 # nascosto: non passa dalla riga di comando né dalla cronologia. Se il .env
-# non c'è lo crea dal .env.example. Poi allinea la stanza.
-segreto() {
-  local stanza=$1 agente=$2 var=$3 dir="$radice/stanze/$1/profili/$2" f valore tmp
+# non c'è lo crea dal .env.example. Poi allinea la room.
+secret() {
+  local room=$1 agente=$2 var=$3 dir="$radice/rooms/$1/profiles/$2" f valore tmp
   [[ -d $dir && $agente != default ]] || die "agente sconosciuto: $agente"
   [[ $var =~ ^[A-Z][A-Z0-9_]*$ ]] || die "nome non valido: $var"
   grep -q "^$var=" "$dir/.env.example" 2>/dev/null ||
@@ -201,20 +205,20 @@ segreto() {
     END { if (!fatto) print var "=" ENVIRON["VALORE"] }' "$f" >"$tmp"
   mv "$tmp" "$f"
   echo "$var di $agente aggiornato"
-  sync_stanza "$stanza"
+  sync_room "$room"
 }
 
-# Cartella del profilo dentro il volume: il default è la radice di HERMES_HOME.
-dir_profilo() {
+# Cartella del profile dentro il volume: il default è la radice di HERMES_HOME.
+profile_dir() {
   if [[ $1 == default ]]; then echo /opt/data; else echo "/opt/data/profiles/$1"; fi
 }
 
 rand() { od -An -N24 -tx1 /dev/urandom | tr -d ' \n'; }
 
-# Credenziali della dashboard di Hermes: casuali, solo in pannello.env (non
-# nei .env dei profili, che gli agenti leggono). Se il file esiste non si tocca.
-crea_pannello() {
-  local f="stanze/$1/pannello.env"
+# Credenziali della dashboard di Hermes: casuali, solo in dashboard.env (non
+# nei .env dei profiles, che gli agenti leggono). Se il file esiste non si tocca.
+create_dashboard() {
+  local f="rooms/$1/dashboard.env"
   [[ ! -f $f ]] || return 0
   (
     umask 077
@@ -228,94 +232,94 @@ crea_pannello() {
   echo "creato $f: utente dojo, password casuale lì dentro"
 }
 
-sync_stanza() {
-  local stanza=$1 base="stanze/$1" tmp p dest
+sync_room() {
+  local room=$1 base="rooms/$1" tmp p dest
   [[ -f "$base/.env" ]] || die "manca $base/.env: copia $base/.env.example e compilalo"
-  crea_pannello "$stanza"
+  create_dashboard "$room"
   tmp=$(mktemp -d)
   trap 'rm -rf "$tmp"' RETURN
 
-  crea_reti
-  compose "$stanza" up -d --build
-  compose "$stanza" exec -T hermes mkdir -p /opt/data/lavori
+  create_networks
+  compose "$room" up -d --build
+  compose "$room" exec -T hermes mkdir -p /opt/data/work
 
-  for dir in "$base"/profili/*/; do
+  for dir in "$base"/profiles/*/; do
     p=$(basename "$dir")
-    dest=$(dir_profilo "$p")
+    dest=$(profile_dir "$p")
     # Un agente senza .env non si attiva ancora: si può partire da uno solo.
     if [[ $p != default && ! -f "$dir/.env" ]]; then
-      echo "salto $stanza/$p: manca ${dir}.env"
+      echo "salto $room/$p: manca ${dir}.env"
       continue
     fi
-    if [[ $p != default ]] && ! compose "$stanza" exec -T hermes test -f "$dest/SOUL.md"; then
-      # Profili stretti: nessuna skill inclusa, solo i flussi del dojo.
-      compose "$stanza" exec -T hermes hermes profile create "$p" --no-skills
+    if [[ $p != default ]] && ! compose "$room" exec -T hermes test -f "$dest/SOUL.md"; then
+      # Profili stretti: nessuna skill inclusa, solo i flows del dojo.
+      compose "$room" exec -T hermes hermes profile create "$p" --no-skills
     fi
-    # .env del profilo = valori comuni della stanza + quelli dell'agente.
+    # .env del profile = valori comuni della room + quelli dell'agente.
     cat "$base/.env" >"$tmp/$p.env"
     [[ ! -f "$dir/.env" ]] || cat "$dir/.env" >>"$tmp/$p.env"
-    compose "$stanza" cp "$dir/config.yaml" "hermes:$dest/config.yaml"
-    compose "$stanza" cp "$dir/SOUL.md" "hermes:$dest/SOUL.md"
-    compose "$stanza" cp "$tmp/$p.env" "hermes:$dest/.env"
+    compose "$room" cp "$dir/config.yaml" "hermes:$dest/config.yaml"
+    compose "$room" cp "$dir/SOUL.md" "hermes:$dest/SOUL.md"
+    compose "$room" cp "$tmp/$p.env" "hermes:$dest/.env"
     # `compose cp` crea i file come root: Hermes gira come utente hermes e
     # senza questo non riesce a leggere il .env (né quello del default, che
     # serve già al comando successivo).
-    compose "$stanza" exec -T hermes chown hermes:hermes \
+    compose "$room" exec -T hermes chown hermes:hermes \
       "$dest/config.yaml" "$dest/SOUL.md" "$dest/.env"
-    compose "$stanza" exec -T hermes chmod 600 "$dest/.env"
-    echo "ok   $stanza/$p"
+    compose "$room" exec -T hermes chmod 600 "$dest/.env"
+    echo "ok   $room/$p"
   done
 
-  compose "$stanza" exec -T hermes chown -R hermes:hermes /opt/data
-  compose "$stanza" exec -T hermes hermes gateway restart
-  echo "dashboard: http://127.0.0.1:${DASHBOARD_PORT:-9119} (utente e password in $base/pannello.env)"
+  compose "$room" exec -T hermes chown -R hermes:hermes /opt/data
+  compose "$room" exec -T hermes hermes gateway restart
+  echo "dashboard: http://127.0.0.1:${DASHBOARD_PORT:-9119} (utente e password in $base/dashboard.env)"
 }
 
 comando=${1:-}
 [[ $# -gt 0 ]] && shift
 case $comando in
   up)
-    if [[ $# -eq 0 ]]; then up_modelli; else crea_reti; fi
-    for c in $(scegli_stanze "$@"); do compose "$c" up -d --build; done
+    if [[ $# -eq 0 ]]; then up_models; else create_networks; fi
+    for c in $(pick_rooms "$@"); do compose "$c" up -d --build; done
     ;;
   down)
-    for c in $(scegli_stanze "$@"); do compose "$c" down; done
-    [[ $# -gt 0 ]] || modelli down
+    for c in $(pick_rooms "$@"); do compose "$c" down; done
+    [[ $# -gt 0 ]] || models down
     ;;
   status)
-    echo "== modelli"
-    modelli ps
-    for c in $(scegli_stanze "$@"); do
+    echo "== models"
+    models ps
+    for c in $(pick_rooms "$@"); do
       echo "== $c"
       compose "$c" ps
     done
     ;;
   sync)
-    [[ $# -eq 1 ]] || die "uso: dojo.sh sync <stanza>"
-    scegli_stanze "$1" >/dev/null
-    sync_stanza "$1"
+    [[ $# -eq 1 ]] || die "uso: dojo.sh sync <room>"
+    pick_rooms "$1" >/dev/null
+    sync_room "$1"
     ;;
-  up-modelli)
-    up_modelli
+  up-models)
+    up_models
     ;;
   provider)
     [[ $# -eq 1 ]] || die "uso: dojo.sh provider <anthropic|openrouter|groq|gemini>"
     provider "$1"
     ;;
-  segreto)
-    [[ $# -eq 3 ]] || die "uso: dojo.sh segreto <stanza> <agente> <CHIAVE>"
-    scegli_stanze "$1" >/dev/null
-    segreto "$@"
+  secret)
+    [[ $# -eq 3 ]] || die "uso: dojo.sh secret <room> <agente> <CHIAVE>"
+    pick_rooms "$1" >/dev/null
+    secret "$@"
     ;;
   budget)
-    [[ $# -eq 2 ]] || die "uso: dojo.sh budget <stanza> <dollari>"
-    scegli_stanze "$1" >/dev/null
+    [[ $# -eq 2 ]] || die "uso: dojo.sh budget <room> <dollari>"
+    pick_rooms "$1" >/dev/null
     budget "$1" "$2"
     ;;
-  chiave)
-    [[ $# -ge 1 && $# -le 2 ]] || die "uso: dojo.sh chiave <stanza> [budget]"
-    scegli_stanze "$1" >/dev/null
-    chiave "$@"
+  key)
+    [[ $# -ge 1 && $# -le 2 ]] || die "uso: dojo.sh key <room> [budget]"
+    pick_rooms "$1" >/dev/null
+    key "$@"
     ;;
   *)
     sed -n '2,24p' "$0" | sed 's/^# \{0,1\}//'

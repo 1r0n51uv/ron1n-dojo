@@ -3,20 +3,20 @@
 Contesto per le sessioni di Claude che lavorano su questo repo.
 
 - Il dojo è il sistema di agenti Hermes di ron1n. Architettura in
-  `docs/architettura.md`, requisiti in `docs/specs/` (ID `STANZA-NNN`,
-  `FLUSSO-NNN`, stati come in ron1n).
+  `docs/architecture.md`, requisiti in `docs/specs/` (ID `ROOM-NNN`,
+  `FLOW-NNN`, stati come in ron1n).
 - Documentazione e commenti in italiano.
-- Una stanza è `stanze/<nome>/`: `compose.yaml`, `Dockerfile` se serve,
-  `uscita/allowlist.conf` (domini raggiungibili) e `profili/<agente>/` con
+- Una room è `rooms/<nome>/`: `compose.yaml`, `Dockerfile` se serve,
+  `egress/allowlist.conf` (domini raggiungibili) e `profiles/<agente>/` con
   `config.yaml`, `SOUL.md`, `.env.example`. Il container è il confine di
-  sicurezza: niente `docker.sock`, niente porte pubblicate, rete `interna`
-  senza internet più il proxy `uscita`.
-- I profili Hermes separano ruoli e memoria ma non isolano: due agenti che
-  non devono vedersi stanno in stanze diverse.
+  sicurezza: niente `docker.sock`, niente porte pubblicate, rete `internal`
+  senza internet più il proxy `egress`.
+- I profiles Hermes separano ruoli e memoria ma non isolano: due agenti che
+  non devono vedersi stanno in rooms diverse.
 - Permessi minimi: toolset espliciti in `platform_toolsets`, approvazioni
   `manual` con `cron_mode: deny`, `approvals.deny` per merge e push forzati,
   token GitHub fine-grained per agente.
-- I flussi sono skill in `flussi/<nome>/SKILL.md`, montate in sola lettura.
+- I flows sono skill in `flows/<nome>/SKILL.md`, montate in sola lettura.
 - Segreti solo in file `.env` non versionati; versiona un `.env.example`.
 - Immagini sempre con tag esplicito (Hermes a versione fissata, mai
   `latest`).
