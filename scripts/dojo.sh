@@ -129,13 +129,20 @@ def chiama(percorso, corpo=None):
     return json.load(urllib.request.urlopen(req))
 
 
-q = urllib.parse.urlencode({"key_alias": f"stanza-{stanza}", "return_full_object": "true"})
-chiavi = chiama("/key/list?" + q).get("keys", [])
+def cerca(alias):
+    q = urllib.parse.urlencode({"key_alias": alias, "return_full_object": "true"})
+    return chiama("/key/list?" + q).get("keys", [])
+
+
+chiavi = cerca(f"stanza-{stanza}")
+# La stanza lab si chiamava kajiba: la sua chiave ha ancora il vecchio nome.
+if not chiavi and stanza == "lab":
+    chiavi = cerca("stanza-kajiba")
 if not chiavi:
     sys.exit(f"nessuna chiave stanza-{stanza}: usa dojo.sh chiave {stanza}")
 for k in chiavi:
     token = k["token"] if isinstance(k, dict) else k
-    chiama("/key/update", {"key": token, "max_budget": importo})
+    chiama("/key/update", {"key": token, "max_budget": importo, "key_alias": f"stanza-{stanza}"})
     info = chiama("/key/info?" + urllib.parse.urlencode({"key": token}))["info"]
     print(f"stanza-{stanza}: max_budget {info.get('max_budget')}, spesa {info.get('spend')}")
 PY
