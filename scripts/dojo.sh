@@ -140,9 +140,29 @@ dir_profilo() {
   if [[ $1 == default ]]; then echo /opt/data; else echo "/opt/data/profiles/$1"; fi
 }
 
+rand() { od -An -N24 -tx1 /dev/urandom | tr -d ' \n'; }
+
+# Credenziali della dashboard di Hermes: casuali, solo in pannello.env (non
+# nei .env dei profili, che gli agenti leggono). Se il file esiste non si tocca.
+crea_pannello() {
+  local f="stanze/$1/pannello.env"
+  [[ ! -f $f ]] || return 0
+  (
+    umask 077
+    {
+      echo "HERMES_DASHBOARD=1"
+      echo "HERMES_DASHBOARD_BASIC_AUTH_USERNAME=dojo"
+      echo "HERMES_DASHBOARD_BASIC_AUTH_PASSWORD=$(rand)"
+      echo "HERMES_DASHBOARD_BASIC_AUTH_SECRET=$(rand)"
+    } >"$f"
+  )
+  echo "creato $f: utente dojo, password casuale lì dentro"
+}
+
 sync_stanza() {
   local stanza=$1 base="stanze/$1" tmp p dest
   [[ -f "$base/.env" ]] || die "manca $base/.env: copia $base/.env.example e compilalo"
+  crea_pannello "$stanza"
   tmp=$(mktemp -d)
   trap 'rm -rf "$tmp"' RETURN
 
@@ -179,6 +199,7 @@ sync_stanza() {
 
   compose "$stanza" exec -T hermes chown -R hermes:hermes /opt/data
   compose "$stanza" exec -T hermes hermes gateway restart
+  echo "dashboard: http://127.0.0.1:${DASHBOARD_PORT:-9119} (utente e password in $base/pannello.env)"
 }
 
 comando=${1:-}

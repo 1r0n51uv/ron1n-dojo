@@ -17,7 +17,8 @@ non verso i domini previsti.
 
 Accettazione:
 
-- [ ] Nessun `docker.sock` montato, nessuna porta pubblicata sull'host.
+- [ ] Nessun `docker.sock` montato; l'unica porta pubblicata sull'host è la
+      dashboard (STANZA-006), solo su `127.0.0.1`.
 - [ ] Il container Hermes sta solo sulla rete `interna` (senza rotta verso
       internet); esce dal proxy `uscita`.
 - [ ] Una richiesta verso un dominio fuori da `uscita/allowlist.conf`
@@ -95,6 +96,27 @@ Accettazione:
       spenti si possono attivare dopo.
 - [ ] Se mancano git, Docker o compose, o Docker non risponde, si ferma
       subito e dice cosa fare.
+
+### STANZA-006 · Dashboard di Hermes
+
+Stato: proposto
+
+Ogni stanza offre la dashboard di Hermes (sessioni, configurazione, log),
+raggiungibile solo dal PC su cui gira e protetta da password.
+
+Accettazione:
+
+- [ ] La dashboard è sulla porta 9119 di `127.0.0.1` (`DASHBOARD_PORT` la
+      cambia), mai su altre interfacce.
+- [ ] Servono utente e password: `dojo.sh sync` li crea casuali in
+      `pannello.env` (permessi 600) solo se mancano.
+- [ ] Le credenziali non entrano nei `.env` dei profili, che gli agenti
+      leggono.
+- [ ] Senza `pannello.env` la dashboard resta spenta e il resto funziona.
+- [ ] Il container Hermes resta su una rete senza internet: l'ingresso è un
+      piccolo inoltro TCP (`pannello`) senza privilegi e a file system
+      in sola lettura.
+- [ ] Da un'altra macchina si usa un tunnel SSH, non una porta aperta.
 
 ## Note
 

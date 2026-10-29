@@ -35,6 +35,9 @@ Si può rilanciare per attivare altri agenti; i `.env` esistenti restano.
 
 Dopo: `scripts/dojo.sh status`, `up`, `down`, `sync <stanza>`.
 
+La dashboard di Hermes della kajiba è su <http://127.0.0.1:9119> (solo dal
+tuo PC). Utente `dojo`, password in `stanze/kajiba/pannello.env`.
+
 ## Sviluppo
 
 `npm run check` prima di consegnare: Prettier, markdownlint, shellcheck e
