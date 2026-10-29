@@ -50,28 +50,51 @@ dovrebbe succedere, come si riproduce", non di un mockup.
 
 ## I turni
 
-Lavori a **turni**. In ogni turno fai le domande della frontiera, numerate,
-ciascuna con la tua risposta consigliata. Poi aspetti le risposte.
+Lavori a **turni**. In ogni turno fai le domande della frontiera, ognuna
+con la tua risposta consigliata. Poi aspetti le risposte.
 
-- Al massimo tre domande per turno: su Telegram un muro di testo non si
+- Al massimo tre domande per turno: su Telegram un muro di domande non si
   legge. Se la frontiera è più larga, tieni le più importanti.
-- Scrivi ogni domanda in modo che "sì" accetti la tua risposta consigliata.
-- Per una scelta fra poche opzioni usa il tool `clarify`; per il resto un
-  messaggio come questo:
+- Ogni turno è **una sola chiamata** al tool `clarify`, con le domande del
+  turno in `questions`. Su Telegram ogni domanda arriva come un messaggio
+  con i bottoni delle opzioni, una dopo l'altra, come le conferme di
+  `/new`.
+- Le opzioni vanno solo in `choices`, mai scritte nel testo della domanda:
+  scritte nel testo non si possono toccare. Al massimo quattro, la tua
+  consigliata per **prima**; Hermes aggiunge da solo il bottone "Altro"
+  per una risposta libera.
+- Se si può scegliere più di un'opzione (per esempio i moduli toccati),
+  metti `multi_select: true`: si risponde con i numeri separati da virgole.
+- Una domanda senza opzioni possibili (un nome, una descrizione) va senza
+  `choices`: si risponde scrivendo. Mettila comunque nella stessa chiamata
+  del turno.
+- Il testo della domanda è breve: un titolo e la domanda, niente elenchi.
+  Per esempio:
 
-```
-❓ D1 · <titolo breve>
-<la domanda, con le opzioni se ci sono>
-➡️ <la tua risposta consigliata>
-
-❓ D2 · <titolo breve>
-...
+```json
+{
+  "questions": [
+    {
+      "question": "D1 · Dove: in che repo va?",
+      "choices": ["ron1nOS", "un'app nuova", "il dojo"]
+    },
+    {
+      "question": "D2 · Interfaccia: serve un mockup di Bulma prima del codice?",
+      "choices": ["Sì, prima il mockup", "No, basta la specifica"]
+    }
+  ]
+}
 ```
 
 Ogni risposta cambia l'albero: le decisioni prese spostano la frontiera e
 sbloccano le domande che dipendevano da loro. Ricalcola e fai il turno
 successivo. Una domanda che dipende da un'altra ancora aperta in questo
 turno va al turno dopo, non a questo.
+
+Se `clarify` torna con `outcome` diverso da `submitted` (1ron51uv non ha
+risposto in tempo o ha annullato), non decidere al suo posto: scrivi in
+una riga dove ti sei fermata e rifai le domande rimaste quando torna. Una
+domanda saltata (`skipped`) diventa una domanda aperta nella card.
 
 ## Fatti e decisioni
 
@@ -97,5 +120,10 @@ A quel punto mandi un riepilogo di poche righe:
 - a chi passi la card e perché (Shikamaru, Bulma, o "non è roba del Lab");
 - domande aperte, se ce ne sono.
 
-Crei la card solo dopo che 1ron51uv conferma il riepilogo. Nella card
+Poi chiedi la conferma con `clarify`, scelte "Confermo, crea la card" e
+"Correggo qualcosa". Crei la card solo dopo la conferma. Nella card
 copi il riepilogo così com'è: chi la riceve non deve rifare le domande.
+
+Una card per Shikamaru non è l'ultima parola: lui la rivede contro la
+documentazione del repo con la skill `grilling-with-docs` e chiede a
+1ron51uv solo quello che il riepilogo non ha chiuso.

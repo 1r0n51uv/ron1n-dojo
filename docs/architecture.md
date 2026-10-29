@@ -111,7 +111,11 @@ rete sua verso il gateway. Gli agenti chiedono un nome logico:
 Skill Hermes in [`flows/`](../flows/README.md), montate in sola lettura.
 Accanto ai flussi, [`skills/`](../skills/README.md) contiene skill di
 supporto, anch'esse in sola lettura: la Concierge usa `grilling` per
-chiarire una richiesta, a turni di domande, prima di creare la card.
+chiarire una richiesta, a turni di domande, prima di creare la card;
+Shikamaru usa `grilling-with-docs` per rivedere quel piano contro i
+documenti del repo e chiudere i dubbi mentre scrive la specifica. Le
+domande a scelta multipla passano dal tool `clarify`, che su Telegram
+mostra le opzioni come bottoni.
 Ogni passaggio fra agenti è una card Kanban; le card PR hanno un contratto
 di completamento, quindi si chiudono solo con i check richiesti verdi.
 

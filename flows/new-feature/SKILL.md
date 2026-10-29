@@ -26,6 +26,9 @@ Se manca il repo o il modulo, Shikamaru li chiede.
 ## Passi
 
 1. **Specifica** (strategist)
+   - Se la richiesta arriva da una card di Nico Robin, la rivede con la
+     skill `grilling-with-docs` (`skills/`): revisione del piano con le
+     correzioni, poi grilling e specifica scritta durante.
    - Clona il repo in `/opt/data/work/<repo>`, legge `docs/specs/README.md`
      e il modulo interessato.
    - Scrive o aggiorna i requisiti (ID nuovo, mai riusato, stato `proposto`).
