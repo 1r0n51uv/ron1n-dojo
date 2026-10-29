@@ -163,8 +163,8 @@ provider() {
     { print }
     END { if (!fatto) print var "=" ENVIRON["VALORE"] }' "$f" >"$tmp"
   mv "$tmp" "$f"
-  modelli up -d litellm
-  echo "$var aggiornata, LiteLLM riavviato"
+  up_modelli
+  echo "$var aggiornata, LiteLLM riavviato e ricollegato alle stanze"
 }
 
 # Cartella del profilo dentro il volume: il default è la radice di HERMES_HOME.
