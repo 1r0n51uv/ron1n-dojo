@@ -41,10 +41,10 @@ anime, con il nome del ruolo in giapponese.
 | `kajiba`, la forgia | Gunshi · Shikamaru (Naruto), Takumi · Edward Elric (Fullmetal Alchemist), Shinpan · L (Death Note) | shell nel container, git, `gh`, npm; PR sui repo app        | merge, admin dei repo, server, docker |
 | personale (dopo)    | Nakama · Chopper (One Piece)                                                                       | promemoria, note, brief del mattino; MCP di ron1nOS         | shell, GitHub, file                   |
 | lavoro (dopo)       | Taichō · Levi (L'attacco dei giganti)                                                              | come la stanza personale, con memoria e credenziali proprie | vedere le altre stanze                |
-| ingresso (forse)    | Shihan · da scegliere (Gojo, Netero, ...)                                                          | smistare le richieste alle stanze, creare cron              | lavorare da sé                        |
+| ingresso (forse)    | Shihan · Aizawa (My Hero Academia)                                                                 | smistare le richieste alle stanze, creare cron              | lavorare da sé                        |
 
 I nomi delle stanze personale, lavoro e ingresso si decidono quando
-arrivano. Shinpan potrebbe diventare Aizawa (My Hero Academia).
+arrivano.
 
 Ogni stanza: immagine Hermes a versione fissata, volume dati suo, limiti di
 CPU e memoria, rete `interna` più proxy `uscita`, nessuna porta pubblicata
