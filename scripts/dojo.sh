@@ -73,6 +73,9 @@ up_modelli() {
 # mese. Vale per tutti i modelli del gateway, riserve comprese. La stampa: va nel .env della stanza.
 chiave() {
   local stanza=$1 budget=${2:-20}
+  # Un budget a 0 o non numerico blocca ogni richiesta della stanza.
+  awk -v b="$budget" 'BEGIN { exit !(b ~ /^[0-9]+([.][0-9]+)?$/ && b + 0 > 0) }' ||
+    die "budget non valido: $budget (serve un numero maggiore di 0, in dollari)"
   modelli exec -T litellm python3 - "$stanza" "$budget" <<'PY'
 import json, os, sys, urllib.request
 stanza, budget = sys.argv[1], float(sys.argv[2])

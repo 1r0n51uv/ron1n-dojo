@@ -36,6 +36,8 @@ Accettazione:
 - [ ] `scripts/dojo.sh chiave <stanza> [budget]` crea una chiave limitata ai
       nomi logici, con budget mensile (20 dollari di default).
 - [ ] Oltre il budget la stanza riceve un errore, non spende altro.
+- [ ] Un budget a 0, negativo o non numerico è rifiutato da `dojo.sh chiave` e
+      dall'installazione, che lo richiede finché è valido.
 - [ ] Le stanze non hanno `api.anthropic.com` né altri provider
       nell'allowlist di `uscita`.
 

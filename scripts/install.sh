@@ -153,8 +153,12 @@ stanza() {
   if [[ -f $base/.env ]]; then
     info "$base/.env c'è già"
   else
-    ask "Budget mensile della stanza sul gateway, in dollari" 20
-    budget=$REPLY
+    while :; do
+      ask "Budget mensile della stanza sul gateway, in dollari (maggiore di 0)" 20
+      budget=$REPLY
+      awk -v b="$budget" 'BEGIN { exit !(b ~ /^[0-9]+([.][0-9]+)?$/ && b + 0 > 0) }' && break
+      info "serve un numero maggiore di 0: con 0 ogni richiesta verrebbe rifiutata"
+    done
     chiave=$("$DIR/scripts/dojo.sh" chiave "$s" "$budget" | sed -n 's/^LITELLM_API_KEY=//p')
     [[ -n $chiave ]] || die "chiave della stanza non creata"
     info "chiave virtuale creata"
