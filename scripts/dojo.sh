@@ -9,6 +9,8 @@
 #   scripts/dojo.sh up-models         avvia solo il gateway dei modelli
 #   scripts/dojo.sh provider <nome>    imposta la chiave di un provider (anthropic,
 #                                      openrouter, groq, gemini), input nascosto
+#   scripts/dojo.sh chatgpt [off]     login all'abbonamento ChatGPT (Plus o Pro)
+#                                      e strong/fast su ChatGPT; off torna indietro
 #   scripts/dojo.sh secret <room> <agente> <CHIAVE>
 #                                      imposta un valore (per esempio GH_TOKEN o
 #                                      TELEGRAM_BOT_TOKEN) nel .env di un agente,
@@ -152,6 +154,19 @@ for k in chiavi:
 PY
 }
 
+# Imposta VAR=valore in un .env: sostituisce la riga se c'è, altrimenti la
+# aggiunge. Il valore passa dall'ambiente di awk, non dalla riga di comando.
+env_set() {
+  local f=$1 var=$2 tmp
+  tmp=$(mktemp)
+  chmod 600 "$tmp"
+  VALORE=$3 awk -v var="$var" 'BEGIN { FS = OFS = "="; fatto = 0 }
+    $1 == var { print var "=" ENVIRON["VALORE"]; fatto = 1; next }
+    { print }
+    END { if (!fatto) print var "=" ENVIRON["VALORE"] }' "$f" >"$tmp"
+  mv "$tmp" "$f"
+}
+
 # Chiave di un provider nel .env del gateway, chiesta con input nascosto e
 # senza passare dalla riga di comando né dalla cronologia. Poi riavvia solo
 # LiteLLM: le rooms non si accorgono di nulla.
@@ -169,17 +184,34 @@ provider() {
   IFS= read -rs valore </dev/tty
   printf '\n' >/dev/tty
   [[ -n $valore ]] || die "valore vuoto, non cambio nulla"
-  tmp=$(mktemp)
-  chmod 600 "$tmp"
-  # Sostituisce la riga se c'è, altrimenti la aggiunge. Il valore passa
-  # dall'ambiente di awk, non dalla riga di comando.
-  VALORE=$valore awk -v var="$var" 'BEGIN { FS = OFS = "="; fatto = 0 }
-    $1 == var { print var "=" ENVIRON["VALORE"]; fatto = 1; next }
-    { print }
-    END { if (!fatto) print var "=" ENVIRON["VALORE"] }' "$f" >"$tmp"
-  mv "$tmp" "$f"
+  env_set "$f" "$var" "$valore"
   up_models
   echo "$var aggiornata, LiteLLM riavviato e ricollegato alle rooms"
+}
+
+# Abbonamento ChatGPT davanti a strong e fast (config.chatgpt.yaml). Il
+# login con codice dispositivo gira in un container usa e getta del gateway:
+# il token resta nel volume chatgpt, che le rooms non vedono. Rilanciarlo con
+# il login già fatto non chiede nulla. `off` torna a config.yaml.
+chatgpt() {
+  local f="$radice/services/models/.env"
+  [[ -f $f ]] || die "manca $f: lancia prima scripts/install.sh"
+  if [[ ${1:-} == off ]]; then
+    env_set "$f" LITELLM_CONFIG config.yaml
+    up_models
+    echo "strong e fast tornano ai provider di config.yaml"
+    return
+  fi
+  echo "Apri il link, accedi con l'account ChatGPT e inserisci il codice."
+  models run --rm --no-deps --entrypoint python3 litellm -c '
+from litellm.llms.chatgpt.authenticator import Authenticator
+a = Authenticator()
+a.get_access_token()
+print("login ChatGPT ok, account", a.get_account_id())
+'
+  env_set "$f" LITELLM_CONFIG config.chatgpt.yaml
+  up_models
+  echo "strong e fast usano ChatGPT; finita la quota si scende sui provider di riserva"
 }
 
 # Un valore nel .env di un agente (token del bot, GH_TOKEN), chiesto con input
@@ -197,13 +229,7 @@ secret() {
   IFS= read -rs valore </dev/tty
   printf '\n' >/dev/tty
   [[ -n $valore ]] || die "valore vuoto, non cambio nulla"
-  tmp=$(mktemp)
-  chmod 600 "$tmp"
-  VALORE=$valore awk -v var="$var" 'BEGIN { FS = OFS = "="; fatto = 0 }
-    $1 == var { print var "=" ENVIRON["VALORE"]; fatto = 1; next }
-    { print }
-    END { if (!fatto) print var "=" ENVIRON["VALORE"] }' "$f" >"$tmp"
-  mv "$tmp" "$f"
+  env_set "$f" "$var" "$valore"
   echo "$var di $agente aggiornato"
   sync_room "$room"
 }
@@ -306,6 +332,10 @@ case $comando in
     [[ $# -eq 1 ]] || die "uso: dojo.sh provider <anthropic|openrouter|groq|gemini>"
     provider "$1"
     ;;
+  chatgpt)
+    [[ $# -le 1 && ${1:-on} =~ ^(on|off)$ ]] || die "uso: dojo.sh chatgpt [off]"
+    chatgpt "${1:-}"
+    ;;
   secret)
     [[ $# -eq 3 ]] || die "uso: dojo.sh secret <room> <agente> <CHIAVE>"
     pick_rooms "$1" >/dev/null
@@ -322,7 +352,7 @@ case $comando in
     key "$@"
     ;;
   *)
-    sed -n '2,24p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,25p' "$0" | sed 's/^# \{0,1\}//'
     [[ -z $comando ]] || exit 1
     ;;
 esac

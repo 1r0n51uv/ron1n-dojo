@@ -96,6 +96,10 @@ rete sua verso il gateway. Gli agenti chiedono un nome logico:
 | `free`   | OpenRouter `:free`, Groq, Gemini, poi `local` | digest, riassunti, cron    |
 | `local`  | Ollama sul mini PC (spento di default)        | lavori leggeri e privati   |
 
+Con un abbonamento ChatGPT (Plus o Pro) collegato da `dojo.sh chatgpt`,
+`strong` e `fast` passano prima da GPT (GPT-6.1 Sol e GPT-6 Luna) e poi
+dalle riserve qui sopra ([MODELS-005](specs/models.md)).
+
 ## Canali
 
 - **Telegram** per iniziare: un bot per agente. WhatsApp è supportato da
