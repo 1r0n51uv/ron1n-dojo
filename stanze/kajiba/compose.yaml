@@ -43,7 +43,7 @@ services:
       - uscita
 
   uscita:
-    image: ubuntu/squid:6.10-24.04_edge
+    image: ubuntu/squid:6.6-24.04_edge
     restart: unless-stopped
     volumes:
       - ./uscita/allowlist.conf:/etc/squid/conf.d/dojo.conf:ro
