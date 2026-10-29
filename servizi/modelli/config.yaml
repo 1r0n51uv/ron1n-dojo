@@ -59,9 +59,9 @@ router_settings:
   num_retries: 1
   fallbacks:
     - forte:
-        [forte-riserva, veloce, veloce-riserva, gratis, gratis-nemotron, gratis-groq, gratis-gemini, locale]
-    - veloce: [veloce-riserva, gratis, gratis-nemotron, gratis-groq, gratis-gemini, locale]
-    - gratis: [gratis-nemotron, gratis-groq, gratis-gemini, locale]
+        [forte-riserva, veloce, veloce-riserva, gratis-gemini, gratis, gratis-nemotron, gratis-groq, locale]
+    - veloce: [veloce-riserva, gratis-gemini, gratis, gratis-nemotron, gratis-groq, locale]
+    - gratis: [gratis-gemini, gratis-nemotron, gratis-groq, locale]
 
 litellm_settings:
   drop_params: true
