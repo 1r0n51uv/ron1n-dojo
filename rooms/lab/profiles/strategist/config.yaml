@@ -1,5 +1,6 @@
 # Strategist (Shikamaru): da un'idea scrive la specifica, apre la PR `spec` e, dopo il
 # merge, crea le issue con label. Non scrive codice delle app.
+# Le card di Nico Robin le rivede con la skill grilling-with-docs (skills/).
 model:
   # Nome logico del gateway dei modelli (services/models/config.yaml).
   provider: "custom"
@@ -20,6 +21,7 @@ terminal:
 skills:
   external_dirs:
     - /opt/dojo/flows
+    - /opt/dojo/skills
 
 kanban:
   dispatch_in_gateway: false

@@ -19,6 +19,8 @@ amministratore li fa 1ron51uv.
 ## Passi
 
 1. **Idea** (strategist): chiede nome, descrizione, stack e primo modulo.
+   Se l'idea arriva da una card di Nico Robin, la rivede prima con la skill
+   `grilling-with-docs` e chiede solo quello che manca.
 2. **Repo** (1ron51uv): crea il repo su GitHub e lo rende visibile al
    token degli agenti. Shikamaru non crea repo.
 3. **Template** (strategist): copia `templates/app/` di ron1n nel repo,

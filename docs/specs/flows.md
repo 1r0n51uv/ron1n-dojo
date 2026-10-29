@@ -17,6 +17,11 @@ pronta per il merge, seguendo il flusso di ron1n.
 
 Accettazione:
 
+- [ ] Se la richiesta arriva da una card di Nico Robin, Shikamaru manda
+      prima la sua revisione del piano, con le correzioni e da dove
+      vengono, e chiede solo le decisioni che il repo non dice.
+- [ ] Le domande a scelta multipla arrivano su Telegram con le opzioni
+      come bottoni.
 - [ ] Shikamaru apre la PR di specifica (label `spec`, `type:docs`,
       CHANGELOG) e manda il link; non procede prima del merge.
 - [ ] Dopo il merge crea una issue per requisito, con titolo
