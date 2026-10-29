@@ -126,6 +126,11 @@ sync_stanza() {
     compose "$stanza" cp "$dir/config.yaml" "hermes:$dest/config.yaml"
     compose "$stanza" cp "$dir/SOUL.md" "hermes:$dest/SOUL.md"
     compose "$stanza" cp "$tmp/$p.env" "hermes:$dest/.env"
+    # `compose cp` crea i file come root: Hermes gira come utente hermes e
+    # senza questo non riesce a leggere il .env (né quello del default, che
+    # serve già al comando successivo).
+    compose "$stanza" exec -T hermes chown hermes:hermes \
+      "$dest/config.yaml" "$dest/SOUL.md" "$dest/.env"
     compose "$stanza" exec -T hermes chmod 600 "$dest/.env"
     echo "ok   $stanza/$p"
   done
