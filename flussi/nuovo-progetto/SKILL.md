@@ -1,0 +1,31 @@
+---
+name: nuovo-progetto
+description: 'Prepara un nuovo repo app ron1n dal template: specifica iniziale, label, stack in infra.'
+version: 0.1.0
+author: ron1n-dojo
+metadata:
+  hermes:
+    tags: [ron1n, progetto, flusso]
+prerequisites:
+  commands: [git, gh]
+---
+
+# Nuovo progetto
+
+Segue la sezione "Nuovo repo app" di `docs/flusso-sviluppo.md` nel repo
+`1r0n51uv/ron1n`. Bozza: i passi che richiedono permessi da
+amministratore li fa 1ron51uv.
+
+## Passi
+
+1. **Idea** (gunshi): chiede nome, descrizione, stack e primo modulo.
+2. **Repo** (1ron51uv): crea il repo su GitHub e lo rende visibile al
+   token degli agenti. Shikamaru non crea repo.
+3. **Template** (gunshi): copia `templates/app/` di ron1n nel repo,
+   compila `docs/specs/README.md` e il primo `docs/specs/<modulo>.md`, apre
+   la PR.
+4. **Branch protection** (1ron51uv): PR obbligatoria, check `ci`, solo
+   squash.
+5. **Hub** (gunshi): PR su `1r0n51uv/ron1n` con la riga nella tabella
+   del README e lo stack `infra/<app>/` dal template.
+6. Da qui ogni requisito segue il flusso `nuova-feature`.

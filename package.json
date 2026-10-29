@@ -1,0 +1,17 @@
+{
+  "name": "ron1n-dojo",
+  "private": true,
+  "description": "Dojo ron1n: agenti Hermes in Docker, stanze, profili e flussi",
+  "scripts": {
+    "format": "prettier --config .prettierrc.json --write .",
+    "format:check": "prettier --config .prettierrc.json --check .",
+    "lint:md": "markdownlint-cli2",
+    "lint:sh": "shellcheck scripts/*.sh",
+    "validate": "scripts/validate.sh",
+    "check": "npm run format:check && npm run lint:md && npm run lint:sh && npm run validate"
+  },
+  "devDependencies": {
+    "markdownlint-cli2": "^0.23.3",
+    "prettier": "^3.9.10"
+  }
+}
