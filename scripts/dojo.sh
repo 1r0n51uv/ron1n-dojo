@@ -294,6 +294,12 @@ sync_room() {
     compose "$room" cp "$dir/config.yaml" "hermes:$dest/config.yaml"
     compose "$room" cp "$dir/SOUL.md" "hermes:$dest/SOUL.md"
     compose "$room" cp "$tmp/$p.env" "hermes:$dest/.env"
+    # Plugin della room (rooms/<room>/plugins/), uguali per tutti i profiles:
+    # ognuno li abilita in plugins.enabled del suo config.yaml.
+    if [[ -d "$base/plugins" ]]; then
+      compose "$room" exec -T hermes mkdir -p "$dest/plugins"
+      compose "$room" cp "$base/plugins/." "hermes:$dest/plugins/"
+    fi
     # `compose cp` crea i file come root: Hermes gira come utente hermes e
     # senza questo non riesce a leggere il .env (né quello del default, che
     # serve già al comando successivo).

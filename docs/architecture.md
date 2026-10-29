@@ -73,6 +73,14 @@ worker delle card Kanban dall'ora di avvio del processo, li rifiutava con
 `permission_denied`. A ogni aggiornamento di Hermes la build verifica che la
 patch si applichi ancora.
 
+Ogni agente della lab, quando lavora in autonomia su una card, manda un
+riepilogo su Telegram dal proprio bot: quando la prende, quando la finisce
+(con il riassunto), quando si blocca (con il motivo) e se il suo worker si
+ferma. Lo fa il plugin `rooms/lab/plugins/kanban-telegram`, che `dojo.sh sync`
+copia in ogni profile e che ogni `config.yaml` abilita in `plugins.enabled`.
+Nico Robin continua a ricevere gli esiti delle card che ha creato e a
+proporre il passo successivo.
+
 ### Lab
 
 | Agente                   | Ruolo                                                                                                   | Toolset                                         | Token GitHub                                |

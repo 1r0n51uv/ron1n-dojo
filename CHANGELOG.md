@@ -6,6 +6,7 @@ merge.
 
 ## 2026-10-29
 
+- Lab: ogni agente manda su Telegram un riepilogo quando inizia, finisce o si blocca su una card Kanban, o se il suo worker si ferma (plugin `kanban-telegram`) ([#13](https://github.com/1r0n51uv/ron1n-dojo/pull/13))
 - `dojo.sh chatgpt` azzera un login lasciato a metà e mostra subito un codice nuovo, invece di aspettare 5 minuti in silenzio ([#12](https://github.com/1r0n51uv/ron1n-dojo/pull/12))
 - Abbonamento ChatGPT (Plus o Pro) per `strong` e `fast` senza API key: `dojo.sh chatgpt` fa il login con codice dispositivo e passa il gateway a `config.chatgpt.yaml`; finita la quota si scende su OpenRouter e sui free (MODELS-005) ([#11](https://github.com/1r0n51uv/ron1n-dojo/pull/11))
 - Lab: patch dell'immagine Hermes che rende stabile l'identità dei processi worker quando l'orologio di WSL2/Docker Desktop oscilla; le card Kanban non crashano più con `permission_denied` ("Kanban owner refused") ([#10](https://github.com/1r0n51uv/ron1n-dojo/pull/10))
