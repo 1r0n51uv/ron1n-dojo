@@ -57,7 +57,7 @@ Accettazione:
       scrittura. Nessuno ha administration.
 - [ ] `gh pr merge`, push forzati e push su `main` sono bloccati da
       `approvals.deny` in ogni profile della lab.
-- [ ] I flows sono montati in sola lettura.
+- [ ] I flows e le skill di `skills/` sono montati in sola lettura.
 
 ### ROOM-004 · Gestire le rooms con un comando
 

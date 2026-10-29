@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Valida rooms e servizi: `docker compose config` su ogni compose.yaml (i
 # servizi con i valori di .env.example) e, per ogni profile, la presenza di
-# config.yaml, SOUL.md e .env.example. Non serve il demone Docker.
+# config.yaml, SOUL.md e .env.example; ogni skill di flows/ e skills/ ha il
+# frontmatter. Non serve il demone Docker.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -42,7 +43,7 @@ for compose in services/*/compose.yaml; do
   fi
 done
 
-for skill in flows/*/; do
+for skill in flows/*/ skills/*/; do
   if ! head -1 "${skill}SKILL.md" 2>/dev/null | grep -qx -- '---'; then
     echo "FAIL ${skill}SKILL.md mancante o senza frontmatter"
     status=1
