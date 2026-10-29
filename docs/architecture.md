@@ -78,8 +78,12 @@ riepilogo su Telegram dal proprio bot: quando la prende, quando la finisce
 (con il riassunto), quando si blocca (con il motivo) e se il suo worker si
 ferma. Lo fa il plugin `rooms/lab/plugins/kanban-telegram`, che `dojo.sh sync`
 copia in ogni profile e che ogni `config.yaml` abilita in `plugins.enabled`.
-Nico Robin continua a ricevere gli esiti delle card che ha creato e a
-proporre il passo successivo.
+La conversazione su quel lavoro passa all'agente: il plugin
+`rooms/lab/plugins/handoff`, abilitato solo nel default (dove il dispatcher
+prende le card), gli intesta la subscription Kanban della tua chat che
+Hermes aveva dato a chi ha creato la card. Alla fine, al blocco o al crash è
+l'agente a svegliarsi nella sua chat con il riepilogo o le domande, non Nico
+Robin ([ROOM-007](specs/rooms.md)).
 
 ### Lab
 

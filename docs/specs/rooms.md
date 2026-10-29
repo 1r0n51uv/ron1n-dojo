@@ -70,8 +70,9 @@ Accettazione:
 - [ ] `up`, `down`, `status` senza nomi agiscono su tutte le rooms, con
       nomi solo su quelle; un nome sconosciuto elenca le rooms valide.
 - [ ] `sync <room>` crea i profiles mancanti, copia `config.yaml`,
-      `SOUL.md` e il `.env` (comune più agente, permessi 600) nel volume e
-      riavvia il gateway; memoria e sessioni restano.
+      `SOUL.md` e il `.env` (comune più agente, permessi 600) e i plugin di
+      `rooms/<room>/plugins/` nel volume e riavvia il gateway; memoria e
+      sessioni restano.
 - [ ] `secret <room> <agente> <CHIAVE>` imposta un valore (token del bot,
       `GH_TOKEN`) nel `.env` dell'agente con input nascosto, senza passarlo
       dalla riga di comando, e poi fa il `sync`.
@@ -120,6 +121,26 @@ Accettazione:
       piccolo inoltro TCP (`dashboard`) senza privilegi e a file system
       in sola lettura.
 - [ ] Da un'altra macchina si usa un tunnel SSH, non una porta aperta.
+
+### ROOM-007 · Il lavoro autonomo si racconta su Telegram
+
+Stato: proposto
+
+Quando un agente lavora da solo su una card Kanban, 1ron51uv lo sa dal bot
+di quell'agente, e la conversazione su quel lavoro continua lì.
+
+Accettazione:
+
+- [ ] Quando il dispatcher assegna una card, il bot dell'agente manda un
+      messaggio breve in italiano con ID e titolo; alla fine il riassunto,
+      al blocco il motivo, se il worker si ferma il codice di uscita
+      (plugin `kanban-telegram`).
+- [ ] Dopo la fine, un blocco o un crash è l'agente assegnato a riprendere
+      il discorso nella sua chat, non chi ha creato la card (per esempio
+      Nico Robin): plugin `handoff`.
+- [ ] Un agente senza bot Telegram viene saltato; un errore dei plugin non
+      ferma il dispatcher né la card.
+- [ ] I plugin non danno nuovi tool agli agenti.
 
 ## Note
 
