@@ -4,6 +4,10 @@ Cosa cambia nel dojo (stanze, profili, flussi, script), il giorno più
 recente in alto. Ogni PR aggiunge la sua riga in cima, sotto il giorno del
 merge.
 
+## 2026-10-30
+
+- Abbonamento Claude (Pro o Max) come modello degli agenti, opzionale: `dojo.sh claude <room> [agente...]` fa il login con la CLI ufficiale di Claude Code e mette Claude davanti, con il gateway (GPT e free) come riserva; `off` torna indietro (MODELS-006) ([#15](https://github.com/1r0n51uv/ron1n-dojo/pull/15))
+
 ## 2026-10-29
 
 - Lab: quando un agente prende una card la chat passa a lui; alla fine, al blocco o al crash è lui a riprendere il discorso nella sua chat, non chi ha creato la card (plugin `handoff`, ROOM-007) ([#14](https://github.com/1r0n51uv/ron1n-dojo/pull/14))

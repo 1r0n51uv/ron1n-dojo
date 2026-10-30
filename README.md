@@ -34,7 +34,8 @@ provider (ne basta uno, anche gratuito), il tuo user ID Telegram e, agente
 per agente, se attivarlo con il suo bot e token GitHub. Poi accende tutto.
 Si può rilanciare per attivare altri agenti; i `.env` esistenti restano.
 
-Dopo: `scripts/dojo.sh status`, `up`, `down`, `sync <room>`.
+Dopo: `scripts/dojo.sh status`, `up`, `down`, `sync <room>`. Con un
+abbonamento Claude Pro o Max: `scripts/dojo.sh claude lab` (MODELS-006).
 
 La dashboard di Hermes della lab è su <http://127.0.0.1:9119> (solo dal
 tuo PC). Utente `dojo`, password in `rooms/lab/dashboard.env`.

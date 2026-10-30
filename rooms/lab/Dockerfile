@@ -1,11 +1,34 @@
 # Immagine Hermes della lab: quella ufficiale più la CLI di GitHub, che
-# serve per issue, PR e review. La versione si fissa in compose.yaml.
+# serve per issue, PR e review, e la CLI di Claude Code con il provider
+# dell'abbonamento Claude. Le versioni si fissano in compose.yaml.
 ARG HERMES_VERSION
 FROM nousresearch/hermes-agent:${HERMES_VERSION}
+ARG CLAUDE_CODE_VERSION
+ARG CLAUDE_PLUGIN_COMMIT
 
 RUN apt-get -o Acquire::Retries=3 update \
   && apt-get install -y --no-install-recommends gh \
   && rm -rf /var/lib/apt/lists/*
+
+# Abbonamento Claude Pro/Max come modello degli agenti (MODELS-006), spento
+# finché non lo accende `dojo.sh claude`. La CLI ufficiale, non modificata,
+# fa login e chiamate; il plugin claude-subscription-directsdk di Nous
+# Research la guida come provider. Il plugin sta fra quelli inclusi in
+# Hermes (/opt/hermes, di root): gli agenti lo usano ma non lo cambiano.
+RUN npm install -g --prefix /opt/claude-code --no-audit --no-fund \
+    "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" \
+  && ln -s /opt/claude-code/bin/claude /usr/local/bin/claude \
+  && npm cache clean --force \
+  && claude --version
+RUN src=$(mktemp -d) \
+  && git -C "$src" init -q \
+  && git -C "$src" fetch -q --depth 1 https://github.com/NousResearch/hermes-official-plugins "${CLAUDE_PLUGIN_COMMIT}" \
+  && git -C "$src" archive FETCH_HEAD claude-subscription-directsdk \
+    | tar -x -C /opt/hermes/plugins/model-providers \
+  && rm -rf "$src" \
+  && cd /opt/hermes/plugins/model-providers/claude-subscription-directsdk \
+  && rm -rf tests evals assets conftest.py \
+  && grep -qx 'name: claude-subscription-directsdk-experimental' plugin.yaml
 
 # Birth dei processi stabile anche quando il btime del kernel oscilla
 # (WSL2/Docker Desktop): senza, le card Kanban crashano con permission_denied.
