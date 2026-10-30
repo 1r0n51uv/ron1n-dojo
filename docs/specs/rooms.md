@@ -1,10 +1,11 @@
 # Stanze
 
-Prefisso ID: `STANZA` · Label: `mod:rooms`
+Prefisso ID: `ROOM` · Label: `mod:rooms`
 
 Una room è un container Hermes con i suoi profiles, il suo volume e la sua
 rete. È il confine di sicurezza del dojo: quello che sta in una room non
-vede le altre né il server.
+vede le altre né il server. Gira sul mini PC Linux; il PC Windows con WSL2
+serve solo per le prove.
 
 ## Requisiti
 
@@ -18,28 +19,30 @@ non verso i domini previsti.
 Accettazione:
 
 - [ ] Nessun `docker.sock` montato; le sole porte pubblicate sull'host sono
-      la dashboard (ROOM-006) e l'interfaccia web (ROOM-009), solo su
-      `127.0.0.1`.
+      la dashboard (ROOM-006) e la WebUI (ROOM-009), solo su `127.0.0.1`.
 - [ ] Il container Hermes sta solo sulla rete `internal` (senza rotta verso
       internet); esce dal proxy `egress`.
 - [ ] Una richiesta verso un dominio fuori da `egress/allowlist.conf`
-      fallisce; verso `api.telegram.org` e `api.github.com` riesce.
+      fallisce; verso `api.telegram.org`, `api.github.com` e
+      `api.anthropic.com` riesce; `*.atlassian.net` solo se un progetto usa
+      Jira.
 - [ ] Limiti di memoria, CPU e processi; `no-new-privileges`.
-- [ ] Immagine Hermes a versione fissata, mai `latest`.
+- [ ] Hermes, Claude Code, plugin e WebUI a versione fissata nell'immagine.
 
 ### ROOM-002 · Un agente risponde solo a te
 
 Stato: proposto
 
-Ogni agente ha il suo bot Telegram e risponde solo all'utente autorizzato.
+Ogni agente ha il suo bot Telegram con la chat completa e risponde solo
+all'utente autorizzato, su Telegram come sulla WebUI.
 
 Accettazione:
 
 - [ ] Un bot per profile; lo stesso token su due profiles è un errore.
 - [ ] Un messaggio da un utente fuori da `TELEGRAM_ALLOWED_USERS` non
       riceve risposta.
-- [ ] I comandi pericolosi chiedono conferma su Telegram; nei cron sono
-      negati.
+- [ ] Toolset, memoria e approvazioni di un agente sono gli stessi su
+      Telegram e sulla WebUI.
 
 ### ROOM-003 · Permessi minimi per agente
 
@@ -49,158 +52,197 @@ Ogni agente ha solo gli strumenti e le credenziali del suo ruolo.
 
 Accettazione:
 
-- [ ] I toolset di ogni profile sono elencati in `platform_toolsets`; un
-      profile senza `file` non scrive file con i tool di Hermes.
-- [ ] Token GitHub fine-grained dell'account degli agenti, uno per
-      agente, limitati ai repo app: strategist e designer con contents, pull
-      requests e issues in scrittura; builder con contents e pull requests in
+- [ ] I toolset di ogni profile sono elencati in `platform_toolsets` per
+      `telegram`, `cli` e `api_server`, uguali fra loro; nessun toolset
+      `acp`.
+- [ ] Token GitHub fine-grained del tuo account, uno per agente, limitati ai
+      repo dei progetti: strategist e designer con contents, pull requests e
+      issues in scrittura; builder con contents e pull requests in
       scrittura; reviewer con contents in lettura e pull requests in
-      scrittura. Nessuno ha administration.
-- [ ] `gh pr merge`, push forzati e push su `main` sono bloccati da
-      `approvals.deny` in ogni profile della lab.
-- [ ] I flows e le skill di `skills/` sono montati in sola lettura.
+      scrittura; concierge nessuno. Nessuno ha administration.
+- [ ] I commit degli agenti hanno come autore il nome dell'agente (per
+      esempio `Edward Elric (dojo)`).
+- [ ] `gh pr merge`, push forzati, push su `main` e cancellazioni di repo
+      sono bloccati da `approvals.deny` in ogni profile, anche con
+      approvazione.
+- [ ] Passano senza conferma solo i comandi sicuri: `git` senza push
+      forzato, test e build (`npm`, `pytest`, `make`), `gh` in lettura,
+      lettura di file. Il resto chiede conferma su WebUI o Telegram;
+      `cron_mode` e `unattended_mode` sono `deny`.
+- [ ] Flows e skill sono nell'immagine, fuori dalla portata degli agenti.
 
-### ROOM-004 · Gestire le rooms con un comando
+### ROOM-004 · Gestire la room con un comando
 
 Stato: proposto
 
-`scripts/dojo.sh` avvia, spegne, mostra e aggiorna le rooms.
+`scripts/dojo.sh` avvia, spegne, controlla e configura la room senza
+toccare i file a mano.
 
 Accettazione:
 
-- [ ] `up`, `down`, `status` senza nomi agiscono su tutte le rooms, con
-      nomi solo su quelle; un nome sconosciuto elenca le rooms valide.
-- [ ] `sync <room>` crea i profiles mancanti, copia `config.yaml`,
-      `SOUL.md` e il `.env` (comune più agente, permessi 600) e i plugin di
-      `rooms/<room>/plugins/` nel volume e riavvia il gateway; memoria e
-      sessioni restano.
-- [ ] `secret <room> <agente> <CHIAVE>` imposta un valore (token del bot,
-      `GH_TOKEN`) nel `.env` dell'agente con input nascosto, senza passarlo
-      dalla riga di comando, e poi fa il `sync`.
-- [ ] Senza `.env` della room si ferma e lo dice; un agente senza `.env`
-      viene saltato, così si può attivare un agente alla volta.
+- [ ] `up`, `down`, `status` agiscono sulla room; un nome sconosciuto
+      elenca le rooms valide.
+- [ ] `secret <agente> <CHIAVE>` imposta un valore (token del bot,
+      `GH_TOKEN`, token Jira) nel `.env` dell'agente con input nascosto,
+      senza passarlo dalla riga di comando, e riavvia il gateway.
+- [ ] `claude` fa il login dell'abbonamento Claude nel container
+      (MODELS-006).
+- [ ] `doctor` controlla bot, login Claude, egress, token GitHub e Jira,
+      WebUI e cartella di lavoro, e per ogni problema dice cosa fare.
+- [ ] Un agente senza `.env` viene saltato, così si può attivare un agente
+      alla volta.
 
 ### ROOM-005 · Installare il dojo con un comando
 
 Stato: proposto
 
-Su una macchina con Docker un solo comando porta da zero agli agenti
-avviati, come il bootstrap di ron1n.
+Sul mini PC con Docker un solo comando porta da zero agli agenti avviati,
+come il bootstrap di ron1n.
 
 Accettazione:
 
 - [ ] `curl -fsSL .../scripts/install.sh | bash` clona o aggiorna il repo
       (`DOJO_DIR`, `DOJO_BRANCH`) e funziona anche lanciato da un checkout.
-- [ ] Chiede i valori dei `.env` che mancano: password e master key
-      casuali, token e chiavi nascosti, invio = vuoto o default.
-- [ ] Accende il gateway dei modelli, aspetta che sia pronto e crea la
-      chiave virtuale di ogni room con il budget scelto.
-- [ ] Per ogni agente chiede se attivarlo; quelli attivati partono con
-      `dojo.sh sync`.
+- [ ] Chiede i valori che mancano (token dei bot, token GitHub, Jira se
+      serve) con input nascosto; password casuali per dashboard e WebUI.
+- [ ] Crea `~/dojo/work`, scarica l'immagine da GHCR, avvia la room e fa il
+      login Claude.
+- [ ] Per ogni agente chiede se attivarlo.
 - [ ] Si può rilanciare: i `.env` esistenti non si toccano, gli agenti
       spenti si possono attivare dopo.
 - [ ] Se mancano git, Docker o compose, o Docker non risponde, si ferma
       subito e dice cosa fare.
+- [ ] Alla fine lancia `dojo.sh doctor`.
 
 ### ROOM-006 · Dashboard di Hermes
 
 Stato: proposto
 
 Ogni room offre la dashboard di Hermes (sessioni, configurazione, log),
-raggiungibile solo dal PC su cui gira e protetta da password.
+raggiungibile solo dal mini PC e protetta da password.
 
 Accettazione:
 
 - [ ] La dashboard è sulla porta 9119 di `127.0.0.1` (`DASHBOARD_PORT` la
       cambia), mai su altre interfacce.
-- [ ] Servono utente e password: `dojo.sh sync` li crea casuali in
-      `dashboard.env` (permessi 600) solo se mancano.
+- [ ] Servono utente e password, casuali in `dashboard.env` (permessi 600),
+      create solo se mancano.
 - [ ] Le credenziali non entrano nei `.env` dei profiles, che gli agenti
       leggono.
-- [ ] Senza `dashboard.env` la dashboard resta spenta e il resto funziona.
 - [ ] Il container Hermes resta su una rete senza internet: l'ingresso è un
-      piccolo inoltro TCP (`dashboard`) senza privilegi e a file system
-      in sola lettura.
+      piccolo inoltro TCP senza privilegi e a file system in sola lettura.
 - [ ] Da un'altra macchina si usa un tunnel SSH, non una porta aperta.
 
 ### ROOM-007 · Il lavoro autonomo si racconta su Telegram
 
-Stato: proposto
+Stato: rimosso
 
-Quando un agente lavora da solo su una card Kanban, 1ron51uv lo sa dal bot
-di quell'agente, e la conversazione su quel lavoro continua lì.
-
-Accettazione:
-
-- [ ] Quando il dispatcher assegna una card, il bot dell'agente manda un
-      messaggio breve in italiano con ID e titolo; alla fine il riassunto,
-      al blocco il motivo, se il worker si ferma il codice di uscita
-      (plugin `kanban-telegram`).
-- [ ] Dopo la fine, un blocco o un crash è l'agente assegnato a riprendere
-      il discorso nella sua chat, non chi ha creato la card (per esempio
-      Nico Robin): plugin `handoff`.
-- [ ] Un agente senza bot Telegram viene saltato; un errore dei plugin non
-      ferma il dispatcher né la card.
-- [ ] I plugin non danno nuovi tool agli agenti.
+Sostituito dalle notifiche di serie del Kanban di Hermes (FLOW-004). I
+plugin `handoff` e `kanban-telegram` escono; se dopo la prova sul mini PC
+non bastano, un requisito nuovo dice cosa aggiungere.
 
 ### ROOM-008 · Agenti da un client ACP sul PC
 
-Stato: proposto
+Stato: rimosso
 
-Dal PC su cui gira la room si parla con un agente da un client
-[ACP](https://agentclientprotocol.com) come
-[AionUi](https://github.com/iOfficeAI/AionUi), senza aprire porte e senza
-dare all'agente più di quello che ha su Telegram.
-
-Accettazione:
-
-- [ ] Il client avvia, con `docker exec -i -u hermes` nel container
-      Hermes, `dojo-acp <agente>`: nessuna porta nuova, il container resta
-      com'è (ROOM-001).
-- [ ] `dojo-acp` accetta solo gli agenti della room che hanno un profile,
-      non il `default`.
-- [ ] Ogni profile ha `platform_toolsets.acp` uguale a `cli`: niente
-      toolset `hermes-acp` di default, che darebbe shell e web a tutti.
-- [ ] La cartella del PC che il client manda come `cwd` diventa
-      `/opt/data/work`; i server MCP proposti dal client si scartano.
-- [ ] Le approvazioni restano `manual`: i comandi pericolosi chiedono
-      conferma nel client e `approvals.deny` vale anche qui.
-- [ ] Per un client che riconosce Hermes (AionUi) `scripts/hermes-acp.sh`
-      fa da `hermes`: `acp` diventa `dojo-acp` con l'agente di
-      `DOJO_AGENT`; passano solo `--version`, `acp --version` e
-      `acp --check`, ogni altro comando o flag (per esempio `--yolo`) è
-      rifiutato. Su Windows fa lo stesso `scripts/hermes-acp.cmd`.
+AionUi e i client ACP non fanno più parte del dojo: i canali sono la WebUI e
+Telegram.
 
 ### ROOM-009 · Interfaccia web per gli agenti
 
 Stato: proposto
 
-Dal PC si parla con gli agenti della room da
-[hermes-webui](https://github.com/nesquena/hermes-webui), con gli stessi
-permessi che hanno su Telegram.
+La WebUI ([hermes-webui](https://github.com/nesquena/hermes-webui)) è il
+canale principale: da casa e da fuori, con gli stessi permessi che gli
+agenti hanno su Telegram.
 
 Accettazione:
 
-- [ ] L'interfaccia è su `127.0.0.1:8787` (`WEBUI_PORT` la cambia), dietro
-      la password casuale che `dojo.sh sync` crea in `webui.env`; senza
+- [ ] In casa è su `127.0.0.1:8787` (`WEBUI_PORT` la cambia); fuori casa su
+      `https://dojo.ron1n.space` via Cloudflare Tunnel e Caddy di ron1n,
+      dietro Cloudflare Access. Nessuna porta aperta verso internet.
+- [ ] Oltre ad Access serve la password casuale di `webui.env`; senza
       `webui.env` il servizio resta fermo.
-- [ ] Il servizio `webui` usa l'immagine e il volume della room, sta solo
-      sulle reti `internal` e `models` ed esce da `egress`; non scarica
-      niente all'avvio.
-- [ ] Le chat passano dall'API del gateway (`HERMES_WEBUI_CHAT_BACKEND=gateway`
-      con la runs API): i tool girano nel container `hermes`, con
-      `platform_toolsets.api_server` uguale a `cli` in ogni profile.
-- [ ] Ogni agente risponde dal suo indirizzo `/p/<agente>` con la chiave
-      dell'API, che `dojo.sh sync` scrive nel `.env` di ogni profile; l'API
-      non è raggiungibile fuori dalla rete `internal`.
-- [ ] Le approvazioni restano `manual` e `approvals.deny` vale anche qui;
-      la modalità YOLO della WebUI non va accesa.
+- [ ] Il servizio `webui` sta solo sulla rete `internal`; verso Caddy passa
+      un inoltro TCP (`webui-proxy`) sulle reti `internal` e `proxy`.
+- [ ] Le chat passano dall'API del gateway (runs API): i tool girano nel
+      container `hermes` con `platform_toolsets.api_server` del profile.
+- [ ] Il terminale della WebUI è spento; la modalità YOLO non va accesa.
+- [ ] Ogni agente risponde dal suo indirizzo `/p/<agente>`; l'API del
+      gateway non è raggiungibile fuori dalla rete `internal`.
+
+### ROOM-010 · Immagine dalla CI e aggiornamenti automatici
+
+Stato: proposto
+
+Sul mini PC non si costruisce niente: l'immagine della room arriva da GHCR
+e si aggiorna da sola, come le app di ron1n.
+
+Accettazione:
+
+- [ ] Un workflow costruisce `ghcr.io/1r0n51uv/dojo-lab` a ogni push su
+      `main` e pubblica i tag `main` e `sha-<commit>`, solo `linux/amd64`.
+- [ ] Le PR costruiscono l'immagine senza pubblicarla.
+- [ ] I servizi della room hanno l'etichetta
+      `com.centurylinklabs.watchtower.enable: "true"`: Watchtower di ron1n li
+      aggiorna quando `main` cambia.
+- [ ] Rollback: `image: ...:sha-<commit>` nel compose, poi `dojo.sh up`.
+- [ ] Hermes cambia versione solo con una PR che passa dalla CI.
+
+### ROOM-011 · Cartella di lavoro sul mini PC
+
+Stato: proposto
+
+Gli agenti lavorano in una cartella del mini PC che apri anche da fuori,
+senza poter uscire da lì.
+
+Accettazione:
+
+- [ ] `~/dojo/work` (`DOJO_WORK` la cambia) è montata in `/opt/data/work`,
+      la `cwd` del terminale di ogni agente.
+- [ ] Il container gira con UID e GID dell'utente del mini PC: i file
+      creati dagli agenti sono suoi, senza `sudo`.
+- [ ] Ogni agente lavora in `work/<agente>/` per convenzione (non è un
+      blocco).
+- [ ] Nessun'altra cartella del mini PC è montata in scrittura.
+
+### ROOM-012 · Configurazione dall'immagine, modello da Hermes
+
+Stato: proposto
+
+Un aggiornamento dell'immagine porta config, SOUL e skill nuovi senza
+comandi a mano, e non cancella le scelte fatte da Hermes.
+
+Accettazione:
+
+- [ ] All'avvio il gateway copia `config.yaml`, `SOUL.md` e skill
+      dall'immagine nei profiles e crea quelli mancanti.
+- [ ] Modello e provider scelti da Hermes (`hermes model`, dashboard,
+      WebUI) restano: la copia non tocca `model` e `providers` di un profile
+      che li ha già.
+- [ ] I `.env` dei profiles restano sul mini PC e non sono nell'immagine.
+- [ ] Memoria e sessioni restano.
+
+### ROOM-013 · Migrare la memoria degli agenti
+
+Stato: proposto
+
+Dalla prima versione si portano solo le memorie degli agenti; sessioni,
+board e config ripartono da zero.
+
+Accettazione:
+
+- [ ] `dojo.sh export-memory` sul PC di prova crea un archivio con le
+      `memories/` di ogni profile del volume.
+- [ ] `dojo.sh import-memory <archivio>` sul mini PC le rimette nei profiles
+      con lo stesso nome, senza toccare il resto.
+- [ ] Il volume vecchio non si cancella: resta come backup.
 
 ## Note
 
-- Le rooms `personale` e `lavoro` arrivano nella fase 2 e 3
-  ([architettura](../architecture.md#fasi)).
-- La WebUI ha un suo terminale: gira nel container `webui`, con lo stesso
-  confinamento della room, non sul PC.
-- Da verificare al primo avvio: chiave del modello letta dal `.env` del
-  profile, identità git dei commit degli agenti, HOME dei tool per `gh`.
+- Le rooms `personale` e `lavoro` arrivano dopo
+  ([architettura](../architecture.md#fasi-della-riscrittura)).
+- Se Hermes v0.22.5 non sa approvare da solo i comandi sicuri di ROOM-003,
+  si passa alla versione che lo fa, provandola prima.
+- Una room per tutti gli agenti: chi ha `terminal` può leggere `.env` e file
+  degli altri. Il confine vero sono container, egress e token limitati.

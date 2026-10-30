@@ -1,45 +1,54 @@
 # Architettura
 
-Il dojo è un insieme di agenti Hermes (Nous Research) in Docker. Ognuno ha
-un ruolo, strumenti e credenziali minimi; si parla con loro da Telegram;
-lavorano su richiesta, a orario (cron) o su evento (webhook). Gira sul
-mini PC di ron1n accanto agli altri stack.
+Il dojo è un insieme di agenti Hermes (Nous Research) in Docker sul mini PC
+di ron1n. Ogni agente ha un ruolo, strumenti e credenziali minimi; si parla
+con loro dalla WebUI o da Telegram; lavorano su richiesta, a orario (cron) o
+quando un altro agente gli passa una card.
+
+Questa è la versione stabile (riscrittura dell'ottobre 2026): un solo
+ambiente, il mini PC Linux; immagine costruita dalla CI; meno codice nostro
+sopra Hermes. Il PC Windows con WSL2 serve solo per le prove.
 
 ## Principi
 
-- **Plug and play**: un comando installa tutto
-  (`scripts/install.sh`), chiede solo i valori che mancano e si può
-  rilanciare.
-- **Modulare**: una room è una cartella in `rooms/`; reti, chiavi e
-  avvio la trovano da sola. Un agente si attiva quando gli dai un `.env`.
-- **Zero trust**: nessun agente si fida degli altri né della rete. Ogni
-  room è un container senza porte e senza internet, esce solo verso i
-  domini permessi; ogni agente ha i suoi token minimi; le chiavi dei
-  provider stanno solo nel gateway; il merge è sempre tuo.
-- **Free**: tutto è open source e gira anche solo con modelli gratuiti
-  (OpenRouter `:free`, Groq, Gemini) o locali (Ollama); trascrizione e voci
-  hanno opzioni gratuite e locali. I modelli a pagamento sono un'aggiunta.
+- **Plug and play**: un comando installa tutto (`scripts/install.sh`),
+  chiede solo i valori che mancano e si può rilanciare. Gli aggiornamenti
+  arrivano da soli (Watchtower).
+- **Modulare**: una room è una cartella in `rooms/`; un agente si attiva
+  quando gli dai un `.env`; un progetto si aggiunge con un file in
+  `projects/`.
+- **Zero trust**: la room è un container senza porte verso internet, esce
+  solo verso i domini permessi; ogni agente ha i suoi token minimi; il merge
+  è sempre tuo.
+- **Poco codice nostro**: quello che Hermes fa di serie (Kanban, notifiche,
+  scelta del modello, approvazioni) non si riscrive in plugin o patch.
 
 ## Cosa isola davvero
 
 - Un **profile** Hermes è un agente con config, SOUL, memoria, skill, cron
   e bot propri, ma non è una sandbox: i profiles nello stesso container
-  condividono filesystem e processi.
+  condividono filesystem e processi. Un agente con `terminal` può leggere i
+  file e i `.env` degli altri.
 - Il **container** è il confine. Senza `docker.sock` l'agente non esce dal
-  suo container; il volume dati è solo suo.
+  suo container; vede solo il volume della room e la cartella di lavoro
+  montata.
 - I **toolset** (`platform_toolsets.<piattaforma>`) decidono cosa può
-  fare: senza `terminal` niente shell, senza `file` niente scritture.
-- Le **approvazioni** (`approvals.mode: manual`) chiedono conferma su
-  Telegram per i comandi pericolosi; `cron_mode` e `unattended_mode: deny`
-  li negano quando nessuno può rispondere; `approvals.deny` blocca sempre
-  alcuni comandi (merge, push forzati), anche con approvazione.
+  fare: senza `terminal` niente shell, senza `file` niente scritture con i
+  tool di Hermes.
+- Le **approvazioni** (`approvals.mode: manual`) lasciano passare da soli
+  i comandi sicuri (git senza push forzato, test, build, `gh` in lettura) e
+  chiedono conferma, su WebUI o Telegram, per il resto. `cron_mode` e
+  `unattended_mode: deny` negano quando nessuno può rispondere;
+  `approvals.deny` blocca sempre merge, push forzati e push su `main`,
+  anche con approvazione.
 - L'**egress** passa dal proxy Squid `egress` con allowlist di domini; la
   rete `internal` non ha rotta verso internet.
 - Su **Telegram** risponde solo `TELEGRAM_ALLOWED_USERS`; un bot per
   profile.
-- Su **GitHub** ogni agente ha un token fine-grained dell'account bot,
-  limitato ai repo app; la branch protection impedisce merge senza
-  approvazione.
+- Su **GitHub** gli agenti usano il tuo account con un token fine-grained
+  per agente, limitato ai repo dei progetti. Le loro PR risultano tue,
+  quindi i repo app chiedono la CI verde ma non un'approvazione: il merge
+  resta tuo e la review di L arriva come commento.
 
 Da qui due livelli: **rooms** (container) come confine di sicurezza,
 **profiles** dentro la room come ruoli. Agenti nella stessa room
@@ -53,112 +62,107 @@ nome del ruolo in inglese.
 
 | Stanza                | Agenti (ruolo · personaggio)                                                                                                                                                 | Può                                                       | Non può                               |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------- |
-| `lab`, il laboratorio | Strategist · Shikamaru (Naruto), Designer · Bulma (Dragon Ball), Concierge · Nico Robin (One Piece), Builder · Edward Elric (Fullmetal Alchemist), Reviewer · L (Death Note) | shell nel container, git, `gh`, npm; PR sui repo app      | merge, admin dei repo, server, docker |
+| `lab`, il laboratorio | Concierge · Nico Robin (One Piece), Strategist · Shikamaru (Naruto), Designer · Bulma (Dragon Ball), Builder · Edward Elric (Fullmetal Alchemist), Reviewer · L (Death Note) | shell nel container, git, `gh`, Jira; PR sui repo app     | merge, admin dei repo, server, docker |
 | personale (dopo)      | Companion · Chopper (One Piece)                                                                                                                                              | promemoria, note, brief del mattino; MCP di ron1nOS       | shell, GitHub, file                   |
 | lavoro (dopo)         | Captain · Levi (L'attacco dei giganti)                                                                                                                                       | come la room personale, con memoria e credenziali proprie | vedere le altre rooms                 |
 
-I nomi delle rooms personale e lavoro si decidono quando
-arrivano.
+### Lab sul mini PC
 
-Ogni room: immagine Hermes a versione fissata, volume dati suo, limiti di
-CPU e memoria, rete `internal` più proxy `egress`, nessuna porta pubblicata
-(Telegram in polling), dashboard spenta o solo su `127.0.0.1`.
+| Servizio      | Cosa fa                                                                           | Reti               |
+| ------------- | --------------------------------------------------------------------------------- | ------------------ |
+| `hermes`      | gateway con i cinque profile, Telegram, Kanban, API per la WebUI                  | internal           |
+| `webui`       | hermes-webui, chat via API del gateway, senza terminale proprio                   | internal           |
+| `webui-proxy` | inoltro TCP verso Caddy di ron1n (`dojo.ron1n.space`) e verso `127.0.0.1:8787`    | internal, proxy    |
+| `dashboard`   | inoltro TCP della dashboard di Hermes su `127.0.0.1:9119`, per diagnosi           | internal           |
+| `egress`      | Squid con l'allowlist: Telegram, GitHub, npm, Anthropic, Jira (`*.atlassian.net`) | internal, external |
+
+- **Immagine**: `ghcr.io/1r0n51uv/dojo-lab`, costruita dalla CI a ogni push
+  su `main` con i tag `main` e `sha-<commit>`. Contiene Hermes, Claude Code,
+  il plugin Claude, hermes-webui, config, SOUL, flows e skill, tutti a
+  versione fissata. Il tag mobile `main` va bene perché l'immagine è senza
+  dati. Watchtower di ron1n (`infra/updates`) la aggiorna.
+- **Stato di Hermes** (memoria, sessioni, board, `.env` dei profile) nel
+  volume `dojo-lab_data`.
+- **Cartella di lavoro**: `~/dojo/work` del mini PC montata in
+  `/opt/data/work`. Il container gira con il tuo UID, così i file sono tuoi.
+  Ogni agente lavora in `work/<agente>/` per convenzione.
+- **WebUI fuori casa**: Cloudflare Tunnel e Caddy di ron1n, dietro
+  Cloudflare Access, come gli altri siti.
 
 In una room il profile `default` non ha bot: ospita il gateway che serve
 tutti i profiles (multiplexing) e il dispatcher Kanban.
 
-L'immagine della lab applica una patch a Hermes (`rooms/lab/patches/`): su
-WSL2/Docker Desktop il btime del kernel oscilla e Hermes, che riconosce i
-worker delle card Kanban dall'ora di avvio del processo, li rifiutava con
-`permission_denied`. A ogni aggiornamento di Hermes la build verifica che la
-patch si applichi ancora.
+### Agenti della lab
 
-Ogni agente della lab, quando lavora in autonomia su una card, manda un
-riepilogo su Telegram dal proprio bot: quando la prende, quando la finisce
-(con il riassunto), quando si blocca (con il motivo) e se il suo worker si
-ferma. Lo fa il plugin `rooms/lab/plugins/kanban-telegram`, che `dojo.sh sync`
-copia in ogni profile e che ogni `config.yaml` abilita in `plugins.enabled`.
-La conversazione su quel lavoro passa all'agente: il plugin
-`rooms/lab/plugins/handoff`, abilitato solo nel default (dove il dispatcher
-prende le card), gli intesta la subscription Kanban della tua chat che
-Hermes aveva dato a chi ha creato la card. Alla fine, al blocco o al crash è
-l'agente a svegliarsi nella sua chat con il riepilogo o le domande, non Nico
-Robin ([ROOM-007](specs/rooms.md)).
-
-### Lab
-
-| Agente                   | Ruolo                                                                                                   | Toolset                                         | Token GitHub                                |
-| ------------------------ | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------- |
-| `strategist` (Shikamaru) | specifica, PR `spec`, issue con label, card per Edward                                                  | file, terminal, kanban, clarify, skills         | contents, pull requests, issues: scrittura  |
-| `designer` (Bulma)       | flows, mockup e specifiche UI/UX in `docs/design/`, review di progetti, issue per Edward; niente codice | file, terminal, vision, kanban, clarify, skills | contents, pull requests, issues: scrittura  |
-| `builder` (Edward)       | implementazione con test, `npm run check`, PR con `Closes #N`                                           | file, terminal, code_execution, kanban, clarify | contents, pull requests: scrittura          |
-| `reviewer` (L)           | review contro specifica e regole, segnala la PR pronta                                                  | terminal, kanban, clarify, skills               | contents: lettura; pull requests: scrittura |
+| Agente                   | Ruolo                                                                                  | Toolset                                                               | Token GitHub                                |
+| ------------------------ | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------- |
+| `concierge` (Nico Robin) | primo contatto, chiarisce con `grilling`, card a Shikamaru; non tocca il tracker       | kanban, clarify, skills, todo, memory                                 | nessuno                                     |
+| `strategist` (Shikamaru) | specifica, PR `spec`, issue nel tracker (anche quella iniziale), card a Bulma o Edward | file, terminal, kanban, clarify, skills, todo, memory                 | contents, pull requests, issues: scrittura  |
+| `designer` (Bulma)       | flows, mockup e note UI/UX in `docs/design/` e nella issue; niente codice              | file, terminal, vision, kanban, clarify, skills, todo, memory         | contents, pull requests, issues: scrittura  |
+| `builder` (Edward)       | implementazione con test, `npm run check`, PR con il riferimento alla issue            | file, terminal, code_execution, kanban, clarify, skills, todo, memory | contents, pull requests: scrittura          |
+| `reviewer` (L)           | review contro specifica e regole, commento sulla PR, card indietro o PR pronta         | terminal, kanban, clarify, skills, todo, memory                       | contents: lettura; pull requests: scrittura |
 
 ## Modelli
 
-Le rooms non parlano direttamente con i provider: passano dal gateway
-[`services/models/`](../services/models/compose.yaml), un LiteLLM con le
-chiavi vere. Ogni room ha una chiave virtuale con budget mensile e una
-rete sua verso il gateway. Gli agenti chiedono un nome logico:
+Per ora tutti gli agenti usano Claude con il tuo abbonamento, attraverso la
+CLI ufficiale di Claude Code e il plugin `claude-subscription-directsdk` di
+Nous Research. È una zona grigia dei termini di Anthropic, accettata. Non c'è
+riserva: finita la quota gli agenti aspettano il reset.
 
-| Nome     | Provider, in ordine                           | Per                        |
-| -------- | --------------------------------------------- | -------------------------- |
-| `strong` | Anthropic Opus, OpenRouter, poi `fast`        | specifiche, codice, review |
-| `fast`   | Anthropic Sonnet, OpenRouter, poi `free`      | lavoro di tutti i giorni   |
-| `free`   | OpenRouter `:free`, Groq, Gemini, poi `local` | digest, riassunti, cron    |
-| `local`  | Ollama sul mini PC (spento di default)        | lavori leggeri e privati   |
-
-Con un abbonamento ChatGPT (Plus o Pro) collegato da `dojo.sh chatgpt`,
-`strong` e `fast` passano prima da GPT (GPT-6.1 Sol e GPT-6 Luna) e poi
-dalle riserve qui sopra ([MODELS-005](specs/models.md)).
-
-Con un abbonamento Claude (Pro o Max) collegato da `dojo.sh claude <room>`,
-gli agenti scelti usano Claude come modello principale senza passare dal
-gateway: la CLI ufficiale di Claude Code, nell'immagine della room, fa le
-chiamate con il tuo login, guidata dal plugin `claude-subscription-directsdk`
-di Nous Research. Il modello del gateway resta la riserva di Hermes
-(`fallback_providers`), quindi finita la quota di Claude si torna su GPT e sui
-free. Solo in questo caso l'egress della room apre i domini di Anthropic, e il
-token sta nel volume della room ([MODELS-006](specs/models.md)).
+Il modello di ogni agente si sceglie da Hermes (`hermes model`, dashboard o
+WebUI) con i nomi veri del provider: niente nomi logici come `strong` o
+`fast`. Da lì si aggiungono altri provider quando serviranno. Il gateway
+LiteLLM esce dal dojo ([MODELS-006, MODELS-007](specs/models.md)).
 
 ## Canali
 
-- **Telegram** per iniziare: un bot per agente. WhatsApp è supportato da
-  Hermes ma vuole un secondo numero e un pairing da rifare: più avanti.
-- **Su richiesta**: messaggio al bot (`/new-feature ...` o testo libero).
+- **WebUI**: il canale principale, da casa e da fuori.
+- **Telegram**: chat completa con ogni agente, un bot per agente.
 - **A orario**: `hermes cron` del profile, consegna su Telegram.
-- **Su evento**: webhook GitHub verso il gateway. Serve una porta
-  raggiungibile, quindi Caddy più Cloudflare Tunnel come gli altri stack:
-  fase 2.
+- AionUi e i client ACP non fanno più parte del dojo.
 
-## Flussi
+## Lavoro
 
-Skill Hermes in [`flows/`](../flows/README.md), montate in sola lettura.
-Accanto ai flussi, [`skills/`](../skills/README.md) contiene skill di
-supporto, anch'esse in sola lettura: la Concierge usa `grilling` per
-chiarire una richiesta, a turni di domande, prima di creare la card;
-Shikamaru usa `grilling-with-docs` per rivedere quel piano contro i
-documenti del repo e chiudere i dubbi mentre scrive la specifica. Le
-domande a scelta multipla passano dal tool `clarify`, che su Telegram
-mostra le opzioni come bottoni.
-Ogni passaggio fra agenti è una card Kanban; le card PR hanno un contratto
-di completamento, quindi si chiudono solo con i check richiesti verdi.
+Il lavoro vive su due livelli ([tracker](specs/tracker.md),
+[flussi](specs/flows.md)):
 
-1. **Nuova feature**: strategist (specifica, issue) → designer (mockup,
-   se c'è interfaccia) → builder (PR) → reviewer (review) → merge tuo.
-2. **Nuovo progetto**: strategist prepara specifica e template; repo e
-   branch protection li crei tu; PR sul hub per README e `infra/<app>/`.
-3. **Personale**, **lavoro**, **ricorrenti** (digest di PR e issue, CI
-   rossa su `main`, dipendenze): con le rooms della fase 2.
+- il **tracker del progetto**, GitHub Issues o Jira scelto in
+  `projects/<nome>.yaml`: quello che vedi tu da cliente;
+- il **Kanban di Hermes**, la cucina interna: dice quale agente deve
+  partire. Ogni card porta la chiave della issue (`#42` o `DOJO-42`).
 
-## Fasi
+I flussi sono skill Hermes in [`flows/`](../flows/README.md), neutre
+rispetto al tracker: dicono «sposta la issue in Review», e le skill
+`tracker-github` e `tracker-jira` lo traducono in comandi. Accanto,
+[`skills/`](../skills/README.md) ha le skill di supporto: Nico Robin usa
+`grilling` per chiarire una richiesta, Shikamaru `grilling-with-docs` per
+rivederla contro i documenti del repo. Le domande a scelta multipla passano
+dal tool `clarify`, che su Telegram mostra le opzioni come bottoni.
 
-1. **Fase 0**: questo repo, specifiche, room `lab`, flows in bozza.
-2. **Fase 1**: `lab` sul mini PC con Telegram, prova di
-   `new-feature` su un repo vero; stack `infra/dojo-lab/` in ron1n.
-3. **Fase 2**: room `personale`, cron, webhook GitHub via Tunnel.
-4. **Fase 3**: room `lavoro`, server MCP per ron1n (stato degli stack,
-   log, API di ron1nOS) con filtri per server nelle rooms.
+1. **Nuova feature**: Nico Robin → Shikamaru (specifica, issue) → Bulma
+   (mockup, se c'è interfaccia) → Edward (PR) → L (review) → merge tuo.
+2. **Nuovo progetto**: Shikamaru prepara specifica, template e
+   `projects/<nome>.yaml`; repo e branch protection li crei tu.
+3. **Personale**, **lavoro**, **ricorrenti**: con le rooms future.
+
+Le notifiche del Kanban sono quelle di Hermes. I plugin `handoff` e
+`kanban-telegram` della prima versione escono; se le notifiche di serie non
+bastano si decide dopo la prova sul mini PC.
+
+## Fasi della riscrittura
+
+1. **Specifiche**: questo documento e `docs/specs/`.
+2. **Immagine in CI**: Dockerfile ripulito, pubblicazione su GHCR.
+3. **Room lab nuova**: compose con l'immagine GHCR, cartella montata,
+   approvazioni con comandi sicuri; via ACP, patch e plugin.
+4. **Tracker e flows**: `projects/`, skill `tracker-github` e
+   `tracker-jira`, flows riscritti.
+5. **Install e migrazione sul mini PC**: `install.sh`, `dojo.sh doctor` e
+   `import-memory`, WebUI su `dojo.ron1n.space` (PR in ron1n), pulizia del
+   PC Windows.
+
+Dopo: room personale, cron, webhook GitHub via Tunnel, room lavoro, server
+MCP per ron1n.
 
 ## Riferimenti
 
