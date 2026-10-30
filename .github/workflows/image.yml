@@ -10,6 +10,7 @@ on:
       - rooms/lab/**
       - flows/**
       - skills/**
+      - projects/**
       - .dockerignore
       - .github/workflows/image.yml
   push:
@@ -72,6 +73,10 @@ jobs:
           docker exec lab test -d /opt/data/claude
           docker exec lab claude --version
           docker exec lab gh --version
+          # Jira (TRACKER-002): server MCP nell'immagine, progetti e skill.
+          docker exec -e PYTHONPATH=/opt/mcp-atlassian lab /opt/hermes/.venv/bin/python -c "from mcp_atlassian import main"
+          docker exec lab test -f /opt/dojo/projects/ron1n.yaml
+          docker exec lab test -f /opt/dojo/skills/tracker-jira/SKILL.md
           # Il modello scelto da Hermes resta dopo un riavvio (MODELS-007).
           # Hermes può riscrivere il config togliendo le virgolette.
           conf=/opt/data/profiles/builder/config.yaml
