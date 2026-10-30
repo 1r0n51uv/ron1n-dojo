@@ -1,0 +1,7 @@
+# Contesto della build dell'immagine della lab (rooms/lab/Dockerfile): niente
+# segreti né file locali. I .env.example restano, il Dockerfile li toglie.
+.git
+node_modules
+**/.env
+**/*.env
+**/egress/00-claude.conf

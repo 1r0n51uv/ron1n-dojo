@@ -8,17 +8,11 @@ name: dojo-lab
 
 services:
   hermes:
+    # Stessa immagine che la CI pubblica su GHCR (ROOM-010); le versioni
+    # stanno nel Dockerfile.
     build:
-      context: .
-      args:
-        HERMES_VERSION: v0.22.5
-        # CLI ufficiale e provider dell'abbonamento Claude (MODELS-006): il
-        # plugin vuole Claude Code 2.1.293 o più recente.
-        CLAUDE_CODE_VERSION: 2.1.299
-        # NousResearch/hermes-official-plugins, claude-subscription-directsdk 0.3.3.
-        CLAUDE_PLUGIN_COMMIT: 1e326ddd28ae261821d7714d106fe114999a0bba
-        # nesquena/hermes-webui v0.52.544 (servizio webui, ROOM-009).
-        WEBUI_COMMIT: 687d80333870c3797d6858738621fca13d1bf27a
+      context: ../..
+      dockerfile: rooms/lab/Dockerfile
     image: dojo-lab:v0.22.5
     restart: unless-stopped
     command: ["gateway", "run"]
