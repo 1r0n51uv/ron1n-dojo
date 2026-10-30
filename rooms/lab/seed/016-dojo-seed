@@ -1,0 +1,8 @@
+#!/command/with-contenv sh
+# shellcheck shell=sh
+# Config e SOUL dell'immagine nei profiles (ROOM-012), a ogni avvio. Gira
+# dopo 01-hermes-setup (UID e permessi del volume già sistemati) e prima di
+# 02-reconcile-profiles, che così trova anche i profiles nuovi.
+set -e
+[ "$(id -u)" = 0 ] || exec /opt/dojo/bin/dojo-seed
+exec s6-setuidgid hermes /opt/dojo/bin/dojo-seed

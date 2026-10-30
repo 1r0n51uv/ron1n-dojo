@@ -1,10 +1,10 @@
 # ron1n-dojo
 
 Il dojo è il sistema di agenti di ron1n: agenti
-[Hermes](https://github.com/NousResearch/hermes-agent) in Docker, ognuno
-con un ruolo e permessi stretti, con cui si parla da Telegram. Lavorano su
-richiesta, a orario o su evento, e seguono flows fissi che ricalcano
-quello di ron1n: specifica → issue con label → PR con CI → merge → GHCR →
+[Hermes](https://github.com/NousResearch/hermes-agent) in Docker sul mini PC,
+ognuno con un ruolo e permessi stretti, con cui si parla dalla WebUI o da
+Telegram. Lavorano su richiesta o a orario e seguono flows fissi che
+ricalcano quello di ron1n: specifica → issue → PR con CI → merge → GHCR →
 Watchtower. Il merge resta sempre umano.
 
 Architettura e scelte in [`docs/architecture.md`](docs/architecture.md),
@@ -12,52 +12,40 @@ requisiti in [`docs/specs/`](docs/specs/README.md).
 
 ## Struttura
 
-| Cartella                               | Cosa contiene                                                                |
-| -------------------------------------- | ---------------------------------------------------------------------------- |
-| [`rooms/`](rooms/)                     | una room = un container Hermes con i suoi profiles, rete e proxy             |
-| [`rooms/lab/`](rooms/lab/)             | sviluppo: `concierge`, `strategist`, `designer`, `builder`, `reviewer`       |
-| [`services/models/`](services/models/) | gateway dei modelli LiteLLM: cloud, piani free, Ollama                       |
-| [`flows/`](flows/README.md)            | skill Hermes dei flows, montate in sola lettura nelle rooms                  |
-| [`skills/`](skills/README.md)          | skill Hermes di supporto (`grilling`, `grilling-with-docs`), in sola lettura |
-| [`scripts/`](scripts/)                 | `dojo.sh` (up, down, status, sync) e la validazione                          |
+| Cartella                      | Cosa contiene                                                              |
+| ----------------------------- | -------------------------------------------------------------------------- |
+| [`rooms/lab/`](rooms/lab/)    | la room: `concierge`, `strategist`, `designer`, `builder`, `reviewer`      |
+| [`flows/`](flows/README.md)   | skill Hermes dei flows, dentro l'immagine                                  |
+| [`skills/`](skills/README.md) | skill Hermes di supporto (`grilling`, `grilling-with-docs`)                |
+| [`scripts/`](scripts/)        | `install.sh`, `dojo.sh` (up, down, status, secret, claude, doctor), checks |
 
 ## Installazione
 
-Su una macchina con Docker (il mini PC, un portatile, WSL), un comando:
+Sul mini PC, con Docker, un comando:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/1r0n51uv/ron1n-dojo/main/scripts/install.sh | bash
 ```
 
-Clona il repo in `~/ron1n-dojo` (o `DOJO_DIR`), chiede le chiavi dei
-provider (ne basta uno, anche gratuito), il tuo user ID Telegram e, agente
-per agente, se attivarlo con il suo bot e token GitHub. Poi accende tutto.
-Si può rilanciare per attivare altri agenti; i `.env` esistenti restano.
+Clona il repo in `~/ron1n-dojo` (o `DOJO_DIR`), chiede il tuo user ID
+Telegram e, agente per agente, se attivarlo con il suo bot e token GitHub.
+Poi scarica l'immagine da GHCR, avvia la room, fa il login all'abbonamento
+Claude e controlla tutto con `scripts/dojo.sh doctor`. Si può rilanciare
+per attivare altri agenti; i `.env` esistenti restano.
 
-Dopo: `scripts/dojo.sh status`, `up`, `down`, `sync <room>`. Con un
-abbonamento Claude Pro o Max: `scripts/dojo.sh claude lab` (MODELS-006).
+Gli agenti lavorano in `~/dojo/work` (o `DOJO_WORK`), con i tuoi permessi.
+L'immagine si aggiorna da sola con Watchtower di ron1n; config e SOUL nuovi
+arrivano con lei, mentre il modello scelto da Hermes resta.
 
-La dashboard di Hermes della lab è su <http://127.0.0.1:9119> (solo dal
-tuo PC). Utente `dojo`, password in `rooms/lab/dashboard.env`.
-
-Per parlare con un agente da un client ACP come
-[AionUi](https://github.com/iOfficeAI/AionUi), aggiungi un agente custom
-con comando `docker` e argomenti
-`exec -i -u hermes dojo-lab-hermes-1 dojo-acp <agente>`, dove `<agente>` è
-`concierge`, `strategist`, `designer`, `builder` o `reviewer` (ROOM-008).
-Lavora in `/opt/data/work` del container, non nelle cartelle del PC.
-Per farlo riconoscere come Hermes, nell'agente Hermes di AionUi metti
-come launch path `scripts/hermes-acp.sh` (percorso completo) e la
-variabile `DOJO_AGENT` con il nome dell'agente. Con AionUi su Windows usa
-`scripts/hermes-acp.cmd`, copiato in una cartella di Windows (per esempio
-`C:\Users\<tu>\dojo\`): usa `docker` di Windows se c'è (Docker
-Desktop), altrimenti `wsl.exe -e docker` nella distro WSL di default.
-
-L'interfaccia web [hermes-webui](https://github.com/nesquena/hermes-webui)
-della lab è su <http://127.0.0.1:8787> (ROOM-009), password in
-`rooms/lab/webui.env`. Scegli l'agente dal selettore dei profili.
+- WebUI: <http://127.0.0.1:8787>, password in `rooms/lab/webui.env`; fuori
+  casa `https://dojo.ron1n.space` dietro Cloudflare Access. Scegli l'agente
+  dal selettore dei profili.
+- Dashboard di Hermes: <http://127.0.0.1:9119>, utente `dojo`, password in
+  `rooms/lab/dashboard.env`.
+- Telegram: un bot per agente.
 
 ## Sviluppo
 
 `npm run check` prima di consegnare: Prettier, markdownlint, shellcheck e
-validazione delle rooms. La CI fa lo stesso più actionlint.
+validazione delle rooms. La CI fa lo stesso più actionlint, e costruisce e
+prova l'immagine della lab.

@@ -2,19 +2,22 @@
 # agli altri agenti con card Kanban. Non scrive file, non ha shell né GitHub.
 # Prima di smistare chiarisce la richiesta con la skill grilling (skills/).
 model:
-  # Nome logico del gateway dei modelli (services/models/config.yaml).
-  provider: "custom"
-  base_url: "http://litellm:4000/v1"
-  key_env: LITELLM_API_KEY
-  default: "strong"
+  # Abbonamento Claude (MODELS-006). Si cambia da Hermes (`hermes model`,
+  # dashboard o WebUI) e l'aggiornamento dell'immagine non lo tocca
+  # (MODELS-007, ROOM-012).
+  provider: "claude-subscription-directsdk-experimental"
+  default: "sonnet"
   context_length: 200000
+
+# Una chiamata appesa senza output non tiene ferma una card per 30 minuti.
+providers:
+  claude-subscription-directsdk-experimental:
+    stale_timeout_seconds: 900
 
 platform_toolsets:
   telegram: [kanban, clarify, skills, todo, memory]
   cli: [kanban, clarify, skills, todo, memory]
-  # Client ACP sul PC, come AionUi (ROOM-008): stessi tool della CLI.
-  acp: [kanban, clarify, skills, todo, memory]
-  # Interfaccia web (hermes-webui, ROOM-009) via API del gateway.
+  # WebUI (ROOM-009) via API del gateway.
   api_server: [kanban, clarify, skills, todo, memory]
 
 skills:
@@ -40,7 +43,11 @@ approvals:
     - "git push * main"
     - "git push origin HEAD:main*"
 
-# Riepilogo su Telegram quando una card parte, finisce o si blocca
-# (rooms/lab/plugins/kanban-telegram).
+# Login della CLI di Claude nel volume della room (`dojo.sh claude`), niente
+# telemetria.
 plugins:
-  enabled: [kanban-telegram]
+  entries:
+    claude-subscription-directsdk-experimental:
+      settings:
+        claude_config_dir: /opt/data/claude
+        claude_code_telemetry: false

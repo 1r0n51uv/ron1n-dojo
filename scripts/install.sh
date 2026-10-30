@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
-# Installa il dojo con un comando, su qualsiasi macchina con Docker (il mini
-# PC, un portatile, WSL):
+# Installa il dojo con un comando sul mini PC (va anche su un'altra macchina
+# Linux con Docker, per le prove):
 #
 #   curl -fsSL https://raw.githubusercontent.com/1r0n51uv/ron1n-dojo/main/scripts/install.sh | bash
 #
 # Clona o aggiorna il repo, chiede i valori dei .env che mancano (invio =
-# default, password casuali), accende il gateway dei modelli, crea le chiavi
-# delle rooms, attiva gli agenti scelti e li avvia. Si può rilanciare: i .env
-# che esistono già non si toccano. Spec: docs/specs/rooms.md (ROOM-005).
+# vuoto, token nascosti), attiva gli agenti scelti, scarica l'immagine da
+# GHCR, avvia la room, fa il login Claude e lancia `dojo.sh doctor`. Si può
+# rilanciare: i .env che esistono già non si toccano. Spec:
+# docs/specs/rooms.md (ROOM-005).
 #
 # Variabili: DOJO_DIR (cartella, default ~/ron1n-dojo), DOJO_BRANCH (ramo da
-# installare, default main).
+# installare, default main), DOJO_WORK (cartella di lavoro degli agenti,
+# default ~/dojo/work).
 set -euo pipefail
 
 REPO=https://github.com/1r0n51uv/ron1n-dojo.git
@@ -67,9 +69,8 @@ write_env() {
     if [[ -z $fisso ]]; then
       help_text "$esempio" "$key"
       case $key in
-        *PASSWORD* | *MASTER_KEY*)
+        *PASSWORD*)
           val=$(rand)
-          [[ $key != *MASTER_KEY* ]] || val=sk-$val
           info "$key generata"
           ;;
         *KEY* | *TOKEN*)
@@ -122,65 +123,16 @@ repo() {
   fi
 }
 
-models() {
-  local base=$DIR/services/models
-  step "Gateway dei modelli"
+room() {
+  local base=$DIR/rooms/lab dir p attivi=0
+  step "Room lab"
   if [[ -f $base/.env ]]; then
     info "$base/.env c'è già"
   else
-    info "Basta un provider: Anthropic o OpenRouter per i modelli forti,"
-    info "OpenRouter, Groq o Gemini per quelli gratis."
     write_env "$base/.env.example" "$base/.env"
   fi
-  "$DIR/scripts/dojo.sh" up-models
-  info "attendo che LiteLLM sia pronto (al primo avvio prepara il database)"
-  local _
-  for _ in $(seq 1 60); do
-    if docker compose --project-directory "$base" -f "$base/compose.yaml" exec -T litellm \
-      python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:4000/health/liveliness')" \
-      >/dev/null 2>&1; then
-      info "LiteLLM pronto"
-      return
-    fi
-    sleep 5
-  done
-  die "LiteLLM non risponde dopo 5 minuti: scripts/dojo.sh status e docker compose logs in services/models"
-}
-
-# Abbonamento ChatGPT per strong e fast, se c'è: login con codice dispositivo.
-# Se il gateway lo usa già non chiede nulla.
-chatgpt() {
-  local f=$DIR/services/models/.env
-  [[ $(env_get "$f" LITELLM_CONFIG) != config.chatgpt.yaml ]] || return 0
-  step "Abbonamento ChatGPT"
-  info "Con ChatGPT Plus o Pro strong e fast usano GPT, senza API key;"
-  info "finita la quota si scende su OpenRouter e sui modelli gratis."
-  if ask_yes "Collegare un abbonamento ChatGPT adesso?" n; then
-    "$DIR/scripts/dojo.sh" chatgpt </dev/tty
-  else
-    info "più avanti: $DIR/scripts/dojo.sh chatgpt"
-  fi
-}
-
-room() {
-  local s=$1 base=$DIR/rooms/$1 api_key budget telegram dir p attivi=0
-  step "Stanza $s"
-  if [[ -f $base/.env ]]; then
-    info "$base/.env c'è già"
-  else
-    while :; do
-      ask "Budget mensile della room sul gateway, in dollari (maggiore di 0)" 20
-      budget=$REPLY
-      awk -v b="$budget" 'BEGIN { exit !(b ~ /^[0-9]+([.][0-9]+)?$/ && b + 0 > 0) }' && break
-      info "serve un numero maggiore di 0: con 0 ogni richiesta verrebbe rifiutata"
-    done
-    api_key=$("$DIR/scripts/dojo.sh" key "$s" "$budget" | sed -n 's/^LITELLM_API_KEY=//p')
-    [[ -n $api_key ]] || die "chiave della room non creata"
-    info "chiave virtuale creata"
-    write_env "$base/.env.example" "$base/.env" "LITELLM_API_KEY=$api_key"
-  fi
-  telegram=$(env_get "$base/.env" TELEGRAM_ALLOWED_USERS)
-  [[ -n $telegram ]] || info "TELEGRAM_ALLOWED_USERS è vuoto: gli agenti non risponderanno a nessuno"
+  [[ -n $(env_get "$base/.env" TELEGRAM_ALLOWED_USERS) ]] ||
+    info "TELEGRAM_ALLOWED_USERS è vuoto: gli agenti non risponderanno a nessuno"
 
   for dir in "$base"/profiles/*/; do
     p=$(basename "$dir")
@@ -198,11 +150,14 @@ room() {
       info "$p resta spento: rilancia l'installazione per attivarlo"
     fi
   done
-  if [[ $attivi -eq 0 ]]; then
-    info "nessun agente attivo in $s: salto l'avvio"
-    return
-  fi
-  "$DIR/scripts/dojo.sh" sync "$s"
+  [[ $attivi -gt 0 ]] || die "nessun agente attivo: rilancia e attivane almeno uno"
+
+  step "Avvio"
+  info "cartella di lavoro degli agenti: ${DOJO_WORK:-$HOME/dojo/work}"
+  "$DIR/scripts/dojo.sh" up
+  step "Abbonamento Claude"
+  info "Tutti gli agenti usano Claude con il tuo abbonamento (Pro o Max)."
+  "$DIR/scripts/dojo.sh" claude </dev/tty
 }
 
 # Tutto dentro main: con `curl | bash` lo script arriva da stdin, e un
@@ -213,17 +168,15 @@ main() {
   exec </dev/null
   check
   repo
-  models
-  chatgpt
-  local c
-  for c in "$DIR"/rooms/*/compose.yaml; do
-    room "$(basename "$(dirname "$c")")"
-  done
+  room
+
+  step "Controllo finale"
+  "$DIR/scripts/dojo.sh" doctor || info "sistema le righe NO qui sopra, poi $DIR/scripts/dojo.sh doctor"
 
   step "Fatto"
-  info "Stato: $DIR/scripts/dojo.sh status"
-  info "Segreti: i .env in $DIR/services/models e $DIR/rooms/*/ (permessi 600)"
-  info "Scrivi ai bot su Telegram: per esempio /new-feature <repo> <idea> a Shikamaru"
+  info "WebUI: http://127.0.0.1:8787, password in $DIR/rooms/lab/webui.env"
+  info "Segreti: i .env in $DIR/rooms/lab/ (permessi 600)"
+  info "Oppure scrivi ai bot su Telegram, per esempio a Nico Robin"
 }
 
 main "$@"

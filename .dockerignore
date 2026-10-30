@@ -4,4 +4,3 @@
 node_modules
 **/.env
 **/*.env
-**/egress/00-claude.conf

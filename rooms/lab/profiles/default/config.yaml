@@ -1,12 +1,17 @@
 # Profilo default della room: non parla con nessuno (niente bot), ospita il
 # gateway che serve tutti i profiles e il dispatcher del board Kanban.
 model:
-  # Nome logico del gateway dei modelli (services/models/config.yaml).
-  provider: "custom"
-  base_url: "http://litellm:4000/v1"
-  key_env: LITELLM_API_KEY
-  default: "fast"
+  # Abbonamento Claude (MODELS-006). Si cambia da Hermes (`hermes model`,
+  # dashboard o WebUI) e l'aggiornamento dell'immagine non lo tocca
+  # (MODELS-007, ROOM-012).
+  provider: "claude-subscription-directsdk-experimental"
+  default: "sonnet"
   context_length: 200000
+
+# Una chiamata appesa senza output non tiene ferma una card per 30 minuti.
+providers:
+  claude-subscription-directsdk-experimental:
+    stale_timeout_seconds: 900
 
 gateway:
   multiplex_profiles: true
@@ -16,9 +21,6 @@ kanban:
 
 platform_toolsets:
   cli: [kanban, clarify]
-  # Nessun client ACP usa il default (dojo-acp lo rifiuta), ma se ci arriva
-  # ha gli stessi tool della CLI, non il toolset hermes-acp (ROOM-008).
-  acp: [kanban, clarify]
   api_server: [kanban, clarify]
 
 approvals:
@@ -26,8 +28,11 @@ approvals:
   cron_mode: deny
   unattended_mode: deny
 
-# Riepilogo su Telegram quando una card parte, finisce o si blocca
-# (rooms/lab/plugins/kanban-telegram) e chat che passa all'agente che prende
-# la card (rooms/lab/plugins/handoff, solo qui: gira nel dispatcher).
+# Login della CLI di Claude nel volume della room (`dojo.sh claude`), niente
+# telemetria.
 plugins:
-  enabled: [kanban-telegram, handoff]
+  entries:
+    claude-subscription-directsdk-experimental:
+      settings:
+        claude_config_dir: /opt/data/claude
+        claude_code_telemetry: false
