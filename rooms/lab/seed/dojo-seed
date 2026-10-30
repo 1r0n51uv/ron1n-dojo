@@ -56,12 +56,15 @@ def scrivi(percorso: Path, testo: str) -> None:
 
 def semina(nome: str) -> None:
     dest = cartella(nome)
-    if nome != "default" and not (dest / "config.yaml").is_file():
+    nuovo = not (dest / "config.yaml").is_file()
+    if nome != "default" and nuovo:
         hermes = shutil.which("hermes") or "/opt/hermes/.venv/bin/hermes"
         subprocess.run([hermes, "profile", "create", nome, "--no-skills"], check=True)
     dest.mkdir(parents=True, exist_ok=True)
     testo = (SORGENTE / nome / "config.yaml").read_text(encoding="utf-8")
-    scrivi(dest / "config.yaml", unisci(testo, dest / "config.yaml"))
+    # Il config appena scritto da `profile create` ha il modello di serie di
+    # Hermes, non una scelta dell'utente: vince quello dell'immagine.
+    scrivi(dest / "config.yaml", testo if nuovo else unisci(testo, dest / "config.yaml"))
     shutil.copyfile(SORGENTE / nome / "SOUL.md", dest / "SOUL.md")
 
 
