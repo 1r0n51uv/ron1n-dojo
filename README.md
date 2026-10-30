@@ -36,6 +36,8 @@ Si può rilanciare per attivare altri agenti; i `.env` esistenti restano.
 
 Dopo: `scripts/dojo.sh status`, `up`, `down`, `sync <room>`. Con un
 abbonamento Claude Pro o Max: `scripts/dojo.sh claude lab` (MODELS-006).
+Per dare agli agenti e alla WebUI una cartella del PC in sola lettura, senza
+i `.env`: `scripts/dojo.sh folder lab <cartella>` (ROOM-010).
 
 La dashboard di Hermes della lab è su <http://127.0.0.1:9119> (solo dal
 tuo PC). Utente `dojo`, password in `rooms/lab/dashboard.env`.

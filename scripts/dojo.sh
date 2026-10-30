@@ -24,6 +24,10 @@
 #   scripts/dojo.sh key <room> [budget]
 #                                      crea la chiave virtuale della room sul
 #                                      gateway dei modelli (budget in dollari, 20)
+#   scripts/dojo.sh folder <room> <cartella...|off>
+#                                      cartelle del PC in sola lettura in
+#                                      /opt/pc/<nome>, senza i file .env;
+#                                      off le toglie
 #
 # Senza nomi, up e down includono il gateway dei modelli (services/models):
 # acceso per primo, spento per ultimo.
@@ -53,9 +57,12 @@ pick_rooms() {
 }
 
 compose() {
-  local room=$1
+  local room=$1 base="$radice/rooms/$1" files
   shift
-  docker compose --project-directory "$radice/rooms/$room" -f "$radice/rooms/$room/compose.yaml" "$@"
+  files=(-f "$base/compose.yaml")
+  # Cartelle del PC montate con `dojo.sh folder` (ROOM-010), non versionato.
+  [[ ! -f "$base/folders.yaml" ]] || files+=(-f "$base/folders.yaml")
+  docker compose --project-directory "$base" "${files[@]}" "$@"
 }
 
 models() {
@@ -440,6 +447,70 @@ sync_room() {
   echo "dashboard: http://127.0.0.1:${DASHBOARD_PORT:-9119} (utente e password in $base/dashboard.env)"
 }
 
+# Cartelle del PC nella room (ROOM-010), per esempio il repo del dojo da
+# aprire come spazio della WebUI. Ognuna va in sola lettura in
+# /opt/pc/<nome>, sia in hermes (dove girano i tool) sia in webui; i
+# file .env e *.env che ci sono adesso vengono coperti con /dev/null, così i
+# segreti non entrano nella room. folders.yaml (non versionato) è l'override
+# di compose che le monta; `off` lo toglie.
+folders() {
+  local room=$1 base="rooms/$1" dir nome dest f s i mounts='' env='' dests=()
+  shift
+  if [[ $1 == off ]]; then
+    [[ $# -eq 1 ]] || die "uso: dojo.sh folder <room> <cartella...|off>"
+    rm -f "$base/folders.yaml"
+    compose "$room" up -d
+    echo "nessuna cartella del PC in $room"
+    return
+  fi
+  for dir in "$@"; do
+    [[ -d $dir ]] || die "cartella inesistente: $dir"
+    dir=$(cd "$dir" && pwd -P)
+    # Virgolette, backslash e $ romperebbero lo YAML o l'interpolazione di
+    # compose; i due punti la sintassi dei volumi.
+    [[ $dir != *[\"\\\$:$'\n']* ]] || die "percorso con caratteri non ammessi: $dir"
+    nome=$(basename "$dir")
+    [[ $nome =~ ^[A-Za-z0-9._-]+$ ]] || die "nome di cartella non ammesso: $nome"
+    # Fuori dal volume /opt/data: `sync` fa chown -R lì dentro e su una
+    # cartella in sola lettura fallirebbe.
+    dest=/opt/pc/$nome
+    [[ " ${dests[*]} " != *" $dest "* ]] || die "due cartelle con lo stesso nome: $nome"
+    dests+=("$dest")
+    mounts+="      - \"$dir:$dest:ro\"\n"
+    # I file devono esistere già: sopra una cartella in sola lettura Docker
+    # non crea il punto di montaggio. Per quelli nuovi si rilancia il comando.
+    while IFS= read -r -d '' f; do
+      [[ $f != *[\"\\\$:$'\n']* ]] || die "percorso con caratteri non ammessi: $f"
+      mounts+="      - \"/dev/null:$dest/${f#"$dir"/}:ro\"\n"
+    done < <(find "$dir" -path "$dir/node_modules" -prune -o -path "$dir/.git" -prune -o \
+      -type f \( -name .env -o -name '*.env' \) -print0)
+  done
+  # I file sono dell'utente del PC, non di hermes: senza safe.directory git
+  # rifiuta i repo ("dubious ownership"). Variabili d'ambiente e non
+  # ~/.gitconfig, perché Hermes cambia HOME per ogni profile.
+  env+="      GIT_CONFIG_COUNT: \"${#dests[@]}\"\n"
+  for i in "${!dests[@]}"; do
+    env+="      GIT_CONFIG_KEY_$i: safe.directory\n"
+    env+="      GIT_CONFIG_VALUE_$i: \"${dests[$i]}\"\n"
+  done
+  {
+    echo "# Scritto da \`scripts/dojo.sh folder\` (ROOM-010): cartelle del PC in sola"
+    echo "# lettura, con i file .env coperti. Non versionato."
+    echo "services:"
+    for s in hermes webui; do
+      echo "  $s:"
+      echo "    environment:"
+      printf '%b' "$env"
+      echo "    volumes:"
+      printf '%b' "$mounts"
+    done
+  } >"$base/folders.yaml"
+  create_networks
+  compose "$room" up -d --build
+  for dest in "${dests[@]}"; do echo "ok   $dest (sola lettura)"; done
+  echo "WebUI: aggiungi la cartella fra gli spazi con il percorso qui sopra"
+}
+
 comando=${1:-}
 [[ $# -gt 0 ]] && shift
 case $comando in
@@ -495,8 +566,13 @@ case $comando in
     pick_rooms "$1" >/dev/null
     key "$@"
     ;;
+  folder)
+    [[ $# -ge 2 ]] || die "uso: dojo.sh folder <room> <cartella...|off>"
+    pick_rooms "$1" >/dev/null
+    folders "$@"
+    ;;
   *)
-    sed -n '2,29p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,33p' "$0" | sed 's/^# \{0,1\}//'
     [[ -z $comando ]] || exit 1
     ;;
 esac

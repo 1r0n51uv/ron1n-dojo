@@ -196,6 +196,31 @@ Accettazione:
 - [ ] Le approvazioni restano `manual` e `approvals.deny` vale anche qui;
       la modalità YOLO della WebUI non va accesa.
 
+### ROOM-010 · Cartelle del PC nella room
+
+Stato: proposto
+
+Una cartella del PC, per esempio il repo del dojo, si apre come spazio
+della WebUI e gli agenti la leggono, senza che la room possa cambiarla o
+vederne i segreti.
+
+Accettazione:
+
+- [ ] `dojo.sh folder <room> <cartella...>` monta ogni cartella in sola
+      lettura in `/opt/pc/<nome>`, nei servizi `hermes` e `webui`, con un
+      override di compose (`folders.yaml`) non versionato; `off` lo toglie.
+- [ ] I file `.env` e `*.env` presenti nella cartella (fuori da `.git` e
+      `node_modules`) sono coperti con `/dev/null`: nella room risultano
+      vuoti. Un `.env` creato dopo resta visibile finché non si rilancia il
+      comando.
+- [ ] Le cartelle stanno fuori dal volume `/opt/data`, così `sync` non le
+      tocca; `git` le accetta (`safe.directory`) anche se sono dell'utente
+      del PC.
+- [ ] Non c'è una modalità in scrittura: una cartella scrivibile del PC
+      lascerebbe agli agenti script, `compose.yaml` e hook di git che poi
+      girano sul PC, fuori dal container. Per cambiare un repo gli agenti
+      lavorano sulla loro copia in `/opt/data/work` e aprono una PR.
+
 ## Note
 
 - Le rooms `personale` e `lavoro` arrivano nella fase 2 e 3

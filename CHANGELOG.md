@@ -6,6 +6,7 @@ merge.
 
 ## 2026-10-30
 
+- `dojo.sh folder <room> <cartella...>`: cartelle del PC, come il repo del dojo, in sola lettura in `/opt/pc/<nome>` per gli agenti e gli spazi della WebUI, con i file `.env` coperti; `off` le toglie (ROOM-010) ([#PR](https://github.com/1r0n51uv/ron1n-dojo/pull/PR))
 - Lab: la build dell'immagine installa PyYAML per hermes-webui in `/opt/hermes-webui/deps`, fuori dalla venv di Hermes, che non lo ha (ROOM-009) ([#20](https://github.com/1r0n51uv/ron1n-dojo/pull/20))
 - Lab: interfaccia web hermes-webui su `127.0.0.1:8787`, con password in `webui.env`; le chat passano dall'API del gateway (runs API), i tool girano nel container degli agenti con i loro toolset (ROOM-009) ([#19](https://github.com/1r0n51uv/ron1n-dojo/pull/19))
 - `scripts/hermes-acp.cmd`: launch path di AionUi su Windows con i container in WSL (Docker Desktop o `wsl.exe -e docker`) (ROOM-008) ([#19](https://github.com/1r0n51uv/ron1n-dojo/pull/19))
