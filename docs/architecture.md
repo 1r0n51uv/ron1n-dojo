@@ -87,9 +87,11 @@ nome del ruolo in inglese.
   dati. Watchtower di ron1n (`infra/updates`) la aggiorna.
 - **Stato di Hermes** (memoria, sessioni, board, `.env` dei profile) nel
   volume `dojo-lab_data`.
-- **Cartella di lavoro**: `~/dojo/work` del mini PC montata in
+- **Cartella di lavoro**: `~/dojo/lab` del mini PC montata in
   `/opt/data/work`. Il container gira con il tuo UID, così i file sono tuoi.
-  Ogni agente lavora in `work/<agente>/` per convenzione.
+  Ogni agente lavora in `work/<agente>/` per convenzione. Ogni room ha la sua
+  cartella sul mini PC, `~/dojo/<room>`: le rooms future avranno
+  `~/dojo/personale` e così via, e non vedono quelle delle altre.
 - **WebUI fuori casa**: Cloudflare Tunnel e Caddy di ron1n, dietro
   Cloudflare Access, come gli altri siti.
 

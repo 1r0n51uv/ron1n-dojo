@@ -46,7 +46,7 @@ acceso() { [[ " ${accesi[*]} " == *" $1 "* ]]; }
 
 # Valori per compose.yaml. La cartella di lavoro accetta ~ (ROOM-011).
 lavoro=$(val DOJO_WORK)
-DOJO_WORK=${lavoro:-$HOME/dojo/work}
+DOJO_WORK=${lavoro:-$HOME/dojo/lab}
 DOJO_WORK=${DOJO_WORK/#\~/$HOME}
 DOJO_UID=$(id -u)
 DOJO_GID=$(id -g)

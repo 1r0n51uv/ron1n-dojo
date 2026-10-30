@@ -114,7 +114,7 @@ Accettazione:
       utente Telegram, cartella di lavoro e, per ogni agente, se accenderlo
       e i suoi token, con input nascosto. Password casuali per dashboard e
       WebUI.
-- [ ] Crea `~/dojo/work`, scarica l'immagine da GHCR, avvia la room e fa il
+- [ ] Crea `~/dojo/lab`, scarica l'immagine da GHCR, avvia la room e fa il
       login Claude.
 - [ ] Si può rilanciare: un `dojo.env` esistente non si tocca; da lì in poi
       si modifica il file e si lancia `dojo.sh up`.
@@ -208,7 +208,7 @@ senza poter uscire da lì.
 
 Accettazione:
 
-- [ ] `~/dojo/work` (`DOJO_WORK` la cambia) è montata in `/opt/data/work`,
+- [ ] `~/dojo/lab` (`DOJO_WORK` la cambia) è montata in `/opt/data/work`,
       la `cwd` del terminale di ogni agente.
 - [ ] Il container gira con UID e GID dell'utente del mini PC: i file
       creati dagli agenti sono suoi, senza `sudo`.

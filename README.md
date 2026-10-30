@@ -50,7 +50,7 @@ scripts/dojo.sh claude   # login Claude, una volta sola
 Il modello di ogni agente si sceglie da Hermes (WebUI, dashboard o
 `hermes model`), non dal file.
 
-Gli agenti lavorano in `~/dojo/work` (o `DOJO_WORK` in `dojo.env`), con i
+Gli agenti lavorano in `~/dojo/lab` (o `DOJO_WORK` in `dojo.env`), con i
 tuoi permessi.
 L'immagine si aggiorna da sola con Watchtower di ron1n; config e SOUL nuovi
 arrivano con lei, mentre il modello scelto da Hermes resta.
