@@ -19,6 +19,7 @@ platform_toolsets:
   # Nessun client ACP usa il default (dojo-acp lo rifiuta), ma se ci arriva
   # ha gli stessi tool della CLI, non il toolset hermes-acp (ROOM-008).
   acp: [kanban, clarify]
+  api_server: [kanban, clarify]
 
 approvals:
   mode: manual

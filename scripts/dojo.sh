@@ -345,14 +345,34 @@ create_dashboard() {
   echo "creato $f: utente dojo, password casuale lì dentro"
 }
 
+# Interfaccia web (hermes-webui, ROOM-009): password casuale e chiave dell'API
+# del gateway, in webui.env. La chiave va anche nel .env di ogni profile,
+# perché il gateway accetta su /p/<agente> solo la chiave di quel profile.
+create_webui() {
+  local f="rooms/$1/webui.env" chiave
+  [[ ! -f $f ]] || return 0
+  chiave=$(rand)
+  (
+    umask 077
+    {
+      echo "HERMES_WEBUI_PASSWORD=$(rand)"
+      echo "API_SERVER_KEY=$chiave"
+      echo "HERMES_WEBUI_GATEWAY_API_KEY=$chiave"
+    } >"$f"
+  )
+  echo "creato $f: password dell'interfaccia web lì dentro"
+}
+
 sync_room() {
-  local room=$1 base="rooms/$1" tmp p dest claude_agenti='' claude_modello=''
+  local room=$1 base="rooms/$1" tmp p dest api_key claude_agenti='' claude_modello=''
   [[ -f "$base/.env" ]] || die "manca $base/.env: copia $base/.env.example e compilalo"
   if [[ -f "$base/claude.env" ]]; then
     claude_agenti=$(sed -n 's/^CLAUDE_AGENTS=//p' "$base/claude.env")
     claude_modello=$(sed -n 's/^CLAUDE_MODEL=//p' "$base/claude.env")
   fi
   create_dashboard "$room"
+  create_webui "$room"
+  api_key=$(sed -n 's/^API_SERVER_KEY=//p' "$base/webui.env")
   tmp=$(mktemp -d)
   # Il trap RETURN resta attivo anche dopo: si toglie da solo, altrimenti
   # scatta al ritorno di chi ha chiamato sync_room, dove tmp non c'è.
@@ -377,6 +397,16 @@ sync_room() {
     # .env del profile = valori comuni della room + quelli dell'agente.
     cat "$base/.env" >"$tmp/$p.env"
     [[ ! -f "$dir/.env" ]] || cat "$dir/.env" >>"$tmp/$p.env"
+    # API del gateway per l'interfaccia web: la chiave e l'indirizzo del
+    # profile (/p/<agente> sul gateway che serve tutti i profiles).
+    {
+      echo "API_SERVER_KEY=$api_key"
+      if [[ $p == default ]]; then
+        echo "HERMES_WEBUI_GATEWAY_BASE_URL=http://hermes:8642"
+      else
+        echo "HERMES_WEBUI_GATEWAY_BASE_URL=http://hermes:8642/p/$p"
+      fi
+    } >>"$tmp/$p.env"
     compose "$room" cp "$dir/config.yaml" "hermes:$dest/config.yaml"
     # Abbonamento Claude acceso per questo agente: Claude davanti, il modello
     # del repo diventa la riserva (scripts/claude_profile.py).

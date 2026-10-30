@@ -6,6 +6,7 @@ merge.
 
 ## 2026-10-30
 
+- Lab: interfaccia web hermes-webui su `127.0.0.1:8787`, con password in `webui.env`; le chat passano dall'API del gateway (runs API), i tool girano nel container degli agenti con i loro toolset (ROOM-009) ([#19](https://github.com/1r0n51uv/ron1n-dojo/pull/19))
 - `scripts/hermes-acp.cmd`: launch path di AionUi su Windows con i container in WSL (Docker Desktop o `wsl.exe -e docker`) (ROOM-008) ([#19](https://github.com/1r0n51uv/ron1n-dojo/pull/19))
 - AionUi riconosce gli agenti del dojo come Hermes: `scripts/hermes-acp.sh` fa da launch path e passa a `dojo-acp` l'agente di `DOJO_AGENT`; altri comandi e flag sono rifiutati (ROOM-008) ([#18](https://github.com/1r0n51uv/ron1n-dojo/pull/18))
 - Lab: gli agenti si usano anche da un client ACP sul PC come AionUi, con `docker exec -i -u hermes dojo-lab-hermes-1 dojo-acp <agente>`; stessi tool della CLI, cartella di lavoro del container, niente server MCP del client (ROOM-008) ([#17](https://github.com/1r0n51uv/ron1n-dojo/pull/17))

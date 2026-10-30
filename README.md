@@ -53,6 +53,10 @@ variabile `DOJO_AGENT` con il nome dell'agente. Con AionUi su Windows usa
 `C:\Users\<tu>\dojo\`): usa `docker` di Windows se c'è (Docker
 Desktop), altrimenti `wsl.exe -e docker` nella distro WSL di default.
 
+L'interfaccia web [hermes-webui](https://github.com/nesquena/hermes-webui)
+della lab è su <http://127.0.0.1:8787> (ROOM-009), password in
+`rooms/lab/webui.env`. Scegli l'agente dal selettore dei profili.
+
 ## Sviluppo
 
 `npm run check` prima di consegnare: Prettier, markdownlint, shellcheck e

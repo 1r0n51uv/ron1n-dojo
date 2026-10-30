@@ -1,8 +1,9 @@
 # room lab: gli agenti di sviluppo (strategist, builder, reviewer) in un
 # solo container Hermes, un profile per agente. Il container è il confine di
 # sicurezza: niente docker.sock, egress solo verso i domini di
-# egress/allowlist.conf, nessuna porta pubblicata tranne la dashboard su
-# 127.0.0.1 (servizio dashboard). Spec: docs/specs/rooms.md.
+# egress/allowlist.conf, nessuna porta pubblicata tranne la dashboard e
+# l'interfaccia web su 127.0.0.1 (servizi dashboard e webui-port). Spec:
+# docs/specs/rooms.md.
 name: dojo-lab
 
 services:
@@ -16,6 +17,8 @@ services:
         CLAUDE_CODE_VERSION: 2.1.299
         # NousResearch/hermes-official-plugins, claude-subscription-directsdk 0.3.3.
         CLAUDE_PLUGIN_COMMIT: 1e326ddd28ae261821d7714d106fe114999a0bba
+        # nesquena/hermes-webui v0.52.544 (servizio webui, ROOM-009).
+        WEBUI_COMMIT: 687d80333870c3797d6858738621fca13d1bf27a
     image: dojo-lab:v0.22.5
     restart: unless-stopped
     command: ["gateway", "run"]
@@ -35,6 +38,11 @@ services:
       # Gli IP di riserva di Telegram scavalcano i nomi a dominio: il proxy
       # li rifiuterebbe.
       HERMES_TELEGRAM_DISABLE_FALLBACK_IPS: "true"
+      # API del gateway per l'interfaccia web (ROOM-009), solo sulla rete
+      # internal. La chiave sta nel .env di ogni profile (dojo.sh sync):
+      # senza chiave l'API non parte.
+      API_SERVER_ENABLED: "true"
+      API_SERVER_HOST: 0.0.0.0
     volumes:
       - data:/opt/data
       # Flussi in sola lettura: gli agenti li usano ma non li modificano.
@@ -72,6 +80,75 @@ services:
     read_only: true
     depends_on:
       - hermes
+
+  # Interfaccia web hermes-webui (ROOM-009). Le chat passano dall'API del
+  # gateway, quindi i tool degli agenti girano nel container hermes con i
+  # loro toolset; qui restano i pannelli (sessioni, memoria, Kanban) e il
+  # terminale della WebUI. Stessa immagine, stesso volume e stesse reti di
+  # hermes: niente internet se non da egress, nessuna porta pubblicata.
+  # Senza webui.env (lo crea dojo.sh sync) resta ferma.
+  webui:
+    image: dojo-lab:v0.22.5
+    pull_policy: never
+    restart: unless-stopped
+    user: "${HERMES_UID:-10000}:${HERMES_GID:-10000}"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        if [ -z "$$HERMES_WEBUI_PASSWORD" ]; then
+        echo "webui: manca webui.env, lancia dojo.sh sync"; exec sleep infinity; fi;
+        exec /opt/hermes/.venv/bin/python /opt/hermes-webui/server.py
+    env_file:
+      - path: ./webui.env
+        required: false
+    environment:
+      HOME: /opt/data
+      HERMES_HOME: /opt/data
+      HERMES_WEBUI_AGENT_DIR: /opt/hermes
+      HERMES_WEBUI_STATE_DIR: /opt/data/webui
+      HERMES_WEBUI_HOST: 0.0.0.0
+      HERMES_WEBUI_PORT: "8787"
+      # Le chat vanno al gateway (runs API, con le approvazioni), mai al
+      # runtime interno della WebUI.
+      HERMES_WEBUI_CHAT_BACKEND: gateway
+      HERMES_WEBUI_GATEWAY_BASE_URL: http://hermes:8642
+      HERMES_WEBUI_GATEWAY_USE_RUNS_API: "true"
+      HTTPS_PROXY: http://egress:3128
+      HTTP_PROXY: http://egress:3128
+      NO_PROXY: localhost,127.0.0.1,litellm,hermes
+    volumes:
+      - data:/opt/data
+      - ../../flows:/opt/dojo/flows:ro
+      - ../../skills:/opt/dojo/skills:ro
+    networks:
+      - internal
+      - models
+    mem_limit: 1g
+    cpus: 1
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    depends_on:
+      - hermes
+
+  # Come dashboard: inoltra 127.0.0.1:8787 all'interfaccia web.
+  webui-port:
+    image: alpine/socat:1.8.1.1
+    restart: unless-stopped
+    command: ["TCP-LISTEN:8787,fork,reuseaddr", "TCP:webui:8787"]
+    ports:
+      - "127.0.0.1:${WEBUI_PORT:-8787}:8787"
+    networks:
+      - internal
+      - dashboard
+    mem_limit: 64m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    read_only: true
+    depends_on:
+      - webui
 
   egress:
     image: ubuntu/squid:6.6-24.04_edge

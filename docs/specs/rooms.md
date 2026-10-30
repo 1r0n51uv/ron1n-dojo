@@ -17,8 +17,9 @@ non verso i domini previsti.
 
 Accettazione:
 
-- [ ] Nessun `docker.sock` montato; l'unica porta pubblicata sull'host è la
-      dashboard (ROOM-006), solo su `127.0.0.1`.
+- [ ] Nessun `docker.sock` montato; le sole porte pubblicate sull'host sono
+      la dashboard (ROOM-006) e l'interfaccia web (ROOM-009), solo su
+      `127.0.0.1`.
 - [ ] Il container Hermes sta solo sulla rete `internal` (senza rotta verso
       internet); esce dal proxy `egress`.
 - [ ] Una richiesta verso un dominio fuori da `egress/allowlist.conf`
@@ -170,9 +171,36 @@ Accettazione:
       `acp --check`, ogni altro comando o flag (per esempio `--yolo`) è
       rifiutato. Su Windows fa lo stesso `scripts/hermes-acp.cmd`.
 
+### ROOM-009 · Interfaccia web per gli agenti
+
+Stato: proposto
+
+Dal PC si parla con gli agenti della room da
+[hermes-webui](https://github.com/nesquena/hermes-webui), con gli stessi
+permessi che hanno su Telegram.
+
+Accettazione:
+
+- [ ] L'interfaccia è su `127.0.0.1:8787` (`WEBUI_PORT` la cambia), dietro
+      la password casuale che `dojo.sh sync` crea in `webui.env`; senza
+      `webui.env` il servizio resta fermo.
+- [ ] Il servizio `webui` usa l'immagine e il volume della room, sta solo
+      sulle reti `internal` e `models` ed esce da `egress`; non scarica
+      niente all'avvio.
+- [ ] Le chat passano dall'API del gateway (`HERMES_WEBUI_CHAT_BACKEND=gateway`
+      con la runs API): i tool girano nel container `hermes`, con
+      `platform_toolsets.api_server` uguale a `cli` in ogni profile.
+- [ ] Ogni agente risponde dal suo indirizzo `/p/<agente>` con la chiave
+      dell'API, che `dojo.sh sync` scrive nel `.env` di ogni profile; l'API
+      non è raggiungibile fuori dalla rete `internal`.
+- [ ] Le approvazioni restano `manual` e `approvals.deny` vale anche qui;
+      la modalità YOLO della WebUI non va accesa.
+
 ## Note
 
 - Le rooms `personale` e `lavoro` arrivano nella fase 2 e 3
   ([architettura](../architecture.md#fasi)).
+- La WebUI ha un suo terminale: gira nel container `webui`, con lo stesso
+  confinamento della room, non sul PC.
 - Da verificare al primo avvio: chiave del modello letta dal `.env` del
   profile, identità git dei commit degli agenti, HOME dei tool per `gh`.

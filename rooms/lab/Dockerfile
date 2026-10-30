@@ -50,3 +50,16 @@ RUN python3 /tmp/stable_birth.py /opt/hermes/hermes_cli/process_identity.py \
 # hermes dojo-lab-hermes-1 dojo-acp <agente>` avvia `hermes -p <agente> acp`
 # con la cartella di lavoro del container e senza server MCP del client.
 COPY --chmod=0755 acp/dojo-acp /usr/local/bin/dojo-acp
+
+# Interfaccia web hermes-webui (ROOM-009), nella stessa immagine: gira con il
+# Python e il codice di Hermes già qui (servono solo PyYAML e cryptography,
+# che Hermes ha), senza scaricare nulla all'avvio. Di root, in sola lettura
+# per l'utente hermes.
+ARG WEBUI_COMMIT
+RUN src=$(mktemp -d) \
+  && git -C "$src" init -q \
+  && git -C "$src" fetch -q --depth 1 https://github.com/nesquena/hermes-webui "${WEBUI_COMMIT}" \
+  && mkdir -p /opt/hermes-webui \
+  && git -C "$src" archive FETCH_HEAD | tar -x -C /opt/hermes-webui \
+  && rm -rf "$src" /opt/hermes-webui/tests /opt/hermes-webui/docs \
+  && /opt/hermes/.venv/bin/python -c "import yaml, cryptography"
