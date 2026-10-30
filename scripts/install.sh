@@ -96,9 +96,9 @@ config() {
   info "Il tuo user ID Telegram numerico (da @userinfobot): l'unico a cui gli agenti rispondono."
   ask TELEGRAM_ALLOWED_USERS
   set_value "$f.tmp" TELEGRAM_ALLOWED_USERS "$REPLY"
-  info "Cartella dove lavorano gli agenti, con i tuoi permessi."
-  ask DOJO_WORK "$(env_get "$esempio" DOJO_WORK)"
-  set_value "$f.tmp" DOJO_WORK "$REPLY"
+  info "Cartella che contiene quelle delle rooms (la lab lavora in <cartella>/lab), con i tuoi permessi."
+  ask DOJO_ROOMS_DIR "$(env_get "$esempio" DOJO_ROOMS_DIR)"
+  set_value "$f.tmp" DOJO_ROOMS_DIR "$REPLY"
   for p in concierge strategist designer builder reviewer; do
     P=${p^^}
     echo >/dev/tty

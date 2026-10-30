@@ -64,11 +64,11 @@ condividono nulla.
 Il dojo ha una room per area. Ogni agente è un personaggio di un anime, con il
 nome del ruolo in inglese.
 
-| Stanza                | Agenti (ruolo · personaggio)                                                                                                                                                 | Può                                                       | Non può                               |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------- |
-| `lab`, il laboratorio | Concierge · Nico Robin (One Piece), Strategist · Shikamaru (Naruto), Designer · Bulma (Dragon Ball), Builder · Edward Elric (Fullmetal Alchemist), Reviewer · L (Death Note) | shell nel container, git, `gh`, Jira; PR sui repo app     | merge, admin dei repo, server, docker |
-| personale (dopo)      | Companion · Chopper (One Piece)                                                                                                                                              | promemoria, note, brief del mattino; MCP di ron1nOS       | shell, GitHub, file                   |
-| lavoro (dopo)         | Captain · Levi (L'attacco dei giganti)                                                                                                                                       | come la room personale, con memoria e credenziali proprie | vedere le altre rooms                 |
+| Stanza                | Agenti (ruolo · personaggio)                                                                                                                                                 | Può                                                    | Non può                               |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------- |
+| `lab`, il laboratorio | Concierge · Nico Robin (One Piece), Strategist · Shikamaru (Naruto), Designer · Bulma (Dragon Ball), Builder · Edward Elric (Fullmetal Alchemist), Reviewer · L (Death Note) | shell nel container, git, `gh`, Jira; PR sui repo app  | merge, admin dei repo, server, docker |
+| `home` (dopo)         | Companion · Chopper (One Piece)                                                                                                                                              | promemoria, note, brief del mattino; MCP di ron1nOS    | shell, GitHub, file                   |
+| `work` (dopo)         | Captain · Levi (L'attacco dei giganti)                                                                                                                                       | come la room `home`, con memoria e credenziali proprie | vedere le altre rooms                 |
 
 ### Lab sul mini PC
 
@@ -87,9 +87,12 @@ nome del ruolo in inglese.
   dati. Watchtower di ron1n (`infra/updates`) la aggiorna.
 - **Stato di Hermes** (memoria, sessioni, board, `.env` dei profile) nel
   volume `dojo-lab_data`.
-- **Cartella di lavoro**: `~/dojo/work` del mini PC montata in
+- **Cartella di lavoro**: `~/dojo/lab` del mini PC montata in
   `/opt/data/work`. Il container gira con il tuo UID, così i file sono tuoi.
-  Ogni agente lavora in `work/<agente>/` per convenzione.
+  Ogni agente lavora in `/opt/data/work/<agente>/` per convenzione. Il nome
+  della room e quello della sua cartella coincidono (`~/dojo/<room>`): le
+  rooms future avranno `~/dojo/home` e `~/dojo/work`, e non vedono quelle
+  delle altre.
 - **WebUI fuori casa**: Cloudflare Tunnel e Caddy di ron1n, dietro
   Cloudflare Access, come gli altri siti.
 
@@ -147,7 +150,7 @@ dal tool `clarify`, che su Telegram mostra le opzioni come bottoni.
    (mockup, se c'è interfaccia) → Edward (PR) → L (review) → merge tuo.
 2. **Nuovo progetto**: Shikamaru prepara specifica, template e
    `projects/<nome>.yaml`; repo e branch protection li crei tu.
-3. **Personale**, **lavoro**, **ricorrenti**: con le rooms future.
+3. **Personale** (room `home`), **lavoro** (room `work`), **ricorrenti**: con le rooms future.
 
 Le notifiche del Kanban sono quelle di Hermes. I plugin `handoff` e
 `kanban-telegram` della prima versione escono; se le notifiche di serie non
@@ -165,7 +168,7 @@ bastano si decide dopo la prova sul mini PC.
    `migrate-memory.sh`, WebUI su `dojo.ron1n.space` (PR in ron1n), pulizia del
    PC Windows.
 
-Dopo: room personale, cron, webhook GitHub via Tunnel, room lavoro, server
+Dopo: room `home`, cron, webhook GitHub via Tunnel, room `work`, server
 MCP per ron1n.
 
 ## Riferimenti

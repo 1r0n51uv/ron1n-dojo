@@ -13,7 +13,8 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 radice=$PWD
-room=lab
+# La room da gestire: una cartella di rooms/. Oggi c'è solo la lab.
+room=${DOJO_ROOM:-lab}
 base=$radice/rooms/$room
 conf=$radice/dojo.env
 
@@ -21,6 +22,8 @@ die() {
   echo "dojo: $*" >&2
   exit 1
 }
+
+[[ -f $base/compose.yaml ]] || die "room sconosciuta: $room (DOJO_ROOM)"
 
 # dojo.env letto riga per riga, senza eseguirlo: CHIAVE=valore, il resto si
 # ignora.
@@ -44,9 +47,14 @@ for p in "${accesi[@]}"; do
 done
 acceso() { [[ " ${accesi[*]} " == *" $1 "* ]]; }
 
-# Valori per compose.yaml. La cartella di lavoro accetta ~ (ROOM-011).
-lavoro=$(val DOJO_WORK)
-DOJO_WORK=${lavoro:-$HOME/dojo/work}
+# Valori per compose.yaml. La cartella di lavoro è quella della room dentro
+# DOJO_ROOMS_DIR (~/dojo/<room>, ROOM-011); accetta ~. DOJO_WORK in dojo.env, se
+# c'è ancora, la sostituisce per intero.
+dojo_dir=$(val DOJO_ROOMS_DIR)
+dojo_dir=${dojo_dir:-$HOME/dojo}
+dojo_dir=${dojo_dir/#\~/$HOME}
+DOJO_WORK=$(val DOJO_WORK)
+DOJO_WORK=${DOJO_WORK:-$dojo_dir/$room}
 DOJO_WORK=${DOJO_WORK/#\~/$HOME}
 DOJO_UID=$(id -u)
 DOJO_GID=$(id -g)
@@ -166,6 +174,12 @@ wait_seed() {
 
 up() {
   [[ ${#accesi[@]} -gt 0 ]] || die "DOJO_AGENTS è vuoto in $conf: accendi almeno un agente"
+  # Prima della cartella nuova: chi aveva ~/dojo/work per la lab la ritrova
+  # in ~/dojo/lab con i suoi dati.
+  if [[ $room == lab && ! -e $DOJO_WORK && $DOJO_WORK == "$dojo_dir/lab" && -d $dojo_dir/work ]]; then
+    mv "$dojo_dir/work" "$DOJO_WORK"
+    echo "cartella di lavoro: $dojo_dir/work rinominata in $DOJO_WORK"
+  fi
   mkdir -p "$DOJO_WORK"
   # La rete di Caddy di ron1n: se ron1n non c'è (PC di prova) la si crea
   # vuota, e la WebUI resta solo su 127.0.0.1.

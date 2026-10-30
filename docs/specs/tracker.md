@@ -50,7 +50,7 @@ Accettazione:
 Stato: proposto
 
 Il Jira Cloud personale dell'utente è collegato alla room `lab`. Un Jira di
-lavoro non entra nella lab: arriverà con la room lavoro.
+lavoro non entra nella lab: arriverà con la room `work`.
 
 Accettazione:
 

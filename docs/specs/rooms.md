@@ -114,7 +114,7 @@ Accettazione:
       utente Telegram, cartella di lavoro e, per ogni agente, se accenderlo
       e i suoi token, con input nascosto. Password casuali per dashboard e
       WebUI.
-- [ ] Crea `~/dojo/work`, scarica l'immagine da GHCR, avvia la room e fa il
+- [ ] Crea `~/dojo/lab`, scarica l'immagine da GHCR, avvia la room e fa il
       login Claude.
 - [ ] Si può rilanciare: un `dojo.env` esistente non si tocca; da lì in poi
       si modifica il file e si lancia `dojo.sh up`.
@@ -208,12 +208,17 @@ senza poter uscire da lì.
 
 Accettazione:
 
-- [ ] `~/dojo/work` (`DOJO_WORK` la cambia) è montata in `/opt/data/work`,
+- [ ] `~/dojo/<room>` (`DOJO_ROOMS_DIR` cambia `~/dojo`) è montata in `/opt/data/work`,
       la `cwd` del terminale di ogni agente.
+- [ ] `dojo.sh up` rinomina `~/dojo/work` (la cartella di prima) in
+      `~/dojo/lab` se questa non esiste, senza perdere dati. Il volume di
+      Hermes si chiama `dojo-<room>_data`.
 - [ ] Il container gira con UID e GID dell'utente del mini PC: i file
       creati dagli agenti sono suoi, senza `sudo`.
-- [ ] Ogni agente lavora in `work/<agente>/` per convenzione (non è un
-      blocco).
+- [ ] Ogni agente lavora in `/opt/data/work/<agente>/` per convenzione (non
+      è un blocco).
+- [ ] Il nome di una room e quello della sua cartella coincidono:
+      `~/dojo/<room>`, cioè `lab` oggi e `home` e `work` per le rooms future.
 - [ ] Nessun'altra cartella del mini PC è montata in scrittura.
 
 ### ROOM-012 · Configurazione dall'immagine, modello da Hermes
@@ -251,7 +256,7 @@ Accettazione:
 
 ## Note
 
-- Le rooms `personale` e `lavoro` arrivano dopo
+- Le rooms `home` (personale) e `work` (lavoro) arrivano dopo
   ([architettura](../architecture.md#fasi-della-riscrittura)).
 - Se Hermes v0.22.5 non sa approvare da solo i comandi sicuri di ROOM-003,
   si passa alla versione che lo fa, provandola prima.
