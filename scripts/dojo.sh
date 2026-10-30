@@ -402,7 +402,10 @@ sync_room() {
     echo "ok   $room/$p"
   done
 
-  compose "$room" exec -T hermes chown -R hermes:hermes /opt/data
+  # Il gateway acceso scrive e rinomina file temporanei mentre chown -R li
+  # attraversa: se uno sparisce a metà, un secondo giro basta.
+  compose "$room" exec -T hermes chown -R hermes:hermes /opt/data 2>/dev/null ||
+    compose "$room" exec -T hermes chown -R hermes:hermes /opt/data
   compose "$room" exec -T hermes hermes gateway restart
   echo "dashboard: http://127.0.0.1:${DASHBOARD_PORT:-9119} (utente e password in $base/dashboard.env)"
 }
