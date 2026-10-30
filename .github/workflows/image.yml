@@ -1,4 +1,5 @@
-# Immagine della lab (ROOM-010). Sulle PR la costruisce senza pubblicarla;
+# Immagine della lab (ROOM-010). La costruisce e la prova (profiles creati
+# all'avvio, modello scelto da Hermes che resta dopo un riavvio, ROOM-012);
 # al push su main la pubblica su ghcr.io/1r0n51uv/dojo-lab con i tag main,
 # che il mini PC segue con Watchtower, e sha-<commit> per il rollback.
 name: image
@@ -46,8 +47,53 @@ jobs:
           context: .
           file: rooms/lab/Dockerfile
           platforms: linux/amd64
-          push: ${{ github.event_name == 'push' }}
+          load: true
+          tags: dojo-lab:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Prova dell'immagine
+        run: |
+          seeded() {
+            for _ in $(seq 1 60); do
+              [ "$(docker logs lab 2>&1 | grep -c 'dojo-seed\] ok strategist')" -ge "$1" ] && return 0
+              sleep 2
+            done
+            echo "dojo-seed non ha finito"; return 1
+          }
+          mkdir -p "$RUNNER_TEMP/work"
+          docker run -d --name lab -e HERMES_UID="$(id -u)" -e HERMES_GID="$(id -g)" \
+            -v "$RUNNER_TEMP/work:/opt/data/work" dojo-lab:test gateway run
+          seeded 1
+          for p in concierge strategist designer builder reviewer; do
+            docker exec lab test -f "/opt/data/profiles/$p/config.yaml"
+            docker exec lab test -f "/opt/data/profiles/$p/SOUL.md"
+          done
+          docker exec lab grep -q claude-subscription-directsdk /opt/data/profiles/builder/config.yaml
+          docker exec lab test -d /opt/data/claude
+          docker exec lab claude --version
+          docker exec lab gh --version
+          # Il modello scelto da Hermes resta dopo un riavvio (MODELS-007).
+          # Hermes può riscrivere il config togliendo le virgolette.
+          conf=/opt/data/profiles/builder/config.yaml
+          docker exec -u hermes lab sed -i -E 's/^(  default: )"?sonnet"?$/\1opus/' "$conf"
+          docker exec lab grep -En '^  default: "?opus"?$' "$conf"
+          docker restart lab
+          seeded 2
+          docker exec lab grep -n -A3 '^model:' "$conf"
+          docker exec lab grep -Eq '^  default: "?opus"?$' "$conf"
+          # I file nella cartella di lavoro sono dell'utente dell'host (ROOM-011).
+          docker exec -u hermes lab touch /opt/data/work/prova
+          ls -ln "$RUNNER_TEMP/work"
+          [ "$(stat -c %u "$RUNNER_TEMP/work/prova")" = "$(id -u)" ]
+      - if: failure()
+        run: docker logs lab
+      - if: github.event_name == 'push'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: rooms/lab/Dockerfile
+          platforms: linux/amd64
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
-          cache-to: type=gha,mode=max

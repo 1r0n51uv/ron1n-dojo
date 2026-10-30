@@ -1,5 +1,0 @@
-name: handoff
-version: "1.0"
-description: >-
-  Quando un agente prende una card Kanban, la conversazione passa alla sua
-  chat Telegram: è lui, non chi ha creato la card, a riprendere il discorso.

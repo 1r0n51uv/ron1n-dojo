@@ -1,0 +1,93 @@
+#!/opt/hermes/.venv/bin/python
+"""Porta config e SOUL dell'immagine nei profiles della room (ROOM-012).
+
+Gira a ogni avvio del container hermes, come utente hermes, prima del
+gateway (/etc/cont-init.d/016-dojo-seed). Per ogni profile in
+/opt/dojo/profiles:
+
+- se manca lo crea con `hermes profile create <nome> --no-skills`;
+- scrive config.yaml e SOUL.md dell'immagine, ma dal secondo avvio tiene
+  dal config.yaml che c'era le scelte fatte da Hermes: modello, provider,
+  riserve e comandi approvati per sempre (CHIAVI_TENUTE); il file
+  `.dojo-seed` nel profile segna il primo seed;
+- non tocca .env, memoria e sessioni.
+
+Un errore su un profile non ferma gli altri né l'avvio della room.
+"""
+
+import io
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+from ruamel.yaml import YAML
+
+SORGENTE = Path("/opt/dojo/profiles")
+HOME = Path("/opt/data")
+CHIAVI_TENUTE = ("model", "providers", "fallback_providers", "custom_providers", "command_allowlist")
+
+yaml = YAML()
+yaml.preserve_quotes = True
+
+
+def cartella(nome: str) -> Path:
+    return HOME if nome == "default" else HOME / "profiles" / nome
+
+
+def unisci(nuovo_testo: str, vecchio: Path) -> str:
+    """Il config dell'immagine con le CHIAVI_TENUTE del config che c'era."""
+    if not vecchio.is_file():
+        return nuovo_testo
+    prima = yaml.load(vecchio.read_text(encoding="utf-8")) or {}
+    nuovo = yaml.load(nuovo_testo)
+    for chiave in CHIAVI_TENUTE:
+        if chiave in prima:
+            nuovo[chiave] = prima[chiave]
+    out = io.StringIO()
+    yaml.dump(nuovo, out)
+    return out.getvalue()
+
+
+def scrivi(percorso: Path, testo: str) -> None:
+    tmp = percorso.with_name(percorso.name + ".dojo-seed")
+    tmp.write_text(testo, encoding="utf-8")
+    tmp.replace(percorso)
+
+
+def semina(nome: str) -> None:
+    dest = cartella(nome)
+    if nome != "default" and not (dest / "config.yaml").is_file():
+        hermes = shutil.which("hermes") or "/opt/hermes/.venv/bin/hermes"
+        subprocess.run([hermes, "profile", "create", nome, "--no-skills"], check=True)
+    dest.mkdir(parents=True, exist_ok=True)
+    testo = (SORGENTE / nome / "config.yaml").read_text(encoding="utf-8")
+    # Prima del primo seed il config è quello di serie di Hermes (scritto da
+    # `profile create` o dal primo avvio), non una scelta dell'utente: vince
+    # quello dell'immagine. Dopo, le CHIAVI_TENUTE restano.
+    segno = dest / ".dojo-seed"
+    scrivi(dest / "config.yaml", unisci(testo, dest / "config.yaml") if segno.exists() else testo)
+    segno.touch()
+    shutil.copyfile(SORGENTE / nome / "SOUL.md", dest / "SOUL.md")
+
+
+def main() -> int:
+    # Login della CLI di Claude (MODELS-006): solo l'utente hermes lo legge.
+    (HOME / "claude").mkdir(mode=0o700, exist_ok=True)
+    errori = 0
+    # Prima il default: è la radice di HERMES_HOME, dove stanno gli altri.
+    for p in sorted(SORGENTE.iterdir(), key=lambda p: p.name != "default"):
+        if not p.is_dir():
+            continue
+        try:
+            semina(p.name)
+            print(f"[dojo-seed] ok {p.name}")
+        except Exception as e:  # noqa: BLE001 - un profile rotto non ferma gli altri
+            errori += 1
+            print(f"[dojo-seed] ERRORE {p.name}: {e}", file=sys.stderr)
+    return 0 if errori == 0 else 1
+
+
+if __name__ == "__main__":
+    # L'avvio della room va avanti comunque: gli errori restano nei log.
+    main()

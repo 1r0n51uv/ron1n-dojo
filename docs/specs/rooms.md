@@ -167,7 +167,9 @@ Accettazione:
       un inoltro TCP (`webui-proxy`) sulle reti `internal` e `proxy`.
 - [ ] Le chat passano dall'API del gateway (runs API): i tool girano nel
       container `hermes` con `platform_toolsets.api_server` del profile.
-- [ ] Il terminale della WebUI è spento; la modalità YOLO non va accesa.
+- [ ] La modalità YOLO non va accesa. Il terminale della WebUI resta:
+      hermes-webui non ha un interruttore per spegnerlo; gira nel container
+      `webui`, confinato come la room, dietro password e Cloudflare Access.
 - [ ] Ogni agente risponde dal suo indirizzo `/p/<agente>`; l'API del
       gateway non è raggiungibile fuori dalla rete `internal`.
 

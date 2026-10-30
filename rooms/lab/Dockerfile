@@ -51,11 +51,6 @@ RUN python3 /tmp/stable_birth.py /opt/hermes/hermes_cli/process_identity.py \
   && /opt/hermes/.venv/bin/python -m py_compile /opt/hermes/hermes_cli/process_identity.py \
   && rm /tmp/stable_birth.py
 
-# Ponte ACP per i client sul PC come AionUi (ROOM-008): `docker exec -i -u
-# hermes dojo-lab-hermes-1 dojo-acp <agente>` avvia `hermes -p <agente> acp`
-# con la cartella di lavoro del container e senza server MCP del client.
-COPY --chmod=0755 rooms/lab/acp/dojo-acp /usr/local/bin/dojo-acp
-
 # Interfaccia web hermes-webui (ROOM-009), nella stessa immagine: gira con il
 # Python e il codice di Hermes già qui, senza scaricare nulla all'avvio. Le
 # serve in più solo PyYAML, che va in /opt/hermes-webui/deps (PYTHONPATH del
@@ -88,3 +83,5 @@ RUN find /opt/dojo/profiles -name '.env*' -delete \
   && for p in /opt/dojo/profiles/*/; do \
        test -f "${p}config.yaml" && test -f "${p}SOUL.md"; \
      done
+COPY --chmod=0755 rooms/lab/seed/dojo-seed /opt/dojo/bin/dojo-seed
+COPY --chmod=0755 rooms/lab/seed/016-dojo-seed /etc/cont-init.d/016-dojo-seed

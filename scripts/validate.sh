@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
-# Valida rooms e servizi: `docker compose config` su ogni compose.yaml (i
-# servizi con i valori di .env.example) e, per ogni profile, la presenza di
-# config.yaml, SOUL.md e .env.example; ogni skill di flows/ e skills/ ha il
-# frontmatter. Non serve il demone Docker.
+# Valida le rooms: `docker compose config` su ogni compose.yaml e, per ogni
+# profile, la presenza di config.yaml, SOUL.md e .env.example; ogni skill di
+# flows/ e skills/ ha il frontmatter. Non serve il demone Docker.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 status=0
+# La cartella di lavoro la imposta dojo.sh; qui basta un valore qualsiasi.
+export DOJO_WORK=${DOJO_WORK:-/tmp/dojo-work}
 
 for compose in rooms/*/compose.yaml; do
   dir=$(dirname "$compose")
@@ -26,32 +27,6 @@ for compose in rooms/*/compose.yaml; do
     done
   done
 done
-
-tmp=$(mktemp -d)
-trap 'rm -rf "$tmp"' EXIT
-for compose in services/*/compose.yaml; do
-  dir=$(dirname "$compose")
-  work="$tmp/$(basename "$dir")"
-  cp -r "$dir" "$work"
-  # env_file: .env non è versionato: al suo posto .env.example.
-  cp "$work/.env.example" "$work/.env"
-  if docker compose --project-directory "$work" -f "$work/compose.yaml" --env-file "$work/.env" config --quiet; then
-    echo "ok   $compose"
-  else
-    echo "FAIL $compose"
-    status=1
-  fi
-done
-
-# config.chatgpt.yaml cambia solo il primo modello di strong e fast: dai
-# piani free in giù è identico a config.yaml.
-m=services/models
-if ! diff <(sed -n '/# Piani free/,$p' $m/config.yaml) <(sed -n '/# Piani free/,$p' $m/config.chatgpt.yaml) >/dev/null; then
-  echo "FAIL $m/config.chatgpt.yaml diverso da config.yaml dai piani free in giù"
-  status=1
-else
-  echo "ok   $m/config.chatgpt.yaml"
-fi
 
 for skill in flows/*/ skills/*/; do
   if ! head -1 "${skill}SKILL.md" 2>/dev/null | grep -qx -- '---'; then

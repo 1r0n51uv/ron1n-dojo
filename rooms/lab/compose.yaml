@@ -1,52 +1,51 @@
-# room lab: gli agenti di sviluppo (strategist, builder, reviewer) in un
-# solo container Hermes, un profile per agente. Il container è il confine di
-# sicurezza: niente docker.sock, egress solo verso i domini di
-# egress/allowlist.conf, nessuna porta pubblicata tranne la dashboard e
-# l'interfaccia web su 127.0.0.1 (servizi dashboard e webui-port). Spec:
-# docs/specs/rooms.md.
+# room lab: i cinque agenti di sviluppo in un solo container Hermes, un
+# profile per agente. Il container è il confine di sicurezza: niente
+# docker.sock, egress solo verso i domini di egress/allowlist.conf, nessuna
+# porta pubblicata tranne dashboard e WebUI su 127.0.0.1. L'immagine arriva
+# da GHCR (ROOM-010) e Watchtower la aggiorna. Si avvia con scripts/dojo.sh,
+# che imposta DOJO_UID, DOJO_GID e DOJO_WORK. Spec: docs/specs/rooms.md.
 name: dojo-lab
+
+x-image: &image
+  image: ghcr.io/1r0n51uv/dojo-lab:${DOJO_TAG:-main}
+  labels:
+    com.centurylinklabs.watchtower.enable: "true"
 
 services:
   hermes:
-    # Stessa immagine che la CI pubblica su GHCR (ROOM-010); le versioni
-    # stanno nel Dockerfile.
-    build:
-      context: ../..
-      dockerfile: rooms/lab/Dockerfile
-    image: dojo-lab:v0.22.5
+    <<: *image
     restart: unless-stopped
     command: ["gateway", "run"]
     # Dashboard di Hermes: si accende solo se esiste dashboard.env, che dojo.sh
-    # sync crea con utente e password casuali. Senza credenziali Hermes non
-    # la avvia (nessun accesso senza autenticazione).
+    # crea con utente e password casuali (ROOM-006).
     env_file:
       - path: ./dashboard.env
         required: false
     environment:
-      HERMES_UID: ${HERMES_UID:-10000}
-      HERMES_GID: ${HERMES_GID:-10000}
+      # File degli agenti di proprietà dell'utente del mini PC (ROOM-011).
+      HERMES_UID: ${DOJO_UID:-1000}
+      HERMES_GID: ${DOJO_GID:-1000}
       # Tutto il traffico esce dal proxy con l'allowlist.
       HTTPS_PROXY: http://egress:3128
       HTTP_PROXY: http://egress:3128
-      NO_PROXY: localhost,127.0.0.1,litellm
+      NO_PROXY: localhost,127.0.0.1
       # Gli IP di riserva di Telegram scavalcano i nomi a dominio: il proxy
       # li rifiuterebbe.
       HERMES_TELEGRAM_DISABLE_FALLBACK_IPS: "true"
-      # API del gateway per l'interfaccia web (ROOM-009), solo sulla rete
-      # internal. La chiave sta nel .env di ogni profile (dojo.sh sync):
-      # senza chiave l'API non parte.
+      # API del gateway per la WebUI (ROOM-009), solo sulla rete internal. La
+      # chiave sta nel .env di ogni profile: senza chiave l'API non parte.
       API_SERVER_ENABLED: "true"
       API_SERVER_HOST: 0.0.0.0
+      # CLI di Claude dell'abbonamento (MODELS-006): niente aggiornamenti
+      # automatici né traffico non essenziale.
+      DISABLE_AUTOUPDATER: "1"
+      CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1"
     volumes:
       - data:/opt/data
-      # Flussi in sola lettura: gli agenti li usano ma non li modificano.
-      - ../../flows:/opt/dojo/flows:ro
-      # Skill di supporto (per esempio grilling), anche queste in sola lettura.
-      - ../../skills:/opt/dojo/skills:ro
+      # Cartella di lavoro degli agenti, sul mini PC (ROOM-011).
+      - ${DOJO_WORK:?imposta DOJO_WORK o usa scripts/dojo.sh}:/opt/data/work
     networks:
       - internal
-      # Solo verso il gateway dei modelli (services/models).
-      - models
     mem_limit: 3g
     cpus: 2
     pids_limit: 512
@@ -55,9 +54,9 @@ services:
     depends_on:
       - egress
 
-  # Unico ingresso dall'host: inoltra 127.0.0.1:9119 alla dashboard di Hermes,
-  # che sta su una rete senza internet e dove l'host non arriva. Solo TCP, non
-  # vede il contenuto. Da un'altra macchina: tunnel SSH verso la porta.
+  # Unico ingresso dall'host alla dashboard di Hermes: inoltra
+  # 127.0.0.1:9119 a hermes, che sta su una rete senza internet. Solo TCP.
+  # Da un'altra macchina: tunnel SSH.
   dashboard:
     image: alpine/socat:1.8.1.1
     restart: unless-stopped
@@ -75,22 +74,20 @@ services:
     depends_on:
       - hermes
 
-  # Interfaccia web hermes-webui (ROOM-009). Le chat passano dall'API del
-  # gateway, quindi i tool degli agenti girano nel container hermes con i
-  # loro toolset; qui restano i pannelli (sessioni, memoria, Kanban) e il
-  # terminale della WebUI. Stessa immagine, stesso volume e stesse reti di
-  # hermes: niente internet se non da egress, nessuna porta pubblicata.
-  # Senza webui.env (lo crea dojo.sh sync) resta ferma.
+  # WebUI hermes-webui (ROOM-009). Le chat passano dall'API del gateway,
+  # quindi i tool degli agenti girano nel container hermes con i loro
+  # toolset; qui restano i pannelli (sessioni, memoria, Kanban). Stessa
+  # immagine e stesso volume di hermes, solo rete internal. Senza webui.env
+  # (lo crea dojo.sh) resta ferma.
   webui:
-    image: dojo-lab:v0.22.5
-    pull_policy: never
+    <<: *image
     restart: unless-stopped
-    user: "${HERMES_UID:-10000}:${HERMES_GID:-10000}"
+    user: "${DOJO_UID:-1000}:${DOJO_GID:-1000}"
     entrypoint: ["/bin/sh", "-c"]
     command:
       - >-
         if [ -z "$$HERMES_WEBUI_PASSWORD" ]; then
-        echo "webui: manca webui.env, lancia dojo.sh sync"; exec sleep infinity; fi;
+        echo "webui: manca webui.env, lancia dojo.sh up"; exec sleep infinity; fi;
         exec /opt/hermes/.venv/bin/python /opt/hermes-webui/server.py
     env_file:
       - path: ./webui.env
@@ -104,6 +101,9 @@ services:
       HERMES_WEBUI_STATE_DIR: /opt/data/webui
       HERMES_WEBUI_HOST: 0.0.0.0
       HERMES_WEBUI_PORT: "8787"
+      # Da fuori casa si arriva da Cloudflare e Caddy in HTTPS: il cookie
+      # diventa Secure quando Caddy lo dice.
+      HERMES_WEBUI_TRUST_FORWARDED_PROTO: "1"
       # Le chat vanno al gateway (runs API, con le approvazioni), mai al
       # runtime interno della WebUI.
       HERMES_WEBUI_CHAT_BACKEND: gateway
@@ -111,14 +111,11 @@ services:
       HERMES_WEBUI_GATEWAY_USE_RUNS_API: "true"
       HTTPS_PROXY: http://egress:3128
       HTTP_PROXY: http://egress:3128
-      NO_PROXY: localhost,127.0.0.1,litellm,hermes
+      NO_PROXY: localhost,127.0.0.1,hermes
     volumes:
       - data:/opt/data
-      - ../../flows:/opt/dojo/flows:ro
-      - ../../skills:/opt/dojo/skills:ro
     networks:
       - internal
-      - models
     mem_limit: 1g
     cpus: 1
     pids_limit: 256
@@ -128,16 +125,20 @@ services:
     depends_on:
       - hermes
 
-  # Come dashboard: inoltra 127.0.0.1:8787 all'interfaccia web.
-  webui-port:
+  # Ingresso della WebUI: 127.0.0.1:8787 in casa e `dojo-webui:8787` sulla
+  # rete proxy di ron1n, dove Caddy la pubblica su dojo.ron1n.space dietro
+  # Cloudflare Access. Solo TCP, non vede il contenuto.
+  webui-proxy:
     image: alpine/socat:1.8.1.1
     restart: unless-stopped
     command: ["TCP-LISTEN:8787,fork,reuseaddr", "TCP:webui:8787"]
     ports:
       - "127.0.0.1:${WEBUI_PORT:-8787}:8787"
     networks:
-      - internal
-      - dashboard
+      internal: {}
+      dashboard: {}
+      proxy:
+        aliases: [dojo-webui]
     mem_limit: 64m
     security_opt:
       - no-new-privileges:true
@@ -150,8 +151,6 @@ services:
     image: ubuntu/squid:6.6-24.04_edge
     restart: unless-stopped
     volumes:
-      # allowlist.conf più, se l'abbonamento Claude è acceso, 00-claude.conf
-      # (lo scrive `dojo.sh claude`, non è versionato).
       - ./egress:/etc/squid/conf.d:ro
     networks:
       - internal
@@ -166,8 +165,9 @@ networks:
   internal:
     internal: true
   external: {}
-  # Solo per pubblicare la porta della dashboard su 127.0.0.1.
+  # Solo per pubblicare dashboard e WebUI su 127.0.0.1.
   dashboard: {}
-  models:
-    name: dojo-lab-models
+  # Rete di Caddy (stack proxy di ron1n); dojo.sh la crea se manca.
+  proxy:
+    name: proxy
     external: true

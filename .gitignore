@@ -5,5 +5,3 @@
 node_modules
 __pycache__/
 
-# Domini di Claude nell'egress, scritti da `dojo.sh claude`.
-rooms/*/egress/00-claude.conf
