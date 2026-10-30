@@ -57,7 +57,13 @@ Per togliere il dojo dal PC, anche le versioni vecchie: `scripts/cleanup.sh`
 (chiede prima se fare un backup, poi conferma ogni gruppo; ROOM-014).
 
 Il modello di ogni agente si sceglie da Hermes (WebUI, dashboard o
-`hermes model`), non dal file.
+`hermes model`), non dal file. Si parte da Claude; per usare anche GPT con
+l'abbonamento ChatGPT (Plus o Pro) fai il login una volta dalla dashboard:
+Keys › **ChatGPT or Codex Subscription**, apri il link nel browser di
+Windows, accedi a ChatGPT e inserisci il codice. Il login vale per tutti gli
+agenti; poi scegli un modello GPT per l'agente che vuoi dalla WebUI o dalla
+dashboard. In alternativa, dal terminale in `rooms/lab`:
+`docker compose exec -u hermes hermes hermes auth add openai-codex`.
 
 Gli agenti lavorano in `~/dojo/lab` (la cartella `~/dojo` è `DOJO_ROOMS_DIR` in
 `dojo.env`; ogni room ha la sua, con il suo nome), con i
