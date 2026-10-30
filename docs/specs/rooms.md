@@ -117,6 +117,11 @@ Accettazione:
       WebUI.
 - [ ] Crea `~/dojo/lab`, scarica l'immagine da GHCR, avvia la room e fa il
       login Claude.
+- [ ] Se manca `dojo.env` e trova un backup di `cleanup.sh`
+      (`configurazione.tar.gz` nella cartella da cui lanci, in una
+      `dojo-backup-*` lì dentro o nella home), chiede se importare
+      `dojo.env` e le password di WebUI e dashboard, e in quel caso non rifà
+      le domande.
 - [ ] Si può rilanciare: un `dojo.env` esistente non si tocca; da lì in poi
       si modifica il file e si lancia `dojo.sh up`.
 - [ ] Se mancano git, Docker o compose, o Docker non risponde, si ferma
