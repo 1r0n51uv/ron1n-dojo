@@ -53,6 +53,9 @@ un progetto Jira, `dojo.env` ha anche `JIRA_URL`, `JIRA_USERNAME` e un token
 per agente (commentati in `dojo.env.example`) e `scripts/dojo.sh up` apre
 l'egress verso Atlassian.
 
+Per togliere il dojo dal PC, anche le versioni vecchie: `scripts/cleanup.sh`
+(chiede prima se fare un backup, poi conferma ogni gruppo; ROOM-014).
+
 Il modello di ogni agente si sceglie da Hermes (WebUI, dashboard o
 `hermes model`), non dal file.
 
