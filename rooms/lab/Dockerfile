@@ -15,9 +15,17 @@ RUN apt-get -o Acquire::Retries=3 update \
 # fa login e chiamate; il plugin claude-subscription-directsdk di Nous
 # Research la guida come provider. Il plugin sta fra quelli inclusi in
 # Hermes (/opt/hermes, di root): gli agenti lo usano ma non lo cambiano.
-RUN npm install -g --prefix /opt/claude-code --no-audit --no-fund \
+# Installazione locale in /opt/claude-code, non globale: il prefix globale di
+# npm nell'immagine di Hermes è gestito dal suo package manager. Lo script
+# postinstall e la dipendenza opzionale della piattaforma portano il binario
+# vero: si chiedono esplicitamente, anche se la config di npm li spegnesse.
+RUN node --version && npm --version \
+  && mkdir -p /opt/claude-code \
+  && npm install --prefix /opt/claude-code --no-audit --no-fund \
+    --ignore-scripts=false --include=optional --foreground-scripts \
     "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" \
-  && ln -s /opt/claude-code/bin/claude /usr/local/bin/claude \
+  && node /opt/claude-code/node_modules/@anthropic-ai/claude-code/install.cjs \
+  && ln -sf /opt/claude-code/node_modules/.bin/claude /usr/local/bin/claude \
   && npm cache clean --force \
   && claude --version
 RUN src=$(mktemp -d) \
