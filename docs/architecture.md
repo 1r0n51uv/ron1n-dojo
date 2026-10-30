@@ -162,8 +162,8 @@ bastano si decide dopo la prova sul mini PC.
 2. **Immagine in CI**: Dockerfile ripulito, pubblicazione su GHCR.
 3. **Room lab nuova**: compose con l'immagine GHCR, cartella montata,
    approvazioni con comandi sicuri; via ACP, patch e plugin.
-4. **Tracker e flows**: `projects/`, skill `tracker-github` e
-   `tracker-jira`, flows riscritti.
+4. **Tracker e flows** (fatta): `projects/`, skill `tracker-github` e
+   `tracker-jira`, server MCP di Atlassian nell'immagine, flows riscritti.
 5. **Install e migrazione sul mini PC**: `install.sh` con `dojo.env`,
    `migrate-memory.sh`, WebUI su `dojo.ron1n.space` (PR in ron1n), pulizia del
    PC Windows.

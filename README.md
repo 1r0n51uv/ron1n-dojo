@@ -47,6 +47,12 @@ scripts/dojo.sh down     # spegne, i dati restano
 scripts/dojo.sh claude   # login Claude, una volta sola
 ```
 
+Ogni progetto su cui lavorano gli agenti ha un file in
+[`projects/`](projects/README.md) (repo, tracker GitHub o Jira, stati). Con
+un progetto Jira, `dojo.env` ha anche `JIRA_URL`, `JIRA_USERNAME` e un token
+per agente (commentati in `dojo.env.example`) e `scripts/dojo.sh up` apre
+l'egress verso Atlassian.
+
 Il modello di ogni agente si sceglie da Hermes (WebUI, dashboard o
 `hermes model`), non dal file.
 

@@ -172,6 +172,23 @@ wait_seed() {
   die "i profiles non compaiono dopo 2 minuti: compose logs hermes"
 }
 
+# Almeno un progetto in projects/ ha il tracker Jira (TRACKER-001).
+usa_jira() { grep -qE '^tracker:[[:space:]]*"?jira"?' "$radice"/projects/*.yaml 2>/dev/null; }
+
+# L'egress apre Atlassian solo se un progetto usa Jira (TRACKER-003). Esce 0
+# se il file è cambiato, cioè se Squid va riavviato.
+egress_jira() {
+  local f=$base/egress/10-jira.conf
+  if usa_jira; then
+    [[ -f $f ]] && return 1
+    printf '%s\n' "# Scritto da scripts/dojo.sh up: un progetto in projects/ usa Jira." \
+      "acl dojo_dest dstdomain .atlassian.net api.atlassian.com" >"$f"
+  else
+    [[ -f $f ]] || return 1
+    rm -f "$f"
+  fi
+}
+
 up() {
   [[ ${#accesi[@]} -gt 0 ]] || die "DOJO_AGENTS è vuoto in $conf: accendi almeno un agente"
   # Prima della cartella nuova: chi aveva ~/dojo/work per la lab la ritrova
@@ -185,8 +202,12 @@ up() {
   # vuota, e la WebUI resta solo su 127.0.0.1.
   docker network inspect proxy >/dev/null 2>&1 || docker network create proxy >/dev/null
   create_credentials
+  egress=0
+  ! egress_jira || egress=1
   compose pull -q
   compose up -d
+  # Squid legge conf.d all'avvio: un file di Jira nuovo o tolto lo riavvia.
+  [[ $egress -eq 0 ]] || compose restart egress
   wait_seed
   push_env
   echo "WebUI: http://127.0.0.1:${WEBUI_PORT:-8787} (password in $base/webui.env)"
@@ -269,6 +290,13 @@ status() {
       verify "$p $k" "${p^^}_$k vuoto in $conf" has_value "${p^^}_$k"
     done < <(chiavi_agente "$p")
   done
+  if usa_jira; then
+    verify "Jira JIRA_URL" "JIRA_URL vuoto in $conf: un progetto usa Jira" has_value JIRA_URL
+    verify "Jira JIRA_USERNAME" "JIRA_USERNAME vuoto in $conf: un progetto usa Jira" has_value JIRA_USERNAME
+    for p in strategist designer builder reviewer; do
+      ! acceso "$p" || verify "Jira token di $p" "${p^^}_JIRA_API_TOKEN vuoto in $conf" has_value "${p^^}_JIRA_API_TOKEN"
+    done
+  fi
   verify "cartella di lavoro $DOJO_WORK" "$DOJO_WORK manca o non è scrivibile: scripts/dojo.sh up" test -w "$DOJO_WORK"
   if ! running hermes; then
     echo "NO   la room è spenta: scripts/dojo.sh up"

@@ -74,11 +74,27 @@ RUN src=$(mktemp -d) \
      fi \
   && PYTHONPATH="$deps" "$py" -c "import yaml, cryptography"
 
+# Server MCP di Jira (TRACKER-002), usato dalla skill tracker-jira: a versione
+# fissata in /opt/mcp-atlassian, fuori dalla venv di Hermes (come PyYAML della
+# WebUI) e lanciato con il suo Python tramite PYTHONPATH. Di root, in sola
+# lettura per gli agenti. Resta senza account finché dojo.env non ha JIRA_URL
+# e il token.
+ARG MCP_ATLASSIAN_VERSION=0.23.1
+RUN py=/opt/hermes/.venv/bin/python deps=/opt/mcp-atlassian \
+  && uv=$(command -v uv || find /opt/hermes /usr/local -name uv -type f -perm -u+x 2>/dev/null | head -1) \
+  && if [ -n "$uv" ]; then \
+       "$uv" pip install -q --python "$py" --target "$deps" "mcp-atlassian==${MCP_ATLASSIAN_VERSION}"; \
+     else \
+       "$py" -m pip install -q --target "$deps" "mcp-atlassian==${MCP_ATLASSIAN_VERSION}"; \
+     fi \
+  && PYTHONPATH="$deps" "$py" -c "from mcp_atlassian import main"
+
 # Config e SOUL dei profiles, flows e skill della room (ROOM-012): di root,
 # in sola lettura per gli agenti. I .env non entrano (.dockerignore).
 COPY rooms/lab/profiles /opt/dojo/profiles
 COPY flows /opt/dojo/flows
 COPY skills /opt/dojo/skills
+COPY projects /opt/dojo/projects
 RUN find /opt/dojo/profiles -name '.env*' -delete \
   && for p in /opt/dojo/profiles/*/; do \
        test -f "${p}config.yaml" && test -f "${p}SOUL.md"; \

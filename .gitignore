@@ -5,3 +5,5 @@
 node_modules
 __pycache__/
 
+# Domini di Jira nell'egress, scritti da `dojo.sh up` se un progetto li usa.
+rooms/*/egress/10-jira.conf

@@ -57,9 +57,10 @@ Accettazione:
       `acp`.
 - [ ] Token GitHub fine-grained del tuo account, uno per agente, limitati ai
       repo dei progetti: strategist e designer con contents, pull requests e
-      issues in scrittura; builder con contents e pull requests in
-      scrittura; reviewer con contents in lettura e pull requests in
-      scrittura; concierge nessuno. Nessuno ha administration.
+      issues in scrittura; builder con contents, pull requests e issues in
+      scrittura (sposta la issue in Review); reviewer con contents in lettura,
+      pull requests e issues in scrittura (la porta a Fatto); concierge
+      nessuno. Nessuno ha administration.
 - [ ] I commit degli agenti hanno come autore il nome dell'agente (per
       esempio `Edward Elric (dojo)`).
 - [ ] `gh pr merge`, push forzati, push su `main` e cancellazioni di repo

@@ -1,0 +1,9 @@
+# Hub e home server (repo 1r0n51uv/ron1n). Regole in projects/README.md.
+repo: 1r0n51uv/ron1n
+tracker: github
+states:
+  spec: "stato:spec"
+  todo: "stato:da-fare"
+  doing: "stato:in-corso"
+  review: "stato:review"
+  done: "stato:fatto"

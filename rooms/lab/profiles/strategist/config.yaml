@@ -15,10 +15,10 @@ providers:
     stale_timeout_seconds: 900
 
 platform_toolsets:
-  telegram: [file, terminal, kanban, clarify, skills, todo, memory]
-  cli: [file, terminal, kanban, clarify, skills, todo, memory]
+  telegram: [file, terminal, kanban, clarify, skills, todo, memory, mcp-atlassian]
+  cli: [file, terminal, kanban, clarify, skills, todo, memory, mcp-atlassian]
   # WebUI (ROOM-009) via API del gateway.
-  api_server: [file, terminal, kanban, clarify, skills, todo, memory]
+  api_server: [file, terminal, kanban, clarify, skills, todo, memory, mcp-atlassian]
 
 terminal:
   backend: "local"
@@ -29,6 +29,23 @@ skills:
   external_dirs:
     - /opt/dojo/flows
     - /opt/dojo/skills
+
+# Jira (TRACKER-002): il server MCP atlassian è nell'immagine a versione
+# fissata. Account e token vengono da dojo.env; senza token i tool rispondono
+# con un errore e la skill tracker-jira fa fermare l'agente.
+mcp_servers:
+  atlassian:
+    command: /opt/hermes/.venv/bin/python
+    args: ["-c", "from mcp_atlassian import main; main()"]
+    env:
+      PYTHONPATH: /opt/mcp-atlassian
+      JIRA_URL: "${JIRA_URL}"
+      JIRA_USERNAME: "${JIRA_USERNAME}"
+      JIRA_API_TOKEN: "${JIRA_API_TOKEN}"
+    tools:
+      include: [get_issue, search, create_issue, update_issue, add_comment, get_transitions, transition_issue]
+      resources: false
+      prompts: false
 
 kanban:
   dispatch_in_gateway: false
