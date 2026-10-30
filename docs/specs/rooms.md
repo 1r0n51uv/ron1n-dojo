@@ -208,7 +208,7 @@ senza poter uscire da lì.
 
 Accettazione:
 
-- [ ] `~/dojo/<room>` (`DOJO_DIR` cambia `~/dojo`) è montata in `/opt/data/work`,
+- [ ] `~/dojo/<room>` (`DOJO_ROOMS_DIR` cambia `~/dojo`) è montata in `/opt/data/work`,
       la `cwd` del terminale di ogni agente.
 - [ ] `dojo.sh up` rinomina `~/dojo/work` (la cartella di prima) in
       `~/dojo/lab` se questa non esiste, senza perdere dati. Il volume di

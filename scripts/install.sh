@@ -97,8 +97,8 @@ config() {
   ask TELEGRAM_ALLOWED_USERS
   set_value "$f.tmp" TELEGRAM_ALLOWED_USERS "$REPLY"
   info "Cartella che contiene quelle delle rooms (la lab lavora in <cartella>/lab), con i tuoi permessi."
-  ask DOJO_DIR "$(env_get "$esempio" DOJO_DIR)"
-  set_value "$f.tmp" DOJO_DIR "$REPLY"
+  ask DOJO_ROOMS_DIR "$(env_get "$esempio" DOJO_ROOMS_DIR)"
+  set_value "$f.tmp" DOJO_ROOMS_DIR "$REPLY"
   for p in concierge strategist designer builder reviewer; do
     P=${p^^}
     echo >/dev/tty

@@ -48,9 +48,9 @@ done
 acceso() { [[ " ${accesi[*]} " == *" $1 "* ]]; }
 
 # Valori per compose.yaml. La cartella di lavoro è quella della room dentro
-# DOJO_DIR (~/dojo/<room>, ROOM-011); accetta ~. DOJO_WORK in dojo.env, se
+# DOJO_ROOMS_DIR (~/dojo/<room>, ROOM-011); accetta ~. DOJO_WORK in dojo.env, se
 # c'è ancora, la sostituisce per intero.
-dojo_dir=$(val DOJO_DIR)
+dojo_dir=$(val DOJO_ROOMS_DIR)
 dojo_dir=${dojo_dir:-$HOME/dojo}
 dojo_dir=${dojo_dir/#\~/$HOME}
 DOJO_WORK=$(val DOJO_WORK)
