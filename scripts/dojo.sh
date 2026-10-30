@@ -239,8 +239,14 @@ claude_cli() {
     -e CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 "$@"
 }
 
+# L'uscita si legge tutta prima di cercarci dentro: con `grep -q` in pipe e
+# pipefail, grep chiude presto e il comando a monte fallisce anche col login.
 claude_logged_in() {
-  claude_cli "$1" -T hermes claude auth status 2>/dev/null | grep -q '"loggedIn": *true'
+  local stato
+  stato=$(claude_cli "$1" -T hermes claude auth status 2>&1) || true
+  [[ $stato =~ \"loggedIn\":[[:space:]]*true ]] && return 0
+  [[ ${2:-} != verbose ]] || echo "$stato" >&2
+  return 1
 }
 
 claude_sub() {
@@ -285,7 +291,7 @@ EOF
   else
     echo "Apri il link, accedi con l'account Claude (Pro o Max) e incolla qui il codice."
     claude_cli "$room" hermes claude auth login --claudeai
-    claude_logged_in "$room" || die "login Claude non riuscito"
+    claude_logged_in "$room" verbose || die "login Claude non riuscito (stato qui sopra)"
   fi
   {
     echo "CLAUDE_AGENTS=${agenti[*]}"
@@ -396,7 +402,10 @@ sync_room() {
     echo "ok   $room/$p"
   done
 
-  compose "$room" exec -T hermes chown -R hermes:hermes /opt/data
+  # Il gateway acceso scrive e rinomina file temporanei mentre chown -R li
+  # attraversa: se uno sparisce a metà, un secondo giro basta.
+  compose "$room" exec -T hermes chown -R hermes:hermes /opt/data 2>/dev/null ||
+    compose "$room" exec -T hermes chown -R hermes:hermes /opt/data
   compose "$room" exec -T hermes hermes gateway restart
   echo "dashboard: http://127.0.0.1:${DASHBOARD_PORT:-9119} (utente e password in $base/dashboard.env)"
 }
