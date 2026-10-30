@@ -38,8 +38,8 @@ Accettazione:
 - [ ] `tracker-github` usa `gh issue` con il token dell'agente; gli stati
       sono label (`stato:review` ...), l'agente una label `agente:<nome>`.
 - [ ] `tracker-jira` usa il server MCP `mcp-atlassian`, nell'immagine a
-      versione fissata, con email e token API di Jira Cloud nel `.env` degli
-      agenti che ne hanno bisogno; l'agente è un campo o una label
+      versione fissata, con email e token API di Jira Cloud in `dojo.env`
+      per gli agenti che ne hanno bisogno; l'agente è un campo o una label
       `agente:<nome>`.
 - [ ] I flussi scelgono la skill dal `tracker` del progetto.
 - [ ] Con un tracker senza credenziali l'agente lo dice e si ferma, non
@@ -56,12 +56,11 @@ Accettazione:
 
 - [ ] L'egress apre `*.atlassian.net` e `api.atlassian.com` solo se almeno
       un progetto usa Jira.
-- [ ] Il token Jira ha solo i progetti del dojo; si imposta con
-      `dojo.sh secret`.
+- [ ] Il token Jira ha solo i progetti del dojo; sta in `dojo.env`.
 - [ ] Branch e PR portano la chiave della issue (`DOJO-42-login`), così
       l'app GitHub for Jira li mostra nella issue.
 
 ## Note
 
-- Il token Jira, come quelli GitHub, sta nel `.env` del profile: gli agenti
+- Il token Jira, come quelli GitHub, finisce nel `.env` del profile: gli agenti
   con `terminal` della stessa room possono leggerlo.

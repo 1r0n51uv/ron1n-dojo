@@ -12,12 +12,12 @@ requisiti in [`docs/specs/`](docs/specs/README.md).
 
 ## Struttura
 
-| Cartella                      | Cosa contiene                                                              |
-| ----------------------------- | -------------------------------------------------------------------------- |
-| [`rooms/lab/`](rooms/lab/)    | la room: `concierge`, `strategist`, `designer`, `builder`, `reviewer`      |
-| [`flows/`](flows/README.md)   | skill Hermes dei flows, dentro l'immagine                                  |
-| [`skills/`](skills/README.md) | skill Hermes di supporto (`grilling`, `grilling-with-docs`)                |
-| [`scripts/`](scripts/)        | `install.sh`, `dojo.sh` (up, down, status, secret, claude, doctor), checks |
+| Cartella                      | Cosa contiene                                                         |
+| ----------------------------- | --------------------------------------------------------------------- |
+| [`rooms/lab/`](rooms/lab/)    | la room: `concierge`, `strategist`, `designer`, `builder`, `reviewer` |
+| [`flows/`](flows/README.md)   | skill Hermes dei flows, dentro l'immagine                             |
+| [`skills/`](skills/README.md) | skill Hermes di supporto (`grilling`, `grilling-with-docs`)           |
+| [`scripts/`](scripts/)        | `install.sh`, `dojo.sh` (up, down, status, claude), checks            |
 
 ## Installazione
 
@@ -28,12 +28,30 @@ curl -fsSL https://raw.githubusercontent.com/1r0n51uv/ron1n-dojo/main/scripts/in
 ```
 
 Clona il repo in `~/ron1n-dojo` (o `DOJO_DIR`), chiede il tuo user ID
-Telegram e, agente per agente, se attivarlo con il suo bot e token GitHub.
-Poi scarica l'immagine da GHCR, avvia la room, fa il login all'abbonamento
-Claude e controlla tutto con `scripts/dojo.sh doctor`. Si può rilanciare
-per attivare altri agenti; i `.env` esistenti restano.
+Telegram e, agente per agente, se accenderlo con il suo bot e token GitHub,
+e scrive le risposte in `dojo.env`. Poi scarica l'immagine da GHCR, avvia
+la room, fa il login all'abbonamento Claude e controlla tutto con
+`scripts/dojo.sh status`.
 
-Gli agenti lavorano in `~/dojo/work` (o `DOJO_WORK`), con i tuoi permessi.
+## Configurazione
+
+Tutto sta in un file, `dojo.env` nella radice del repo (permessi 600, non
+versionato; ogni valore è spiegato in [`dojo.env.example`](dojo.env.example)):
+agenti accesi, utente Telegram, cartella di lavoro, bot e token di ogni
+agente. Dopo una modifica:
+
+```sh
+scripts/dojo.sh up       # applica dojo.env e avvia o aggiorna la room
+scripts/dojo.sh status   # cosa gira e cosa manca
+scripts/dojo.sh down     # spegne, i dati restano
+scripts/dojo.sh claude   # login Claude, una volta sola
+```
+
+Il modello di ogni agente si sceglie da Hermes (WebUI, dashboard o
+`hermes model`), non dal file.
+
+Gli agenti lavorano in `~/dojo/work` (o `DOJO_WORK` in `dojo.env`), con i
+tuoi permessi.
 L'immagine si aggiorna da sola con Watchtower di ron1n; config e SOUL nuovi
 arrivano con lei, mentre il modello scelto da Hermes resta.
 

@@ -14,9 +14,13 @@ sopra Hermes. Il PC Windows con WSL2 serve solo per le prove.
 - **Plug and play**: un comando installa tutto (`scripts/install.sh`),
   chiede solo i valori che mancano e si può rilanciare. Gli aggiornamenti
   arrivano da soli (Watchtower).
-- **Modulare**: una room è una cartella in `rooms/`; un agente si attiva
-  quando gli dai un `.env`; un progetto si aggiunge con un file in
+- **Modulare**: una room è una cartella in `rooms/`; un agente si accende
+  in `DOJO_AGENTS` di `dojo.env`; un progetto si aggiunge con un file in
   `projects/`.
+- **Un file di configurazione**: `dojo.env` contiene tutto quello che
+  decidi tu (agenti, token, bot, cartelle); `dojo.sh up` lo applica. Fuori
+  restano solo il login Claude, che è un OAuth, e il modello, che si sceglie
+  da Hermes.
 - **Zero trust**: la room è un container senza porte verso internet, esce
   solo verso i domini permessi; ogni agente ha i suoi token minimi; il merge
   è sempre tuo.
@@ -157,8 +161,8 @@ bastano si decide dopo la prova sul mini PC.
    approvazioni con comandi sicuri; via ACP, patch e plugin.
 4. **Tracker e flows**: `projects/`, skill `tracker-github` e
    `tracker-jira`, flows riscritti.
-5. **Install e migrazione sul mini PC**: `install.sh`, `dojo.sh doctor` e
-   `import-memory`, WebUI su `dojo.ron1n.space` (PR in ron1n), pulizia del
+5. **Install e migrazione sul mini PC**: `install.sh` con `dojo.env`,
+   `migrate-memory.sh`, WebUI su `dojo.ron1n.space` (PR in ron1n), pulizia del
    PC Windows.
 
 Dopo: room personale, cron, webhook GitHub via Tunnel, room lavoro, server

@@ -71,26 +71,33 @@ Accettazione:
       `cron_mode` e `unattended_mode` sono `deny`.
 - [ ] Flows e skill sono nell'immagine, fuori dalla portata degli agenti.
 
-### ROOM-004 · Gestire la room con un comando
+### ROOM-004 · Un file di configurazione, pochi comandi
 
 Stato: proposto
 
-`scripts/dojo.sh` avvia, spegne, controlla e configura la room senza
-toccare i file a mano.
+Tutta la configurazione del dojo sta in un solo file, `dojo.env` nella
+radice del repo; `scripts/dojo.sh` ha solo i comandi che servono.
 
 Accettazione:
 
-- [ ] `up`, `down`, `status` agiscono sulla room; un nome sconosciuto
-      elenca le rooms valide.
-- [ ] `secret <agente> <CHIAVE>` imposta un valore (token del bot,
-      `GH_TOKEN`, token Jira) nel `.env` dell'agente con input nascosto,
-      senza passarlo dalla riga di comando, e riavvia il gateway.
+- [ ] `dojo.env` (modello versionato in `dojo.env.example`, con un commento
+      per valore) contiene agenti accesi (`DOJO_AGENTS`), utente Telegram,
+      cartella di lavoro, porte e, con il prefisso dell'agente, bot e token
+      di ognuno (`BUILDER_GH_TOKEN`). Non è versionato e `dojo.sh` lo porta
+      a permessi 600.
+- [ ] `dojo.sh` legge il file senza eseguirlo.
+- [ ] `up` applica il file: avvia o aggiorna la room e scrive il `.env` di
+      ogni profile (valori comuni più quelli dell'agente senza prefisso),
+      poi riavvia il gateway. Si rilancia dopo ogni modifica.
+- [ ] Un agente fuori da `DOJO_AGENTS` resta senza bot né token.
+- [ ] `down` spegne la room, i dati restano.
+- [ ] `status` mostra i container e controlla valori mancanti, login
+      Claude, egress, WebUI e cartella di lavoro; per ogni problema dice
+      cosa fare.
 - [ ] `claude` fa il login dell'abbonamento Claude nel container
-      (MODELS-006).
-- [ ] `doctor` controlla bot, login Claude, egress, token GitHub e Jira,
-      WebUI e cartella di lavoro, e per ogni problema dice cosa fare.
-- [ ] Un agente senza `.env` viene saltato, così si può attivare un agente
-      alla volta.
+      (MODELS-006): è l'unica cosa che non può stare nel file.
+- [ ] Il modello di ogni agente non sta nel file: si sceglie da Hermes
+      (MODELS-007).
 
 ### ROOM-005 · Installare il dojo con un comando
 
@@ -103,16 +110,17 @@ Accettazione:
 
 - [ ] `curl -fsSL .../scripts/install.sh | bash` clona o aggiorna il repo
       (`DOJO_DIR`, `DOJO_BRANCH`) e funziona anche lanciato da un checkout.
-- [ ] Chiede i valori che mancano (token dei bot, token GitHub, Jira se
-      serve) con input nascosto; password casuali per dashboard e WebUI.
+- [ ] Se manca `dojo.env` lo scrive da `dojo.env.example` con le risposte:
+      utente Telegram, cartella di lavoro e, per ogni agente, se accenderlo
+      e i suoi token, con input nascosto. Password casuali per dashboard e
+      WebUI.
 - [ ] Crea `~/dojo/work`, scarica l'immagine da GHCR, avvia la room e fa il
       login Claude.
-- [ ] Per ogni agente chiede se attivarlo.
-- [ ] Si può rilanciare: i `.env` esistenti non si toccano, gli agenti
-      spenti si possono attivare dopo.
+- [ ] Si può rilanciare: un `dojo.env` esistente non si tocca; da lì in poi
+      si modifica il file e si lancia `dojo.sh up`.
 - [ ] Se mancano git, Docker o compose, o Docker non risponde, si ferma
       subito e dice cosa fare.
-- [ ] Alla fine lancia `dojo.sh doctor`.
+- [ ] Alla fine lancia `dojo.sh status`.
 
 ### ROOM-006 · Dashboard di Hermes
 
@@ -222,7 +230,8 @@ Accettazione:
 - [ ] Modello e provider scelti da Hermes (`hermes model`, dashboard,
       WebUI) restano: la copia non tocca `model` e `providers` di un profile
       che li ha già.
-- [ ] I `.env` dei profiles restano sul mini PC e non sono nell'immagine.
+- [ ] `dojo.env` e i `.env` dei profiles restano sul mini PC e non sono
+      nell'immagine.
 - [ ] Memoria e sessioni restano.
 
 ### ROOM-013 · Migrare la memoria degli agenti
@@ -234,10 +243,10 @@ board e config ripartono da zero.
 
 Accettazione:
 
-- [ ] `dojo.sh export-memory` sul PC di prova crea un archivio con le
-      `memories/` di ogni profile del volume.
-- [ ] `dojo.sh import-memory <archivio>` sul mini PC le rimette nei profiles
-      con lo stesso nome, senza toccare il resto.
+- [ ] Uno script da usare una volta, `scripts/migrate-memory.sh`, fuori da
+      `dojo.sh`: `export` sul PC di prova crea un archivio con le
+      `memories/` di ogni profile del volume, `import <archivio>` sul mini
+      PC le rimette nei profiles con lo stesso nome, senza toccare il resto.
 - [ ] Il volume vecchio non si cancella: resta come backup.
 
 ## Note

@@ -8,7 +8,7 @@ Contesto per le sessioni di Claude che lavorano su questo repo.
 - Documentazione e commenti in italiano.
 - Una room è `rooms/<nome>/`: `compose.yaml`, `Dockerfile` se serve,
   `egress/allowlist.conf` (domini raggiungibili) e `profiles/<agente>/` con
-  `config.yaml`, `SOUL.md`, `.env.example`. Il container è il confine di
+  `config.yaml` e `SOUL.md`. Il container è il confine di
   sicurezza: niente `docker.sock`, niente porte pubblicate, rete `internal`
   senza internet più il proxy `egress`.
 - I profiles Hermes separano ruoli e memoria ma non isolano: due agenti che
@@ -17,7 +17,10 @@ Contesto per le sessioni di Claude che lavorano su questo repo.
   `manual` con `cron_mode: deny`, `approvals.deny` per merge e push forzati,
   token GitHub fine-grained per agente.
 - I flows sono skill in `flows/<nome>/SKILL.md`, montate in sola lettura.
-- Segreti solo in file `.env` non versionati; versiona un `.env.example`.
+- Tutta la configurazione dell'utente sta in un solo file, `dojo.env` (non
+  versionato, modello in `dojo.env.example`), applicato da `dojo.sh up`.
+  Comandi di `dojo.sh` pochi: up, down, status, claude. Un valore nuovo va
+  in `dojo.env.example`, non in un comando o in un altro file.
 - Immagini sempre con tag esplicito (Hermes a versione fissata, mai
   `latest`).
 - Ogni PR aggiunge in cima a `CHANGELOG.md` una riga con il link alla PR,

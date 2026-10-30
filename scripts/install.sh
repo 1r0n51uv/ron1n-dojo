@@ -4,15 +4,13 @@
 #
 #   curl -fsSL https://raw.githubusercontent.com/1r0n51uv/ron1n-dojo/main/scripts/install.sh | bash
 #
-# Clona o aggiorna il repo, chiede i valori dei .env che mancano (invio =
-# vuoto, token nascosti), attiva gli agenti scelti, scarica l'immagine da
-# GHCR, avvia la room, fa il login Claude e lancia `dojo.sh doctor`. Si può
-# rilanciare: i .env che esistono già non si toccano. Spec:
-# docs/specs/rooms.md (ROOM-005).
+# Clona o aggiorna il repo, scrive dojo.env con le tue risposte (invio =
+# vuoto, token nascosti), scarica l'immagine da GHCR, avvia la room, fa il
+# login Claude e lancia `dojo.sh status`. Si può rilanciare: un dojo.env che
+# esiste già non si tocca. Spec: docs/specs/rooms.md (ROOM-005).
 #
 # Variabili: DOJO_DIR (cartella, default ~/ron1n-dojo), DOJO_BRANCH (ramo da
-# installare, default main), DOJO_WORK (cartella di lavoro degli agenti,
-# default ~/dojo/work).
+# installare, default main).
 set -euo pipefail
 
 REPO=https://github.com/1r0n51uv/ron1n-dojo.git
@@ -42,52 +40,14 @@ ask_yes() {
   [[ $REPLY == [sSyY]* ]]
 }
 
-rand() { od -An -N24 -tx1 /dev/urandom | tr -d ' \n'; }
-
-# Il commento sopra una chiave nel .env.example, come help_text alla domanda.
-help_text() {
-  awk -v k="$2" '/^#/ { c = c "    " $0 "\n"; next } $0 ~ "^" k "=" { printf "%s", c; exit } { c = "" }' "$1" >/dev/tty
-}
-
-# Scrive un .env a partire dal suo .env.example, una domanda per chiave.
-# $1 file .env.example, $2 file .env, poi coppie CHIAVE=valore già decise.
-write_env() {
-  local esempio=$1 dest=$2 tmp key val fisso
-  shift 2
+# Imposta CHIAVE=valore in dojo.env, dove c'è già la riga del modello. Il
+# valore passa dall'ambiente di awk, non dalla riga di comando.
+set_value() {
+  local f=$1 tmp
   tmp=$(mktemp)
-  # Le chiavi sono nomi senza spazi: una per parola.
-  # shellcheck disable=SC2013
-  for key in $(sed -n 's/^\([A-Z_][A-Z0-9_]*\)=.*/\1/p' "$esempio"); do
-    val=
-    fisso=
-    for coppia in "$@"; do
-      if [[ ${coppia%%=*} == "$key" ]]; then
-        val=${coppia#*=}
-        fisso=1
-      fi
-    done
-    if [[ -z $fisso ]]; then
-      help_text "$esempio" "$key"
-      case $key in
-        *PASSWORD*)
-          val=$(rand)
-          info "$key generata"
-          ;;
-        *KEY* | *TOKEN*)
-          ask_secret "$key (invio = vuoto)"
-          val=$REPLY
-          ;;
-        *)
-          ask "$key"
-          val=$REPLY
-          ;;
-      esac
-    fi
-    printf '%s=%s\n' "$key" "$val" >>"$tmp"
-  done
   chmod 600 "$tmp"
-  mv "$tmp" "$dest"
-  info "scritto $dest"
+  VALORE=$3 awk -v k="$2" 'index($0, k "=") == 1 { print k "=" ENVIRON["VALORE"]; next } { print }' "$f" >"$tmp"
+  mv "$tmp" "$f"
 }
 
 env_get() { sed -n "s/^$2=//p" "$1" | tail -1; }
@@ -123,37 +83,44 @@ repo() {
   fi
 }
 
-room() {
-  local base=$DIR/rooms/lab dir p attivi=0
-  step "Room lab"
-  if [[ -f $base/.env ]]; then
-    info "$base/.env c'è già"
-  else
-    write_env "$base/.env.example" "$base/.env"
+# dojo.env: un solo file con tutta la configurazione (ROOM-004), copiato da
+# dojo.env.example con le risposte al posto dei valori vuoti.
+config() {
+  local f=$DIR/dojo.env esempio=$DIR/dojo.env.example p P k accesi=
+  step "Configurazione"
+  if [[ -f $f ]]; then
+    info "$f c'è già: per cambiare qualcosa modificalo e lancia scripts/dojo.sh up"
+    return
   fi
-  [[ -n $(env_get "$base/.env" TELEGRAM_ALLOWED_USERS) ]] ||
-    info "TELEGRAM_ALLOWED_USERS è vuoto: gli agenti non risponderanno a nessuno"
-
-  for dir in "$base"/profiles/*/; do
-    p=$(basename "$dir")
-    [[ $p != default ]] || continue
-    if [[ -f $dir.env ]]; then
-      attivi=$((attivi + 1))
+  install -m 600 "$esempio" "$f.tmp"
+  info "Il tuo user ID Telegram numerico (da @userinfobot): l'unico a cui gli agenti rispondono."
+  ask TELEGRAM_ALLOWED_USERS
+  set_value "$f.tmp" TELEGRAM_ALLOWED_USERS "$REPLY"
+  info "Cartella dove lavorano gli agenti, con i tuoi permessi."
+  ask DOJO_WORK "$(env_get "$esempio" DOJO_WORK)"
+  set_value "$f.tmp" DOJO_WORK "$REPLY"
+  for p in concierge strategist designer builder reviewer; do
+    P=${p^^}
+    echo >/dev/tty
+    info "$(sed -n '1s/^# //p' "$DIR/rooms/lab/profiles/$p/SOUL.md")"
+    if ! ask_yes "Accendere $p?" s; then
+      info "$p resta spento: aggiungilo a DOJO_AGENTS in $f quando vuoi"
       continue
     fi
-    echo >/dev/tty
-    info "$(sed -n '1s/^# //p' "${dir}SOUL.md")"
-    if ask_yes "Attivare $p adesso?" s; then
-      write_env "${dir}.env.example" "${dir}.env"
-      attivi=$((attivi + 1))
-    else
-      info "$p resta spento: rilancia l'installazione per attivarlo"
-    fi
+    accesi+=" $p"
+    while IFS= read -r k <&3; do
+      ask_secret "$k (invio = vuoto, lo metti dopo in dojo.env)"
+      set_value "$f.tmp" "$k" "$REPLY"
+    done 3< <(sed -n "s/^\(${P}_[A-Z0-9_]*\)=.*/\1/p" "$esempio")
   done
-  [[ $attivi -gt 0 ]] || die "nessun agente attivo: rilancia e attivane almeno uno"
+  [[ -n $accesi ]] || die "nessun agente acceso: rilancia e accendine almeno uno"
+  set_value "$f.tmp" DOJO_AGENTS "${accesi# }"
+  mv "$f.tmp" "$f"
+  info "scritto $f (permessi 600)"
+}
 
+start() {
   step "Avvio"
-  info "cartella di lavoro degli agenti: ${DOJO_WORK:-$HOME/dojo/work}"
   "$DIR/scripts/dojo.sh" up
   step "Abbonamento Claude"
   info "Tutti gli agenti usano Claude con il tuo abbonamento (Pro o Max)."
@@ -168,14 +135,15 @@ main() {
   exec </dev/null
   check
   repo
-  room
+  config
+  start
 
   step "Controllo finale"
-  "$DIR/scripts/dojo.sh" doctor || info "sistema le righe NO qui sopra, poi $DIR/scripts/dojo.sh doctor"
+  "$DIR/scripts/dojo.sh" status || info "sistema le righe NO qui sopra, poi $DIR/scripts/dojo.sh status"
 
   step "Fatto"
+  info "Configurazione: $DIR/dojo.env; dopo una modifica, $DIR/scripts/dojo.sh up"
   info "WebUI: http://127.0.0.1:8787, password in $DIR/rooms/lab/webui.env"
-  info "Segreti: i .env in $DIR/rooms/lab/ (permessi 600)"
   info "Oppure scrivi ai bot su Telegram, per esempio a Nico Robin"
 }
 

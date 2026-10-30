@@ -59,7 +59,7 @@ Accettazione:
       (`/opt/data/claude`).
 - [ ] Ogni profile parte con il provider Claude e il modello `sonnet`.
 - [ ] Nessuna riserva: finita la quota l'agente lo dice in chat e aspetta
-      il reset; `dojo.sh doctor` mostra lo stato del login.
+      il reset; `dojo.sh status` mostra lo stato del login.
 - [ ] Telemetria e aggiornamenti automatici di Claude Code spenti.
 
 ### MODELS-007 · Modello scelto da Hermes

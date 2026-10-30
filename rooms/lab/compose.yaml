@@ -3,7 +3,8 @@
 # docker.sock, egress solo verso i domini di egress/allowlist.conf, nessuna
 # porta pubblicata tranne dashboard e WebUI su 127.0.0.1. L'immagine arriva
 # da GHCR (ROOM-010) e Watchtower la aggiorna. Si avvia con scripts/dojo.sh,
-# che imposta DOJO_UID, DOJO_GID e DOJO_WORK. Spec: docs/specs/rooms.md.
+# che legge dojo.env e imposta DOJO_UID, DOJO_GID, DOJO_WORK e le porte.
+# Spec: docs/specs/rooms.md.
 name: dojo-lab
 
 x-image: &image
