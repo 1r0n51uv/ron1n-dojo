@@ -6,6 +6,7 @@ merge.
 
 ## 2026-10-30
 
+- `scripts/hermes-acp.cmd`: launch path di AionUi su Windows con i container in WSL (Docker Desktop o `wsl.exe -e docker`) (ROOM-008) ([#19](https://github.com/1r0n51uv/ron1n-dojo/pull/19))
 - AionUi riconosce gli agenti del dojo come Hermes: `scripts/hermes-acp.sh` fa da launch path e passa a `dojo-acp` l'agente di `DOJO_AGENT`; altri comandi e flag sono rifiutati (ROOM-008) ([#18](https://github.com/1r0n51uv/ron1n-dojo/pull/18))
 - Lab: gli agenti si usano anche da un client ACP sul PC come AionUi, con `docker exec -i -u hermes dojo-lab-hermes-1 dojo-acp <agente>`; stessi tool della CLI, cartella di lavoro del container, niente server MCP del client (ROOM-008) ([#17](https://github.com/1r0n51uv/ron1n-dojo/pull/17))
 - Lab: Claude Code si installa in locale in `/opt/claude-code`, con postinstall e binario della piattaforma forzati; la build non si ferma più su "claude native binary not installed" `dojo.sh claude` riconosce il login riuscito e `sync` non si ferma più se un file temporaneo del gateway sparisce durante il chown ([#16](https://github.com/1r0n51uv/ron1n-dojo/pull/16))
