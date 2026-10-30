@@ -46,6 +46,9 @@ con comando `docker` e argomenti
 `exec -i -u hermes dojo-lab-hermes-1 dojo-acp <agente>`, dove `<agente>` è
 `concierge`, `strategist`, `designer`, `builder` o `reviewer` (ROOM-008).
 Lavora in `/opt/data/work` del container, non nelle cartelle del PC.
+Per farlo riconoscere come Hermes, nell'agente Hermes di AionUi metti
+come launch path `scripts/hermes-acp.sh` (percorso completo) e la
+variabile `DOJO_AGENT` con il nome dell'agente.
 
 ## Sviluppo
 
