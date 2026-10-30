@@ -208,8 +208,11 @@ senza poter uscire da lì.
 
 Accettazione:
 
-- [ ] `~/dojo/lab` (`DOJO_WORK` la cambia) è montata in `/opt/data/work`,
+- [ ] `~/dojo/<room>` (`DOJO_DIR` cambia `~/dojo`) è montata in `/opt/data/work`,
       la `cwd` del terminale di ogni agente.
+- [ ] `dojo.sh up` rinomina `~/dojo/work` (la cartella di prima) in
+      `~/dojo/lab` se questa non esiste, senza perdere dati. Il volume di
+      Hermes si chiama `dojo-<room>_data`.
 - [ ] Il container gira con UID e GID dell'utente del mini PC: i file
       creati dagli agenti sono suoi, senza `sudo`.
 - [ ] Ogni agente lavora in `/opt/data/work/<agente>/` per convenzione (non
