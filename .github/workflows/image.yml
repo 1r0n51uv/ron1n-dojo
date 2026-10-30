@@ -73,13 +73,17 @@ jobs:
           docker exec lab claude --version
           docker exec lab gh --version
           # Il modello scelto da Hermes resta dopo un riavvio (MODELS-007).
-          docker exec -u hermes lab sed -i 's/default: "sonnet"/default: "opus"/' \
-            /opt/data/profiles/builder/config.yaml
+          # Hermes può riscrivere il config togliendo le virgolette.
+          conf=/opt/data/profiles/builder/config.yaml
+          docker exec -u hermes lab sed -i -E 's/^(  default: )"?sonnet"?$/\1opus/' "$conf"
+          docker exec lab grep -En '^  default: "?opus"?$' "$conf"
           docker restart lab
           seeded 2
-          docker exec lab grep -q 'default: "opus"' /opt/data/profiles/builder/config.yaml
+          docker exec lab grep -n -A3 '^model:' "$conf"
+          docker exec lab grep -Eq '^  default: "?opus"?$' "$conf"
           # I file nella cartella di lavoro sono dell'utente dell'host (ROOM-011).
           docker exec -u hermes lab touch /opt/data/work/prova
+          ls -ln "$RUNNER_TEMP/work"
           [ "$(stat -c %u "$RUNNER_TEMP/work/prova")" = "$(id -u)" ]
       - if: failure()
         run: docker logs lab
