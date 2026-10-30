@@ -43,7 +43,8 @@ Accettazione:
 - [ ] `scripts/dojo.sh budget <room> <dollari>` cambia il budget della
       chiave esistente, senza toccare i `.env` né riavviare nulla.
 - [ ] Le rooms non hanno `api.anthropic.com` né altri provider
-      nell'allowlist di `egress`.
+      nell'allowlist di `egress`; l'unica eccezione è l'abbonamento Claude
+      acceso con `dojo.sh claude` (MODELS-006).
 
 ### MODELS-003 · Stanze separate anche verso il gateway
 
@@ -100,6 +101,38 @@ Accettazione:
 - [ ] `config.chatgpt.yaml` è uguale a `config.yaml` dai piani free in
       giù: lo controlla `scripts/validate.sh`.
 
+### MODELS-006 · Abbonamento Claude come modello degli agenti
+
+Stato: proposto
+
+Con un abbonamento Claude (Pro o Max) un agente usa Claude come modello
+principale, attraverso la CLI ufficiale di Claude Code non modificata e il
+plugin `claude-subscription-directsdk` di Nous Research. Il gateway resta la
+riserva: finita la quota di Claude si passa a `strong` o `fast`, quindi a GPT
+se l'abbonamento ChatGPT è collegato, e poi ai free.
+
+Accettazione:
+
+- [ ] L'immagine della room ha Claude Code e il plugin a versione fissata
+      (`CLAUDE_CODE_VERSION` e `CLAUDE_PLUGIN_COMMIT` in `compose.yaml`); il
+      plugin sta in `/opt/hermes`, che gli agenti non possono modificare.
+- [ ] Senza `dojo.sh claude` nulla cambia: gli agenti usano il gateway e
+      l'egress non ha domini di Anthropic.
+- [ ] `scripts/dojo.sh claude <room> [agente...]` apre all'egress
+      `api.anthropic.com`, `claude.ai` e `platform.claude.com`
+      (`egress/00-claude.conf`), fa il login con `claude auth login` nel
+      container se manca e scrive `claude.env` con gli agenti (tutti quelli
+      attivi senza nomi) e il modello (`sonnet` di default).
+- [ ] `dojo.sh sync` passa il `config.yaml` di quegli agenti a Claude con
+      `scripts/claude_profile.py`: il modello del repo diventa la prima voce di
+      `fallback_providers`, il contesto resta quello del repo.
+- [ ] Un 429 di quota finita passa alla riserva per il resto della
+      sessione; le sessioni nuove tornano su Claude
+      quando la quota si azzera.
+- [ ] `scripts/dojo.sh claude <room> off` toglie `claude.env` e
+      `00-claude.conf` e riporta gli agenti al gateway.
+- [ ] Telemetria e aggiornamenti automatici di Claude Code spenti.
+
 ## Note
 
 - I nomi dei modelli sui provider cambiano: si verificano in
@@ -110,5 +143,13 @@ Accettazione:
 - I nomi dei modelli GPT dell'abbonamento (`chatgpt/gpt-6.1-sol` per
   `strong`, `chatgpt/gpt-6-luna` per `fast`) cambiano con i piani di
   OpenAI: si verificano dopo il login.
+- Il token dell'abbonamento Claude sta nel volume della room
+  (`/opt/data/claude`), non nel gateway: gli agenti con `terminal` girano
+  con lo stesso utente e potrebbero leggerlo. È il prezzo del plugin, che
+  deve chiamare la CLI dal processo di Hermes.
+- La quota di Claude è quella del tuo account, condivisa con Claude Code,
+  claude.ai e l'app. Il plugin consuma come `claude -p`, più in fretta della
+  CLI interattiva. Su Pro i modelli con contesto da 1M di Opus e Fable usano
+  i crediti extra: si resta su `sonnet`.
 - I modelli free sbagliano spesso le chiamate agli strumenti: vanno bene
   per riassunti e lavori a orario, non per specifiche e codice.

@@ -11,6 +11,10 @@
 #                                      openrouter, groq, gemini), input nascosto
 #   scripts/dojo.sh chatgpt [off]     login all'abbonamento ChatGPT (Plus o Pro)
 #                                      e strong/fast su ChatGPT; off torna indietro
+#   scripts/dojo.sh claude <room> [agente...|off]
+#                                      login all'abbonamento Claude (Pro o Max) e
+#                                      Claude come modello degli agenti (tutti
+#                                      senza nomi), con il gateway come riserva
 #   scripts/dojo.sh secret <room> <agente> <CHIAVE>
 #                                      imposta un valore (per esempio GH_TOKEN o
 #                                      TELEGRAM_BOT_TOKEN) nel .env di un agente,
@@ -221,6 +225,76 @@ print("login ChatGPT ok, account", a.get_account_id())
   echo "strong e fast usano ChatGPT; finita la quota si scende sui provider di riserva"
 }
 
+# Abbonamento Claude come modello degli agenti di una room (MODELS-006). La
+# CLI ufficiale di Claude Code, nell'immagine della room, fa il login: il token
+# sta nel volume della room (/opt/data/claude), non nel gateway. claude.env
+# dice quali agenti lo usano e con che modello; egress/00-claude.conf apre i
+# domini di Anthropic. `off` toglie i due file e gli agenti tornano al gateway;
+# il login resta, finché non lo togli da claude.ai o con `claude auth logout`.
+claude_cli() {
+  local room=$1
+  shift
+  compose "$room" exec -u hermes -e USER=hermes -e LOGNAME=hermes \
+    -e CLAUDE_CONFIG_DIR=/opt/data/claude -e DISABLE_AUTOUPDATER=1 \
+    -e CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 "$@"
+}
+
+claude_logged_in() {
+  claude_cli "$1" -T hermes claude auth status 2>/dev/null | grep -q '"loggedIn": *true'
+}
+
+claude_sub() {
+  local room=$1 base="rooms/$1" agenti=() modello p
+  shift
+  if [[ ${1:-} == off ]]; then
+    rm -f "$base/claude.env" "$base/egress/00-claude.conf"
+    compose "$room" restart egress
+    sync_room "$room"
+    echo "gli agenti di $room tornano al gateway dei modelli"
+    return
+  fi
+  [[ -f "$base/.env" ]] || die "manca $base/.env: lancia prima scripts/install.sh"
+  if [[ $# -eq 0 ]]; then
+    for p in "$base"/profiles/*/; do
+      p=$(basename "$p")
+      [[ $p == default || ! -f "$base/profiles/$p/.env" ]] || agenti+=("$p")
+    done
+  else
+    for p in "$@"; do
+      [[ $p != default && -d "$base/profiles/$p" ]] || die "agente sconosciuto: $p"
+      agenti+=("$p")
+    done
+  fi
+  [[ ${#agenti[@]} -gt 0 ]] || die "nessun agente attivo in $room"
+  # Il modello scelto la volta prima resta (CLAUDE_MODEL in claude.env).
+  modello=$(sed -n 's/^CLAUDE_MODEL=//p' "$base/claude.env" 2>/dev/null) || modello=
+  modello=${modello:-sonnet}
+
+  # Il nome comincia con 00: Squid include i file in ordine alfabetico.
+  cat >"$base/egress/00-claude.conf" <<'EOF'
+# Scritto da `scripts/dojo.sh claude`: abbonamento Claude acceso (MODELS-006).
+# API, login dell'account e scambio del token OAuth della CLI di Claude Code.
+acl dojo_dest dstdomain api.anthropic.com claude.ai platform.claude.com
+EOF
+  create_networks
+  compose "$room" up -d --build
+  compose "$room" restart egress
+  compose "$room" exec -T hermes install -d -m 700 -o hermes -g hermes /opt/data/claude
+  if claude_logged_in "$room"; then
+    echo "login Claude già fatto"
+  else
+    echo "Apri il link, accedi con l'account Claude (Pro o Max) e incolla qui il codice."
+    claude_cli "$room" hermes claude auth login --claudeai
+    claude_logged_in "$room" || die "login Claude non riuscito"
+  fi
+  {
+    echo "CLAUDE_AGENTS=${agenti[*]}"
+    echo "CLAUDE_MODEL=$modello"
+  } >"$base/claude.env"
+  sync_room "$room"
+  echo "${agenti[*]}: Claude ($modello) con l'abbonamento; finita la quota si passa al gateway"
+}
+
 # Un valore nel .env di un agente (token del bot, GH_TOKEN), chiesto con input
 # nascosto: non passa dalla riga di comando né dalla cronologia. Se il .env
 # non c'è lo crea dal .env.example. Poi allinea la room.
@@ -266,11 +340,17 @@ create_dashboard() {
 }
 
 sync_room() {
-  local room=$1 base="rooms/$1" tmp p dest
+  local room=$1 base="rooms/$1" tmp p dest claude_agenti='' claude_modello=''
   [[ -f "$base/.env" ]] || die "manca $base/.env: copia $base/.env.example e compilalo"
+  if [[ -f "$base/claude.env" ]]; then
+    claude_agenti=$(sed -n 's/^CLAUDE_AGENTS=//p' "$base/claude.env")
+    claude_modello=$(sed -n 's/^CLAUDE_MODEL=//p' "$base/claude.env")
+  fi
   create_dashboard "$room"
   tmp=$(mktemp -d)
-  trap 'rm -rf "$tmp"' RETURN
+  # Il trap RETURN resta attivo anche dopo: si toglie da solo, altrimenti
+  # scatta al ritorno di chi ha chiamato sync_room, dove tmp non c'è.
+  trap 'rm -rf "$tmp"; trap - RETURN' RETURN
 
   create_networks
   compose "$room" up -d --build
@@ -292,6 +372,13 @@ sync_room() {
     cat "$base/.env" >"$tmp/$p.env"
     [[ ! -f "$dir/.env" ]] || cat "$dir/.env" >>"$tmp/$p.env"
     compose "$room" cp "$dir/config.yaml" "hermes:$dest/config.yaml"
+    # Abbonamento Claude acceso per questo agente: Claude davanti, il modello
+    # del repo diventa la riserva (scripts/claude_profile.py).
+    if [[ " ${claude_agenti:-} " == *" $p "* ]]; then
+      compose "$room" exec -T hermes /opt/hermes/.venv/bin/python - \
+        "$dest/config.yaml" "$claude_modello" <scripts/claude_profile.py
+      echo "     $p usa Claude ($claude_modello), riserva il gateway"
+    fi
     compose "$room" cp "$dir/SOUL.md" "hermes:$dest/SOUL.md"
     compose "$room" cp "$tmp/$p.env" "hermes:$dest/.env"
     # Plugin della room (rooms/<room>/plugins/), uguali per tutti i profiles:
@@ -349,6 +436,11 @@ case $comando in
     [[ $# -le 1 && ${1:-on} =~ ^(on|off)$ ]] || die "uso: dojo.sh chatgpt [off]"
     chatgpt "${1:-}"
     ;;
+  claude)
+    [[ $# -ge 1 ]] || die "uso: dojo.sh claude <room> [agente...|off]"
+    pick_rooms "$1" >/dev/null
+    claude_sub "$@"
+    ;;
   secret)
     [[ $# -eq 3 ]] || die "uso: dojo.sh secret <room> <agente> <CHIAVE>"
     pick_rooms "$1" >/dev/null
@@ -365,7 +457,7 @@ case $comando in
     key "$@"
     ;;
   *)
-    sed -n '2,25p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,29p' "$0" | sed 's/^# \{0,1\}//'
     [[ -z $comando ]] || exit 1
     ;;
 esac

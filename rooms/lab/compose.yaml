@@ -11,6 +11,11 @@ services:
       context: .
       args:
         HERMES_VERSION: v0.22.5
+        # CLI ufficiale e provider dell'abbonamento Claude (MODELS-006): il
+        # plugin vuole Claude Code 2.1.293 o più recente.
+        CLAUDE_CODE_VERSION: 2.1.299
+        # NousResearch/hermes-official-plugins, claude-subscription-directsdk 0.3.3.
+        CLAUDE_PLUGIN_COMMIT: 1e326ddd28ae261821d7714d106fe114999a0bba
     image: dojo-lab:v0.22.5
     restart: unless-stopped
     command: ["gateway", "run"]
@@ -72,7 +77,9 @@ services:
     image: ubuntu/squid:6.6-24.04_edge
     restart: unless-stopped
     volumes:
-      - ./egress/allowlist.conf:/etc/squid/conf.d/dojo.conf:ro
+      # allowlist.conf più, se l'abbonamento Claude è acceso, 00-claude.conf
+      # (lo scrive `dojo.sh claude`, non è versionato).
+      - ./egress:/etc/squid/conf.d:ro
     networks:
       - internal
       - external

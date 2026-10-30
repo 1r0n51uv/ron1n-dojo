@@ -112,6 +112,15 @@ Con un abbonamento ChatGPT (Plus o Pro) collegato da `dojo.sh chatgpt`,
 `strong` e `fast` passano prima da GPT (GPT-6.1 Sol e GPT-6 Luna) e poi
 dalle riserve qui sopra ([MODELS-005](specs/models.md)).
 
+Con un abbonamento Claude (Pro o Max) collegato da `dojo.sh claude <room>`,
+gli agenti scelti usano Claude come modello principale senza passare dal
+gateway: la CLI ufficiale di Claude Code, nell'immagine della room, fa le
+chiamate con il tuo login, guidata dal plugin `claude-subscription-directsdk`
+di Nous Research. Il modello del gateway resta la riserva di Hermes
+(`fallback_providers`), quindi finita la quota di Claude si torna su GPT e sui
+free. Solo in questo caso l'egress della room apre i domini di Anthropic, e il
+token sta nel volume della room ([MODELS-006](specs/models.md)).
+
 ## Canali
 
 - **Telegram** per iniziare: un bot per agente. WhatsApp è supportato da
