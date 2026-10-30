@@ -50,7 +50,8 @@ Per farlo riconoscere come Hermes, nell'agente Hermes di AionUi metti
 come launch path `scripts/hermes-acp.sh` (percorso completo) e la
 variabile `DOJO_AGENT` con il nome dell'agente. Con AionUi su Windows usa
 `scripts/hermes-acp.cmd`, copiato in una cartella di Windows (per esempio
-`C:\Users\<tu>\dojo\`): Docker Desktop deve essere nel `PATH`.
+`C:\Users\<tu>\dojo\`): usa `docker` di Windows se c'è (Docker
+Desktop), altrimenti `wsl.exe -e docker` nella distro WSL di default.
 
 ## Sviluppo
 

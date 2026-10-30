@@ -7,6 +7,10 @@ rem solo i controlli di versione e di salute, niente altri comandi o flag.
 setlocal EnableDelayedExpansion
 if not defined DOJO_CONTAINER set "DOJO_CONTAINER=dojo-lab-hermes-1"
 if not defined DOJO_AGENT set "DOJO_AGENT=concierge"
+rem Docker Desktop mette docker.exe nel PATH di Windows; con Docker Engine
+rem dentro WSL il comando passa da wsl.exe (distro di default, senza shell).
+set "DOCKER=docker"
+where docker >nul 2>&1 || set "DOCKER=wsl.exe -e docker"
 
 rem Solo lettere, cifre, - e _: il nome finisce in una riga di comando. Il
 rem controllo legge DOJO_AGENT con !...!, che non esegue un & nel valore.
@@ -23,9 +27,9 @@ echo hermes-acp.cmd: comando non permesso: hermes %* 1>&2
 exit /b 2
 
 :acp
-docker exec -i -u hermes %DOJO_CONTAINER% dojo-acp %DOJO_AGENT%
+%DOCKER% exec -i -u hermes %DOJO_CONTAINER% dojo-acp %DOJO_AGENT%
 exit /b %ERRORLEVEL%
 
 :check
-docker exec -i -u hermes %DOJO_CONTAINER% hermes -p %DOJO_AGENT% %*
+%DOCKER% exec -i -u hermes %DOJO_CONTAINER% hermes -p %DOJO_AGENT% %*
 exit /b %ERRORLEVEL%
