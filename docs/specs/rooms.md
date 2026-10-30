@@ -212,8 +212,10 @@ Accettazione:
       la `cwd` del terminale di ogni agente.
 - [ ] Il container gira con UID e GID dell'utente del mini PC: i file
       creati dagli agenti sono suoi, senza `sudo`.
-- [ ] Ogni agente lavora in `work/<agente>/` per convenzione (non è un
-      blocco).
+- [ ] Ogni agente lavora in `/opt/data/work/<agente>/` per convenzione (non
+      è un blocco).
+- [ ] Il nome di una room e quello della sua cartella coincidono:
+      `~/dojo/<room>`, cioè `lab` oggi e `home` e `work` per le rooms future.
 - [ ] Nessun'altra cartella del mini PC è montata in scrittura.
 
 ### ROOM-012 · Configurazione dall'immagine, modello da Hermes
@@ -251,7 +253,7 @@ Accettazione:
 
 ## Note
 
-- Le rooms `personale` e `lavoro` arrivano dopo
+- Le rooms `home` (personale) e `work` (lavoro) arrivano dopo
   ([architettura](../architecture.md#fasi-della-riscrittura)).
 - Se Hermes v0.22.5 non sa approvare da solo i comandi sicuri di ROOM-003,
   si passa alla versione che lo fa, provandola prima.
