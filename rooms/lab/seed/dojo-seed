@@ -6,9 +6,10 @@ gateway (/etc/cont-init.d/016-dojo-seed). Per ogni profile in
 /opt/dojo/profiles:
 
 - se manca lo crea con `hermes profile create <nome> --no-skills`;
-- scrive config.yaml e SOUL.md dell'immagine, ma tiene dal config.yaml che
-  c'era già le scelte fatte da Hermes: modello, provider, riserve e comandi
-  approvati per sempre (CHIAVI_TENUTE);
+- scrive config.yaml e SOUL.md dell'immagine, ma dal secondo avvio tiene
+  dal config.yaml che c'era le scelte fatte da Hermes: modello, provider,
+  riserve e comandi approvati per sempre (CHIAVI_TENUTE); il file
+  `.dojo-seed` nel profile segna il primo seed;
 - non tocca .env, memoria e sessioni.
 
 Un errore su un profile non ferma gli altri né l'avvio della room.
