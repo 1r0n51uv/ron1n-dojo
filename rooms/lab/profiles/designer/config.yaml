@@ -13,6 +13,8 @@ platform_toolsets:
   cli: [file, terminal, vision, kanban, clarify, skills, todo, memory]
   # Client ACP sul PC, come AionUi (ROOM-008): stessi tool della CLI.
   acp: [file, terminal, vision, kanban, clarify, skills, todo, memory]
+  # Interfaccia web (hermes-webui, ROOM-009) via API del gateway.
+  api_server: [file, terminal, vision, kanban, clarify, skills, todo, memory]
 
 terminal:
   backend: "local"
