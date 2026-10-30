@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Valida le rooms: `docker compose config` su ogni compose.yaml e, per ogni
-# profile, la presenza di config.yaml, SOUL.md e .env.example; ogni skill di
-# flows/ e skills/ ha il frontmatter. Non serve il demone Docker.
+# profile, la presenza di config.yaml e SOUL.md e del suo bot in
+# dojo.env.example; ogni skill di flows/ e skills/ ha il frontmatter. Non
+# serve il demone Docker.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -17,14 +18,18 @@ for compose in rooms/*/compose.yaml; do
     echo "FAIL $compose"
     status=1
   fi
-  [[ -f "$dir/.env.example" ]] || { echo "FAIL $dir/.env.example mancante"; status=1; }
   for profile in "$dir"/profiles/*/; do
-    for f in config.yaml SOUL.md .env.example; do
+    for f in config.yaml SOUL.md; do
       if [[ ! -f "$profile$f" ]]; then
         echo "FAIL $profile$f mancante"
         status=1
       fi
     done
+    p=$(basename "$profile")
+    if [[ $p != default ]] && ! grep -q "^${p^^}_TELEGRAM_BOT_TOKEN=" dojo.env.example; then
+      echo "FAIL ${p^^}_TELEGRAM_BOT_TOKEN mancante in dojo.env.example"
+      status=1
+    fi
   done
 done
 

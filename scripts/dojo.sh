@@ -1,36 +1,58 @@
 #!/usr/bin/env bash
-# Gestione della room del dojo (spec docs/specs/rooms.md, ROOM-004).
+# Gestione della room del dojo (spec docs/specs/rooms.md, ROOM-004). Tutta la
+# configurazione sta in un file, dojo.env nella radice del repo (modello in
+# dojo.env.example); i comandi sono pochi:
 #
-#   scripts/dojo.sh up                 scarica l'immagine, avvia la room e
-#                                      copia i .env nei profiles
-#   scripts/dojo.sh down               spegne la room, i dati restano
-#   scripts/dojo.sh status             stato dei container
-#   scripts/dojo.sh secret <agente> <CHIAVE>
-#                                      imposta un valore (TELEGRAM_BOT_TOKEN,
-#                                      GH_TOKEN) nel .env di un agente, input
-#                                      nascosto, poi lo copia nella room
-#   scripts/dojo.sh claude             login all'abbonamento Claude (Pro o Max)
-#   scripts/dojo.sh doctor             controlla la room e dice cosa manca
-#
-# La room è `lab` (DOJO_ROOM la cambia). La cartella di lavoro degli agenti è
-# ~/dojo/work (DOJO_WORK la cambia, ROOM-011).
+#   scripts/dojo.sh up       applica dojo.env e avvia o aggiorna la room;
+#                            si rilancia dopo ogni modifica al file
+#   scripts/dojo.sh down     spegne la room, i dati restano
+#   scripts/dojo.sh status   stato dei container e controlli, con cosa fare
+#   scripts/dojo.sh claude   login all'abbonamento Claude (Pro o Max), una
+#                            volta sola: non può stare in un file
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 radice=$PWD
-room=${DOJO_ROOM:-lab}
+room=lab
 base=$radice/rooms/$room
-
-export DOJO_UID=${DOJO_UID:-$(id -u)}
-export DOJO_GID=${DOJO_GID:-$(id -g)}
-export DOJO_WORK=${DOJO_WORK:-$HOME/dojo/work}
+conf=$radice/dojo.env
 
 die() {
   echo "dojo: $*" >&2
   exit 1
 }
 
-[[ -f $base/compose.yaml ]] || die "room sconosciuta: $room"
+# dojo.env letto riga per riga, senza eseguirlo: CHIAVE=valore, il resto si
+# ignora.
+declare -A cfg
+[[ -f $conf ]] || die "manca $conf: lancia scripts/install.sh o copia dojo.env.example"
+chmod 600 "$conf"
+while IFS= read -r riga || [[ -n $riga ]]; do
+  [[ $riga =~ ^([A-Z][A-Z0-9_]*)=(.*)$ ]] && cfg[${BASH_REMATCH[1]}]=${BASH_REMATCH[2]}
+done <"$conf"
+val() { echo "${cfg[$1]:-}"; }
+
+# Agenti della room: le cartelle in profiles/, tranne default.
+tutti=()
+for dir in "$base"/profiles/*/; do
+  p=$(basename "$dir")
+  [[ $p == default ]] || tutti+=("$p")
+done
+read -ra accesi <<<"$(val DOJO_AGENTS)"
+for p in "${accesi[@]}"; do
+  [[ " ${tutti[*]} " == *" $p "* ]] || die "DOJO_AGENTS: agente sconosciuto $p (validi: ${tutti[*]})"
+done
+acceso() { [[ " ${accesi[*]} " == *" $1 "* ]]; }
+
+# Valori per compose.yaml. La cartella di lavoro accetta ~ (ROOM-011).
+lavoro=$(val DOJO_WORK)
+DOJO_WORK=${lavoro:-$HOME/dojo/work}
+DOJO_WORK=${DOJO_WORK/#\~/$HOME}
+DOJO_UID=$(id -u)
+DOJO_GID=$(id -g)
+WEBUI_PORT=$(val WEBUI_PORT)
+DASHBOARD_PORT=$(val DASHBOARD_PORT)
+export DOJO_WORK DOJO_UID DOJO_GID WEBUI_PORT DASHBOARD_PORT
 
 compose() {
   docker compose --project-directory "$base" -f "$base/compose.yaml" "$@"
@@ -43,23 +65,11 @@ profile_dir() {
   if [[ $1 == default ]]; then echo /opt/data; else echo "/opt/data/profiles/$1"; fi
 }
 
-# Imposta VAR=valore in un .env: sostituisce la riga se c'è, altrimenti la
-# aggiunge. Il valore passa dall'ambiente di awk, non dalla riga di comando.
-env_set() {
-  local f=$1 var=$2 tmp
-  tmp=$(mktemp)
-  chmod 600 "$tmp"
-  VALORE=$3 awk -v var="$var" 'BEGIN { FS = OFS = "="; fatto = 0 }
-    $1 == var { print var "=" ENVIRON["VALORE"]; fatto = 1; next }
-    { print }
-    END { if (!fatto) print var "=" ENVIRON["VALORE"] }' "$f" >"$tmp"
-  mv "$tmp" "$f"
-}
-
-# Credenziali di dashboard (ROOM-006) e WebUI (ROOM-009): casuali, nei loro
-# file e non nei .env dei profiles, che gli agenti leggono. La chiave dell'API
-# del gateway va anche nei .env dei profiles: il gateway accetta su
-# /p/<agente> solo la chiave di quel profile. Se un file esiste non si tocca.
+# Credenziali di dashboard (ROOM-006) e WebUI (ROOM-009): casuali, generate
+# qui e mai scritte a mano, nei loro file e non nei .env dei profiles, che
+# gli agenti leggono. La chiave dell'API del gateway va anche nei .env dei
+# profiles: il gateway accetta su /p/<agente> solo la chiave di quel profile.
+# Se un file esiste non si tocca.
 create_credentials() {
   local f=$base/dashboard.env chiave
   if [[ ! -f $f ]]; then
@@ -72,7 +82,6 @@ create_credentials() {
         echo "HERMES_DASHBOARD_BASIC_AUTH_SECRET=$(rand)"
       } >"$f"
     )
-    echo "creato $f: utente dojo, password casuale lì dentro"
   fi
   f=$base/webui.env
   if [[ ! -f $f ]]; then
@@ -85,43 +94,61 @@ create_credentials() {
         echo "HERMES_WEBUI_GATEWAY_API_KEY=$chiave"
       } >"$f"
     )
-    echo "creato $f: password della WebUI lì dentro"
   fi
 }
 
-# .env di ogni profile = valori comuni della room + quelli dell'agente + API
-# del gateway per la WebUI. Config e SOUL arrivano dall'immagine (ROOM-012).
+# Chiavi di dojo.env che non vanno agli agenti: sono per compose e dojo.sh.
+di_dojo() { [[ $1 == DOJO_* || $1 == *_PORT ]]; }
+
+# Le chiavi di dojo.env.example di un agente, senza il prefisso
+# (BUILDER_GH_TOKEN -> GH_TOKEN).
+chiavi_agente() {
+  local P=${1^^}_
+  sed -n "s/^${P}\([A-Z0-9_]*\)=.*/\1/p" "$radice/dojo.env.example"
+}
+
+# Il .env di un profile: valori comuni di dojo.env (senza prefisso
+# d'agente), quelli dell'agente senza prefisso se è acceso, e l'API del
+# gateway per la WebUI. Un agente spento non ha bot né token.
+env_profile() {
+  local p=$1 k altro P=${1^^}_ comune
+  for k in "${!cfg[@]}"; do
+    di_dojo "$k" && continue
+    comune=1
+    for altro in "${tutti[@]}"; do
+      [[ $k == "${altro^^}"_* ]] && comune=
+    done
+    if [[ -n $comune ]]; then
+      echo "$k=${cfg[$k]}"
+    elif [[ $k == "$P"* ]] && acceso "$p"; then
+      echo "${k#"$P"}=${cfg[$k]}"
+    fi
+  done
+  echo "API_SERVER_KEY=$(sed -n 's/^API_SERVER_KEY=//p' "$base/webui.env")"
+  if [[ $p == default ]]; then
+    echo "HERMES_WEBUI_GATEWAY_BASE_URL=http://hermes:8642"
+  else
+    echo "HERMES_WEBUI_GATEWAY_BASE_URL=http://hermes:8642/p/$p"
+  fi
+}
+
+# Copia il .env di ogni profile nel volume e riavvia il gateway. Config e
+# SOUL arrivano dall'immagine (ROOM-012).
 push_env() {
-  local tmp p dir dest api_key
-  api_key=$(sed -n 's/^API_SERVER_KEY=//p' "$base/webui.env")
+  local tmp p dest
   tmp=$(mktemp -d)
   # Il trap RETURN si toglie da solo, altrimenti scatta anche al ritorno di
   # chi ha chiamato push_env, dove tmp non c'è.
   trap 'rm -rf "$tmp"; trap - RETURN' RETURN
-  for dir in "$base"/profiles/*/; do
-    p=$(basename "$dir")
-    # Un agente senza .env non si attiva: si può partire da uno solo.
-    if [[ $p != default && ! -f "$dir/.env" ]]; then
-      echo "salto $p: manca ${dir}.env"
-      continue
-    fi
+  for p in default "${tutti[@]}"; do
     dest=$(profile_dir "$p")
-    cat "$base/.env" >"$tmp/$p.env"
-    [[ ! -f "$dir/.env" ]] || cat "$dir/.env" >>"$tmp/$p.env"
-    {
-      echo "API_SERVER_KEY=$api_key"
-      if [[ $p == default ]]; then
-        echo "HERMES_WEBUI_GATEWAY_BASE_URL=http://hermes:8642"
-      else
-        echo "HERMES_WEBUI_GATEWAY_BASE_URL=http://hermes:8642/p/$p"
-      fi
-    } >>"$tmp/$p.env"
+    (umask 077 && env_profile "$p" >"$tmp/$p.env")
     compose exec -T hermes test -d "$dest" || die "profile $p non creato: guarda compose logs hermes"
     compose cp "$tmp/$p.env" "hermes:$dest/.env"
     # `compose cp` crea il file come root: Hermes gira come utente hermes.
     compose exec -T hermes chown hermes:hermes "$dest/.env"
     compose exec -T hermes chmod 600 "$dest/.env"
-    echo "ok   $p"
+    if [[ $p == default ]]; then :; elif acceso "$p"; then echo "ok   $p"; else echo "--   $p spento"; fi
   done
   compose exec -T hermes hermes gateway restart
 }
@@ -138,7 +165,7 @@ wait_seed() {
 }
 
 up() {
-  [[ -f $base/.env ]] || die "manca $base/.env: lancia scripts/install.sh"
+  [[ ${#accesi[@]} -gt 0 ]] || die "DOJO_AGENTS è vuoto in $conf: accendi almeno un agente"
   mkdir -p "$DOJO_WORK"
   # La rete di Caddy di ron1n: se ron1n non c'è (PC di prova) la si crea
   # vuota, e la WebUI resta solo su 127.0.0.1.
@@ -149,27 +176,8 @@ up() {
   wait_seed
   push_env
   echo "WebUI: http://127.0.0.1:${WEBUI_PORT:-8787} (password in $base/webui.env)"
-  echo "dashboard: http://127.0.0.1:${DASHBOARD_PORT:-9119} (utente e password in $base/dashboard.env)"
-}
-
-# Un valore nel .env di un agente, chiesto con input nascosto: non passa
-# dalla riga di comando né dalla cronologia. Se il .env non c'è lo crea dal
-# .env.example. Poi lo copia nella room, se è accesa.
-secret() {
-  local agente=$1 var=$2 dir="$base/profiles/$1" f valore
-  [[ -d $dir && $agente != default ]] || die "agente sconosciuto: $agente"
-  [[ $var =~ ^[A-Z][A-Z0-9_]*$ ]] || die "nome non valido: $var"
-  grep -q "^$var=" "$dir/.env.example" 2>/dev/null ||
-    die "$var non è nel .env.example di $agente"
-  f=$dir/.env
-  [[ -f $f ]] || install -m 600 "$dir/.env.example" "$f"
-  printf '%s di %s: ' "$var" "$agente" >/dev/tty
-  IFS= read -rs valore </dev/tty
-  printf '\n' >/dev/tty
-  [[ -n $valore ]] || die "valore vuoto, non cambio nulla"
-  env_set "$f" "$var" "$valore"
-  echo "$var di $agente aggiornato"
-  if [[ -n $(compose ps -q hermes 2>/dev/null) ]]; then push_env; fi
+  echo "dashboard: http://127.0.0.1:${DASHBOARD_PORT:-9119} (utente dojo, password in $base/dashboard.env)"
+  claude_logged_in || echo "manca il login Claude: scripts/dojo.sh claude"
 }
 
 # CLI di Claude Code nel container, con il login nel volume della room.
@@ -215,7 +223,7 @@ verify() {
   fi
 }
 not() { ! "$@"; }
-has_value() { [[ -n $(sed -n "s/^$2=//p" "$1" 2>/dev/null) ]]; }
+has_value() { [[ -n $(val "$1") ]]; }
 running() { [[ -n $(compose ps -q --status running "$1" 2>/dev/null) ]]; }
 
 # Python dentro hermes: esce 0 se l'URL risponde (anche con un errore HTTP).
@@ -229,25 +237,25 @@ except Exception:
     sys.exit(1)' "$1"
 }
 
-# Controlli della room (ROOM-004): per ogni problema una riga con cosa fare.
-doctor() {
-  local p dir v
+# Stato della room (ROOM-004): container, poi per ogni problema una riga con
+# cosa fare.
+status() {
+  local p k
   docker info >/dev/null 2>&1 || die "Docker non risponde"
-  verify "$base/.env" "manca $base/.env: scripts/install.sh" test -f "$base/.env"
-  verify TELEGRAM_ALLOWED_USERS "TELEGRAM_ALLOWED_USERS vuoto: gli agenti non rispondono a nessuno" \
-    has_value "$base/.env" TELEGRAM_ALLOWED_USERS
-  for dir in "$base"/profiles/*/; do
-    p=$(basename "$dir")
-    [[ $p != default ]] || continue
-    if [[ ! -f $dir/.env ]]; then
-      echo "--   $p spento (manca ${dir}.env)"
+  compose ps
+  echo
+  verify TELEGRAM_ALLOWED_USERS "TELEGRAM_ALLOWED_USERS vuoto in $conf: gli agenti non rispondono a nessuno" \
+    has_value TELEGRAM_ALLOWED_USERS
+  for p in "${tutti[@]}"; do
+    if ! acceso "$p"; then
+      echo "--   $p spento (non è in DOJO_AGENTS)"
       continue
     fi
-    while IFS= read -r v; do
-      verify "$p $v" "$p: $v vuoto, scripts/dojo.sh secret $p $v" has_value "$dir/.env" "$v"
-    done < <(sed -n 's/^\([A-Z_][A-Z0-9_]*\)=.*/\1/p' "$dir/.env.example")
+    while IFS= read -r k; do
+      verify "$p $k" "${p^^}_$k vuoto in $conf" has_value "${p^^}_$k"
+    done < <(chiavi_agente "$p")
   done
-  verify "cartella di lavoro $DOJO_WORK" "$DOJO_WORK manca o non è scrivibile" test -w "$DOJO_WORK"
+  verify "cartella di lavoro $DOJO_WORK" "$DOJO_WORK manca o non è scrivibile: scripts/dojo.sh up" test -w "$DOJO_WORK"
   if ! running hermes; then
     echo "NO   la room è spenta: scripts/dojo.sh up"
     return 1
@@ -263,20 +271,13 @@ doctor() {
   return $male
 }
 
-comando=${1:-}
-[[ $# -gt 0 ]] && shift
-case $comando in
+case ${1:-} in
   up) up ;;
   down) compose down ;;
-  status) compose ps ;;
-  secret)
-    [[ $# -eq 2 ]] || die "uso: dojo.sh secret <agente> <CHIAVE>"
-    secret "$@"
-    ;;
+  status) status ;;
   claude) claude ;;
-  doctor) doctor ;;
   *)
-    sed -n '2,15s/^# \{0,1\}//p' "$0"
+    sed -n '2,11s/^# \{0,1\}//p' "$0"
     exit 1
     ;;
 esac
