@@ -255,6 +255,27 @@ Accettazione:
       PC le rimette nei profiles con lo stesso nome, senza toccare il resto.
 - [ ] Il volume vecchio non si cancella: resta come backup.
 
+### ROOM-014 · Togliere il dojo dal PC
+
+Stato: proposto
+
+Un solo script toglie il dojo dal PC, anche le versioni vecchie, senza
+cancellare niente che l'utente non abbia confermato.
+
+Accettazione:
+
+- [ ] `scripts/cleanup.sh` chiede prima se fare un backup dei file importanti
+      (configurazione con i token, volumi `dojo-lab_data` e
+      `dojo-kajiba_dati`, cartella di lavoro) in una cartella a scelta,
+      fuori dal checkout e dalle cartelle delle rooms; se il backup non
+      riesce, non cancella niente.
+- [ ] Poi, un gruppo alla volta, mostra cosa toglie e chiede conferma (invio
+      = no): avanzi delle versioni vecchie (gateway LiteLLM, inoltri per il
+      telefono), room lab accesa, dati della lab, configurazione, immagini.
+- [ ] La rete `proxy` di ron1n non si tocca; un'immagine in uso resta.
+- [ ] Alla fine stampa cosa fare a mano: togliere il checkout, il portproxy
+      e la regola del firewall su Windows, l'agente in AionUi.
+
 ## Note
 
 - Le rooms `home` (personale) e `work` (lavoro) arrivano dopo
