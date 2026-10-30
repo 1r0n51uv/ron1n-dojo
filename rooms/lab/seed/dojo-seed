@@ -56,15 +56,17 @@ def scrivi(percorso: Path, testo: str) -> None:
 
 def semina(nome: str) -> None:
     dest = cartella(nome)
-    nuovo = not (dest / "config.yaml").is_file()
-    if nome != "default" and nuovo:
+    if nome != "default" and not (dest / "config.yaml").is_file():
         hermes = shutil.which("hermes") or "/opt/hermes/.venv/bin/hermes"
         subprocess.run([hermes, "profile", "create", nome, "--no-skills"], check=True)
     dest.mkdir(parents=True, exist_ok=True)
     testo = (SORGENTE / nome / "config.yaml").read_text(encoding="utf-8")
-    # Il config appena scritto da `profile create` ha il modello di serie di
-    # Hermes, non una scelta dell'utente: vince quello dell'immagine.
-    scrivi(dest / "config.yaml", testo if nuovo else unisci(testo, dest / "config.yaml"))
+    # Prima del primo seed il config è quello di serie di Hermes (scritto da
+    # `profile create` o dal primo avvio), non una scelta dell'utente: vince
+    # quello dell'immagine. Dopo, le CHIAVI_TENUTE restano.
+    segno = dest / ".dojo-seed"
+    scrivi(dest / "config.yaml", unisci(testo, dest / "config.yaml") if segno.exists() else testo)
+    segno.touch()
     shutil.copyfile(SORGENTE / nome / "SOUL.md", dest / "SOUL.md")
 
 
