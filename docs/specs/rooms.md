@@ -168,7 +168,7 @@ Accettazione:
       fa da `hermes`: `acp` diventa `dojo-acp` con l'agente di
       `DOJO_AGENT`; passano solo `--version`, `acp --version` e
       `acp --check`, ogni altro comando o flag (per esempio `--yolo`) è
-      rifiutato.
+      rifiutato. Su Windows fa lo stesso `scripts/hermes-acp.cmd`.
 
 ## Note
 
