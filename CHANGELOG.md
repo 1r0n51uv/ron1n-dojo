@@ -6,6 +6,7 @@ merge.
 
 ## 2026-10-30
 
+- Lab: gli agenti si usano anche da un client ACP sul PC come AionUi, con `docker exec -i -u hermes dojo-lab-hermes-1 dojo-acp <agente>`; stessi tool della CLI, cartella di lavoro del container, niente server MCP del client (ROOM-008) ([#17](https://github.com/1r0n51uv/ron1n-dojo/pull/17))
 - Abbonamento Claude (Pro o Max) come modello degli agenti, opzionale: `dojo.sh claude <room> [agente...]` fa il login con la CLI ufficiale di Claude Code e mette Claude davanti, con il gateway (GPT e free) come riserva; `off` torna indietro (MODELS-006) ([#15](https://github.com/1r0n51uv/ron1n-dojo/pull/15))
 
 ## 2026-10-29
