@@ -1,0 +1,77 @@
+#!/usr/bin/env python3
+"""Ponte ACP verso un agente della room (ROOM-008).
+
+Un client ACP sul PC (per esempio AionUi) lo avvia con
+`docker exec -i -u hermes dojo-lab-hermes-1 dojo-acp <agente>` e parla
+JSON-RPC su stdin/stdout con `hermes -p <agente> acp`. Prima di passare i
+messaggi del client a Hermes cambia due campi:
+
+- `cwd`: il client manda una cartella del PC, che nel container non esiste
+  e che Hermes rifiuta. Al suo posto va /opt/data/work, la cartella di
+  lavoro degli agenti.
+- `mcpServers`: i server MCP proposti dal client girerebbero nella room con
+  i permessi dell'agente. Si tolgono: i tool sono solo quelli di
+  `platform_toolsets.acp`.
+
+Le risposte di Hermes passano senza modifiche.
+"""
+
+import json
+import os
+import re
+import subprocess
+import sys
+import threading
+
+WORKDIR = "/opt/data/work"
+
+
+def rewrite(line: bytes) -> bytes:
+    try:
+        msg = json.loads(line)
+    except ValueError:
+        return line
+    params = msg.get("params") if isinstance(msg, dict) and "method" in msg else None
+    if not isinstance(params, dict) or not ({"cwd", "mcpServers"} & params.keys()):
+        return line
+    if "cwd" in params:
+        params["cwd"] = WORKDIR
+    if "mcpServers" in params:
+        params["mcpServers"] = []
+    return (json.dumps(msg, ensure_ascii=False) + "\n").encode()
+
+
+def pump(src, dst) -> None:
+    try:
+        for line in iter(src.readline, b""):
+            dst.write(rewrite(line))
+            dst.flush()
+    except (BrokenPipeError, ValueError):
+        pass
+    finally:
+        try:
+            dst.close()
+        except BrokenPipeError:
+            pass
+
+
+def main() -> int:
+    if len(sys.argv) != 2:
+        print("uso: dojo-acp <agente>", file=sys.stderr)
+        return 2
+    agent = sys.argv[1]
+    home = os.environ.get("HERMES_HOME", "/opt/data")
+    # Solo gli agenti della room: il default è il dispatcher, non un agente.
+    if agent == "default" or not re.fullmatch(r"[a-z0-9_-]+", agent) or not os.path.isfile(
+        os.path.join(home, "profiles", agent, "config.yaml")
+    ):
+        print(f"dojo-acp: agente sconosciuto: {agent}", file=sys.stderr)
+        return 2
+    os.makedirs(WORKDIR, exist_ok=True)
+    proc = subprocess.Popen(["hermes", "-p", agent, "acp"], stdin=subprocess.PIPE)
+    threading.Thread(target=pump, args=(sys.stdin.buffer, proc.stdin), daemon=True).start()
+    return proc.wait()
+
+
+if __name__ == "__main__":
+    sys.exit(main())

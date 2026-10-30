@@ -40,6 +40,13 @@ abbonamento Claude Pro o Max: `scripts/dojo.sh claude lab` (MODELS-006).
 La dashboard di Hermes della lab è su <http://127.0.0.1:9119> (solo dal
 tuo PC). Utente `dojo`, password in `rooms/lab/dashboard.env`.
 
+Per parlare con un agente da un client ACP come
+[AionUi](https://github.com/iOfficeAI/AionUi), aggiungi un agente custom
+con comando `docker` e argomenti
+`exec -i -u hermes dojo-lab-hermes-1 dojo-acp <agente>`, dove `<agente>` è
+`concierge`, `strategist`, `designer`, `builder` o `reviewer` (ROOM-008).
+Lavora in `/opt/data/work` del container, non nelle cartelle del PC.
+
 ## Sviluppo
 
 `npm run check` prima di consegnare: Prettier, markdownlint, shellcheck e

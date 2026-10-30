@@ -12,6 +12,8 @@ model:
 platform_toolsets:
   telegram: [kanban, clarify, skills, todo, memory]
   cli: [kanban, clarify, skills, todo, memory]
+  # Client ACP sul PC, come AionUi (ROOM-008): stessi tool della CLI.
+  acp: [kanban, clarify, skills, todo, memory]
 
 skills:
   external_dirs:

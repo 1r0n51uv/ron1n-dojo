@@ -37,3 +37,8 @@ COPY patches/stable_birth.py /tmp/stable_birth.py
 RUN python3 /tmp/stable_birth.py /opt/hermes/hermes_cli/process_identity.py \
   && /opt/hermes/.venv/bin/python -m py_compile /opt/hermes/hermes_cli/process_identity.py \
   && rm /tmp/stable_birth.py
+
+# Ponte ACP per i client sul PC come AionUi (ROOM-008): `docker exec -i -u
+# hermes dojo-lab-hermes-1 dojo-acp <agente>` avvia `hermes -p <agente> acp`
+# con la cartella di lavoro del container e senza server MCP del client.
+COPY --chmod=0755 acp/dojo-acp /usr/local/bin/dojo-acp

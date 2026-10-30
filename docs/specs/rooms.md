@@ -142,6 +142,29 @@ Accettazione:
       ferma il dispatcher né la card.
 - [ ] I plugin non danno nuovi tool agli agenti.
 
+### ROOM-008 · Agenti da un client ACP sul PC
+
+Stato: proposto
+
+Dal PC su cui gira la room si parla con un agente da un client
+[ACP](https://agentclientprotocol.com) come
+[AionUi](https://github.com/iOfficeAI/AionUi), senza aprire porte e senza
+dare all'agente più di quello che ha su Telegram.
+
+Accettazione:
+
+- [ ] Il client avvia, con `docker exec -i -u hermes` nel container
+      Hermes, `dojo-acp <agente>`: nessuna porta nuova, il container resta
+      com'è (ROOM-001).
+- [ ] `dojo-acp` accetta solo gli agenti della room che hanno un profile,
+      non il `default`.
+- [ ] Ogni profile ha `platform_toolsets.acp` uguale a `cli`: niente
+      toolset `hermes-acp` di default, che darebbe shell e web a tutti.
+- [ ] La cartella del PC che il client manda come `cwd` diventa
+      `/opt/data/work`; i server MCP proposti dal client si scartano.
+- [ ] Le approvazioni restano `manual`: i comandi pericolosi chiedono
+      conferma nel client e `approvals.deny` vale anche qui.
+
 ## Note
 
 - Le rooms `personale` e `lavoro` arrivano nella fase 2 e 3
