@@ -63,7 +63,7 @@ services:
     restart: unless-stopped
     command: ["TCP-LISTEN:9119,fork,reuseaddr", "TCP:hermes:9119"]
     ports:
-      - "127.0.0.1:${DASHBOARD_PORT:-9119}:9119"
+      - "${DASHBOARD_BIND:-127.0.0.1}:${DASHBOARD_PORT:-9119}:9119"
     networks:
       - internal
       - dashboard
@@ -134,7 +134,7 @@ services:
     restart: unless-stopped
     command: ["TCP-LISTEN:8787,fork,reuseaddr", "TCP:webui:8787"]
     ports:
-      - "127.0.0.1:${WEBUI_PORT:-8787}:8787"
+      - "${WEBUI_BIND:-127.0.0.1}:${WEBUI_PORT:-8787}:8787"
     networks:
       internal: {}
       dashboard: {}

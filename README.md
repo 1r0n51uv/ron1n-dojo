@@ -70,6 +70,36 @@ arrivano con lei, mentre il modello scelto da Hermes resta.
   dal selettore dei profili.
 - Dashboard di Hermes: <http://127.0.0.1:9119>, utente `dojo`, password in
   `rooms/lab/dashboard.env`.
+
+### WebUI e dashboard dal telefono, in rete locale o hotspot (Windows con WSL2)
+
+Solo per le prove su Windows; sul mini PC si usa il Cloudflare Tunnel. La
+WebUI ha la sua password e un terminale: aprila solo su una rete tua.
+
+1. In `dojo.env` metti `WEBUI_BIND=0.0.0.0` (e `DASHBOARD_BIND=0.0.0.0` per la
+   dashboard) e lancia `scripts/dojo.sh up`.
+2. Con Docker Desktop basta il punto 3. Con Docker dentro WSL2 (Windows 11
+   22H2 o più recente) metti in `%UserProfile%\.wslconfig`
+   `[wsl2]` e `networkingMode=mirrored`, poi `wsl --shutdown` e riapri WSL.
+3. In PowerShell come amministratore, una regola per le porte, solo sulle
+   reti private (la rete di un hotspot Windows la tratta spesso come
+   pubblica: in quel caso mettila privata da Impostazioni › Rete, oppure
+   usa `-Profile Private,Public`):
+
+   ```powershell
+   New-NetFirewallRule -DisplayName "dojo LAN" -Direction Inbound -Protocol TCP -LocalPort 8787,9119 -Action Allow -Profile Private
+   ```
+
+   Con il networking `mirrored` serve anche, una volta:
+   `Set-NetFirewallHyperVVMSetting -Name '{40E0AC32-46A5-438A-A0B2-2B479E8F2E90}' -DefaultInboundAction Allow`.
+
+4. Dal telefono: `http://<indirizzo IP del PC>:8787` (WebUI) o `:9119`
+   (dashboard). L'IP si legge con `ipconfig` sulla rete a cui il PC è
+   collegato, anche quella dell'hotspot del telefono.
+
+Per chiudere: togli `WEBUI_BIND` e rilancia `up`, poi
+`Remove-NetFirewallRule -DisplayName "dojo LAN"` (`cleanup.sh` te lo ricorda).
+
 - Telegram: un bot per agente.
 
 ## Sviluppo
