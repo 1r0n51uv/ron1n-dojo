@@ -11,7 +11,7 @@ col tracker.
 
 ### TRACKER-001 · Un file per progetto
 
-Stato: proposto
+Stato: fatto (#27)
 
 Ogni progetto su cui lavorano gli agenti è descritto da un file nel repo
 dojo.
@@ -27,7 +27,7 @@ Accettazione:
 
 ### TRACKER-002 · Stesse operazioni su GitHub e Jira
 
-Stato: proposto
+Stato: fatto (#27)
 
 Le skill `skills/tracker-github` e `skills/tracker-jira` offrono le stesse
 operazioni: leggere, creare, commentare una issue, cambiarne stato e
@@ -47,7 +47,7 @@ Accettazione:
 
 ### TRACKER-003 · Jira personale nella lab
 
-Stato: proposto
+Stato: fatto (#27)
 
 Il Jira Cloud personale dell'utente è collegato alla room `lab`. Un Jira di
 lavoro non entra nella lab: arriverà con la room `work`.
