@@ -83,6 +83,31 @@ repo() {
   fi
 }
 
+# Un backup di cleanup.sh (configurazione.tar.gz) nella cartella da cui lanci
+# l'installer, in una dojo-backup-* lì dentro o nella tua home: il più recente.
+# Se c'è e lo vuoi, rimette dojo.env e le password della WebUI e della
+# dashboard al loro posto, senza rifare le domande (ROOM-005, ROOM-014).
+restore_config() {
+  local f=$DIR/dojo.env trovato='' c tmp
+  for c in "$PWD" "$PWD"/dojo-backup-* "$HOME"/dojo-backup-*; do
+    [[ -f $c/configurazione.tar.gz ]] || continue
+    [[ -z $trovato || $c/configurazione.tar.gz -nt $trovato ]] && trovato=$c/configurazione.tar.gz
+  done
+  [[ -n $trovato ]] || return 1
+  info "Ho trovato un backup della configurazione: $trovato"
+  ask_yes "Importo dojo.env e le password da lì, senza rifare le domande?" s || return 1
+  tmp=$(mktemp -d)
+  # shellcheck disable=SC2064
+  trap "rm -rf '$tmp'" RETURN
+  tar -xzf "$trovato" -C "$tmp" || { info "backup illeggibile, passo alle domande"; return 1; }
+  [[ -f $tmp/dojo.env ]] || { info "nel backup non c'è dojo.env, passo alle domande"; return 1; }
+  install -m 600 "$tmp/dojo.env" "$f"
+  for c in webui.env dashboard.env; do
+    [[ ! -f $tmp/rooms/lab/$c ]] || install -m 600 "$tmp/rooms/lab/$c" "$DIR/rooms/lab/$c"
+  done
+  info "importato $f (permessi 600): per cambiare qualcosa modificalo e lancia scripts/dojo.sh up"
+}
+
 # dojo.env: un solo file con tutta la configurazione (ROOM-004), copiato da
 # dojo.env.example con le risposte al posto dei valori vuoti.
 config() {
@@ -92,6 +117,7 @@ config() {
     info "$f c'è già: per cambiare qualcosa modificalo e lancia scripts/dojo.sh up"
     return
   fi
+  ! restore_config || return 0
   install -m 600 "$esempio" "$f.tmp"
   info "Il tuo user ID Telegram numerico (da @userinfobot): l'unico a cui gli agenti rispondono."
   ask TELEGRAM_ALLOWED_USERS
