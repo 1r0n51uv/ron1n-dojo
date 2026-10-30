@@ -6,6 +6,7 @@ merge.
 
 ## 2026-10-30
 
+- Lab: Claude Code si installa in locale in `/opt/claude-code`, con postinstall e binario della piattaforma forzati; la build non si ferma più su "claude native binary not installed" ([#16](https://github.com/1r0n51uv/ron1n-dojo/pull/16))
 - Abbonamento Claude (Pro o Max) come modello degli agenti, opzionale: `dojo.sh claude <room> [agente...]` fa il login con la CLI ufficiale di Claude Code e mette Claude davanti, con il gateway (GPT e free) come riserva; `off` torna indietro (MODELS-006) ([#15](https://github.com/1r0n51uv/ron1n-dojo/pull/15))
 
 ## 2026-10-29
