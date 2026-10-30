@@ -138,7 +138,8 @@ raggiungibile solo dal mini PC e protetta da password.
 Accettazione:
 
 - [ ] La dashboard è sulla porta 9119 di `127.0.0.1` (`DASHBOARD_PORT` la
-      cambia), mai su altre interfacce.
+      cambia); solo `DASHBOARD_BIND=0.0.0.0` in `dojo.env` la apre alla rete
+      locale, e `dojo.sh up` avverte che è aperta.
 - [ ] Servono utente e password, casuali in `dashboard.env` (permessi 600),
       create solo se mancano.
 - [ ] Le credenziali non entrano nei `.env` dei profiles, che gli agenti
@@ -175,6 +176,10 @@ Accettazione:
 - [ ] In casa è su `127.0.0.1:8787` (`WEBUI_PORT` la cambia); fuori casa su
       `https://dojo.ron1n.space` via Cloudflare Tunnel e Caddy di ron1n,
       dietro Cloudflare Access. Nessuna porta aperta verso internet.
+- [ ] `WEBUI_BIND=0.0.0.0` in `dojo.env` apre la WebUI alla rete
+      locale, per il telefono in casa; un valore che non è un indirizzo IPv4
+      è un errore e `dojo.sh up` avverte che è aperta. Sul PC Windows servono
+      anche la rete WSL2 `mirrored` e una regola del firewall (README).
 - [ ] Oltre ad Access serve la password casuale di `webui.env`; senza
       `webui.env` il servizio resta fermo.
 - [ ] Il servizio `webui` sta solo sulla rete `internal`; verso Caddy passa

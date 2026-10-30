@@ -60,7 +60,13 @@ DOJO_UID=$(id -u)
 DOJO_GID=$(id -g)
 WEBUI_PORT=$(val WEBUI_PORT)
 DASHBOARD_PORT=$(val DASHBOARD_PORT)
-export DOJO_WORK DOJO_UID DOJO_GID WEBUI_PORT DASHBOARD_PORT
+WEBUI_BIND=$(val WEBUI_BIND)
+[[ -z $WEBUI_BIND || $WEBUI_BIND =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] ||
+  die "WEBUI_BIND in $conf deve essere un indirizzo IPv4 (127.0.0.1 o 0.0.0.0), non $WEBUI_BIND"
+DASHBOARD_BIND=$(val DASHBOARD_BIND)
+[[ -z $DASHBOARD_BIND || $DASHBOARD_BIND =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] ||
+  die "DASHBOARD_BIND in $conf deve essere un indirizzo IPv4 (127.0.0.1 o 0.0.0.0), non $DASHBOARD_BIND"
+export DOJO_WORK DOJO_UID DOJO_GID WEBUI_PORT DASHBOARD_PORT WEBUI_BIND DASHBOARD_BIND
 
 compose() {
   docker compose --project-directory "$base" -f "$base/compose.yaml" "$@"
@@ -211,6 +217,10 @@ up() {
   wait_seed
   push_env
   echo "WebUI: http://127.0.0.1:${WEBUI_PORT:-8787} (password in $base/webui.env)"
+  [[ -z $WEBUI_BIND || $WEBUI_BIND == 127.0.0.1 ]] ||
+    echo "attenzione: la WebUI ascolta su $WEBUI_BIND, raggiungibile dalla rete locale"
+  [[ -z $DASHBOARD_BIND || $DASHBOARD_BIND == 127.0.0.1 ]] ||
+    echo "attenzione: la dashboard ascolta su $DASHBOARD_BIND, raggiungibile dalla rete locale"
   echo "dashboard: http://127.0.0.1:${DASHBOARD_PORT:-9119} (utente dojo, password in $base/dashboard.env)"
   claude_logged_in || echo "manca il login Claude: scripts/dojo.sh claude"
 }
