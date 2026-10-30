@@ -1,0 +1,53 @@
+# Immagine della lab (ROOM-010). Sulle PR la costruisce senza pubblicarla;
+# al push su main la pubblica su ghcr.io/1r0n51uv/dojo-lab con i tag main,
+# che il mini PC segue con Watchtower, e sha-<commit> per il rollback.
+name: image
+
+on:
+  pull_request:
+    paths:
+      - rooms/lab/**
+      - flows/**
+      - skills/**
+      - .dockerignore
+      - .github/workflows/image.yml
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: image-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  lab:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/dojo-lab
+          tags: |
+            type=raw,value=main
+            type=sha,format=short,prefix=sha-
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: rooms/lab/Dockerfile
+          platforms: linux/amd64
+          push: ${{ github.event_name == 'push' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

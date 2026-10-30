@@ -1,10 +1,15 @@
 # Immagine Hermes della lab: quella ufficiale più la CLI di GitHub, che
-# serve per issue, PR e review, e la CLI di Claude Code con il provider
-# dell'abbonamento Claude. Le versioni si fissano in compose.yaml.
-ARG HERMES_VERSION
+# serve per issue, PR e review, la CLI di Claude Code con il provider
+# dell'abbonamento Claude, hermes-webui, e config, SOUL, flows e skill della
+# room. La CI la pubblica su ghcr.io/1r0n51uv/dojo-lab (ROOM-010). Le
+# versioni si fissano qui; il contesto della build è la radice del repo.
+ARG HERMES_VERSION=v0.22.5
 FROM nousresearch/hermes-agent:${HERMES_VERSION}
-ARG CLAUDE_CODE_VERSION
-ARG CLAUDE_PLUGIN_COMMIT
+# CLI ufficiale e provider dell'abbonamento Claude (MODELS-006): il plugin
+# vuole Claude Code 2.1.293 o più recente.
+ARG CLAUDE_CODE_VERSION=2.1.299
+# NousResearch/hermes-official-plugins, claude-subscription-directsdk 0.3.3.
+ARG CLAUDE_PLUGIN_COMMIT=1e326ddd28ae261821d7714d106fe114999a0bba
 
 RUN apt-get -o Acquire::Retries=3 update \
   && apt-get install -y --no-install-recommends gh \
@@ -41,7 +46,7 @@ RUN src=$(mktemp -d) \
 # Birth dei processi stabile anche quando il btime del kernel oscilla
 # (WSL2/Docker Desktop): senza, le card Kanban crashano con permission_denied.
 # Dettagli in patches/stable_birth.py; la build fallisce se Hermes cambia.
-COPY patches/stable_birth.py /tmp/stable_birth.py
+COPY rooms/lab/patches/stable_birth.py /tmp/stable_birth.py
 RUN python3 /tmp/stable_birth.py /opt/hermes/hermes_cli/process_identity.py \
   && /opt/hermes/.venv/bin/python -m py_compile /opt/hermes/hermes_cli/process_identity.py \
   && rm /tmp/stable_birth.py
@@ -49,14 +54,15 @@ RUN python3 /tmp/stable_birth.py /opt/hermes/hermes_cli/process_identity.py \
 # Ponte ACP per i client sul PC come AionUi (ROOM-008): `docker exec -i -u
 # hermes dojo-lab-hermes-1 dojo-acp <agente>` avvia `hermes -p <agente> acp`
 # con la cartella di lavoro del container e senza server MCP del client.
-COPY --chmod=0755 acp/dojo-acp /usr/local/bin/dojo-acp
+COPY --chmod=0755 rooms/lab/acp/dojo-acp /usr/local/bin/dojo-acp
 
 # Interfaccia web hermes-webui (ROOM-009), nella stessa immagine: gira con il
 # Python e il codice di Hermes già qui, senza scaricare nulla all'avvio. Le
 # serve in più solo PyYAML, che va in /opt/hermes-webui/deps (PYTHONPATH del
 # servizio webui) e non nella venv di Hermes. Di root, in sola lettura per
 # l'utente hermes.
-ARG WEBUI_COMMIT
+# nesquena/hermes-webui v0.52.544.
+ARG WEBUI_COMMIT=687d80333870c3797d6858738621fca13d1bf27a
 ARG PYYAML_VERSION=6.0.3
 RUN src=$(mktemp -d) \
   && git -C "$src" init -q \
@@ -72,3 +78,13 @@ RUN src=$(mktemp -d) \
        "$py" -m pip install -q --target "$deps" "pyyaml==${PYYAML_VERSION}"; \
      fi \
   && PYTHONPATH="$deps" "$py" -c "import yaml, cryptography"
+
+# Config e SOUL dei profiles, flows e skill della room (ROOM-012): di root,
+# in sola lettura per gli agenti. I .env non entrano (.dockerignore).
+COPY rooms/lab/profiles /opt/dojo/profiles
+COPY flows /opt/dojo/flows
+COPY skills /opt/dojo/skills
+RUN find /opt/dojo/profiles -name '.env*' -delete \
+  && for p in /opt/dojo/profiles/*/; do \
+       test -f "${p}config.yaml" && test -f "${p}SOUL.md"; \
+     done
