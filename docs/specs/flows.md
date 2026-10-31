@@ -96,7 +96,7 @@ Accettazione:
 
 ### FLOW-005 · Chi si blocca te lo dice dal suo bot
 
-Stato: fatto (#PR)
+Stato: fatto (#32)
 
 Quando una card si blocca, l'avviso arriva all'utente dal bot Telegram
 dell'agente che la stava lavorando, e la risposta si dà nella chat con lui.
@@ -132,7 +132,7 @@ Accettazione:
 
 ### FLOW-006 · Lo Strategist non implementa
 
-Stato: fatto (#PR)
+Stato: fatto (#32)
 
 Shikamaru pianifica, chiarisce con il grilling, scrive specifiche e issue e
 passa il lavoro con le card; implementare spetta a Edward, sempre.

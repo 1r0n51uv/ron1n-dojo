@@ -6,7 +6,7 @@ merge.
 
 ## 2026-10-31
 
-- Una card bloccata te la segnala chi la blocca: quando il dispatcher prende una card, il plugin `dojo-handoff` intesta all'agente assegnato la subscription della tua chat Telegram, così blocco, fine e fallimenti arrivano dal suo bot e lo svegliano nella sua chat, dove fa la domanda, commenta e sblocca la card (FLOW-005). Shikamaru non implementa più niente: SOUL e flussi lo dicono, template e stack nel hub passano a Edward e il plugin `dojo-spec-only` gli rifiuta le scritture fuori da specifiche, `CHANGELOG.md` e `projects/` (FLOW-006, FLOW-001, 002) ([#PR](https://github.com/1r0n51uv/ron1n-dojo/pull/PR))
+- Una card bloccata te la segnala chi la blocca: quando il dispatcher prende una card, il plugin `dojo-handoff` intesta all'agente assegnato la subscription della tua chat Telegram, così blocco, fine e fallimenti arrivano dal suo bot e lo svegliano nella sua chat, dove fa la domanda, commenta e sblocca la card (FLOW-005). Shikamaru non implementa più niente: SOUL e flussi lo dicono, template e stack nel hub passano a Edward e il plugin `dojo-spec-only` gli rifiuta le scritture fuori da specifiche, `CHANGELOG.md` e `projects/` (FLOW-006, FLOW-001, 002) ([#32](https://github.com/1r0n51uv/ron1n-dojo/pull/32))
 - GPT torna nel dojo con l'abbonamento ChatGPT (Plus o Pro), attraverso il provider `openai-codex` di Hermes invece di LiteLLM: l'egress apre `auth.openai.com` e `chatgpt.com`, il login si fa una volta dalla dashboard (o con `hermes auth add openai-codex`) e vale per tutti gli agenti, che passano a GPT quando lo scegli da Hermes; nessun comando nuovo in `dojo.sh` (MODELS-005) ([#31](https://github.com/1r0n51uv/ron1n-dojo/pull/31))
 
 ## 2026-10-30
