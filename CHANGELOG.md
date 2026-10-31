@@ -4,6 +4,10 @@ Cosa cambia nel dojo (stanze, profili, flussi, script), il giorno più
 recente in alto. Ogni PR aggiunge la sua riga in cima, sotto il giorno del
 merge.
 
+## 2026-10-31
+
+- GPT torna nel dojo con l'abbonamento ChatGPT (Plus o Pro), attraverso il provider `openai-codex` di Hermes invece di LiteLLM: l'egress apre `auth.openai.com` e `chatgpt.com`, il login si fa una volta dalla dashboard (o con `hermes auth add openai-codex`) e vale per tutti gli agenti, che passano a GPT quando lo scegli da Hermes; nessun comando nuovo in `dojo.sh` (MODELS-005) ([#31](https://github.com/1r0n51uv/ron1n-dojo/pull/31))
+
 ## 2026-10-30
 
 - `WEBUI_BIND=0.0.0.0` e `DASHBOARD_BIND=0.0.0.0` in `dojo.env` aprono WebUI e dashboard alla rete locale, con i passi per Windows/WSL2 nel README; `dojo.sh up` avverte che è aperta e rifiuta un valore che non è un indirizzo IPv4 (ROOM-009) ([#30](https://github.com/1r0n51uv/ron1n-dojo/pull/30))

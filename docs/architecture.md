@@ -116,6 +116,11 @@ CLI ufficiale di Claude Code e il plugin `claude-subscription-directsdk` di
 Nous Research. È una zona grigia dei termini di Anthropic, accettata. Non c'è
 riserva: finita la quota gli agenti aspettano il reset.
 
+GPT si aggiunge con l'abbonamento ChatGPT attraverso il provider
+`openai-codex` di Hermes: un login dalla dashboard vale per tutti gli
+agenti, e ognuno passa a GPT quando lo scegli da Hermes
+([MODELS-005](specs/models.md)).
+
 Il modello di ogni agente si sceglie da Hermes (`hermes model`, dashboard o
 WebUI) con i nomi veri del provider: niente nomi logici come `strong` o
 `fast`. Da lì si aggiungono altri provider quando serviranno. Il gateway

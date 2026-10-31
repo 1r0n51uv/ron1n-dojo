@@ -2,8 +2,8 @@
 
 Prefisso ID: `MODELS` · Label: `mod:models`
 
-Per ora il dojo usa solo Claude, con l'abbonamento dell'utente. Il modello
-di ogni agente si sceglie da Hermes con i nomi veri del provider; il gateway
+Il dojo usa Claude con l'abbonamento dell'utente e, a scelta per agente, GPT
+con l'abbonamento ChatGPT. Il modello di ogni agente si sceglie da Hermes con i nomi veri del provider; il gateway
 LiteLLM e i nomi logici (`strong`, `fast`, `free`, `local`) della prima
 versione escono.
 
@@ -33,11 +33,27 @@ Stato: rimosso
 
 Le chiavi di eventuali provider nuovi si aggiungono da Hermes (MODELS-007).
 
-### MODELS-005 · Abbonamento ChatGPT al posto delle API key
+### MODELS-005 · Abbonamento ChatGPT come provider di Hermes
 
-Stato: rimosso
+Stato: proposto
 
-Per ora solo Claude, senza riserva ChatGPT.
+GPT si usa con l'abbonamento ChatGPT dell'utente (Plus o Pro), attraverso il
+provider `openai-codex` già dentro Hermes: niente gateway, plugin o comandi
+nuovi in `dojo.sh`. Claude resta il modello di partenza di ogni agente;
+GPT si sceglie per agente da Hermes (MODELS-007).
+
+Accettazione:
+
+- [ ] L'egress apre `auth.openai.com` (login con codice dispositivo e
+      rinnovo del token) e `chatgpt.com` (chiamate ai modelli).
+- [ ] Il login si fa una volta dalla dashboard (Keys › ChatGPT or Codex
+      Subscription, profile default) o con `hermes auth add openai-codex`
+      nel container; il token sta in `/opt/data/auth.json`, nel volume
+      della room, e vale per tutti i profiles.
+- [ ] Un agente passa a GPT dalla WebUI, dalla dashboard o con
+      `hermes model`, e la scelta resta dopo un riavvio (ROOM-012).
+- [ ] Nessuna riserva automatica fra Claude e ChatGPT: finita la quota,
+      l'agente lo dice e si cambia modello da Hermes.
 
 ### MODELS-006 · Abbonamento Claude per tutti gli agenti
 
@@ -80,6 +96,12 @@ Accettazione:
       entra nell'allowlist di `egress` con una PR che dice perché serve.
 
 ## Note
+
+- Il token ChatGPT, come quello di Claude, sta nel volume della room e gli
+  agenti con `terminal` potrebbero leggerlo. Con il login nel profile
+  default Hermes scrive i rinnovi nello stesso file, così i profiles non si
+  revocano il token a vicenda; un `hermes -p <agente> auth add` separato
+  darebbe all'agente un login suo.
 
 - La quota di Claude è quella dell'account dell'utente, condivisa con Claude
   Code, claude.ai e l'app. Il plugin consuma come `claude -p`, più in fretta
