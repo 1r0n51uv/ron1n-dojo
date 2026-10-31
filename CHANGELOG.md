@@ -4,9 +4,12 @@ Cosa cambia nel dojo (stanze, profili, flussi, script), il giorno più
 recente in alto. Ogni PR aggiunge la sua riga in cima, sotto il giorno del
 merge.
 
-## 2026-10-30
+## 2026-10-31
 
 - GPT torna nel dojo con l'abbonamento ChatGPT (Plus o Pro), attraverso il provider `openai-codex` di Hermes invece di LiteLLM: l'egress apre `auth.openai.com` e `chatgpt.com`, il login si fa una volta dalla dashboard (o con `hermes auth add openai-codex`) e vale per tutti gli agenti, che passano a GPT quando lo scegli da Hermes; nessun comando nuovo in `dojo.sh` (MODELS-005) ([#31](https://github.com/1r0n51uv/ron1n-dojo/pull/31))
+
+## 2026-10-30
+
 - `WEBUI_BIND=0.0.0.0` e `DASHBOARD_BIND=0.0.0.0` in `dojo.env` aprono WebUI e dashboard alla rete locale, con i passi per Windows/WSL2 nel README; `dojo.sh up` avverte che è aperta e rifiuta un valore che non è un indirizzo IPv4 (ROOM-009) ([#30](https://github.com/1r0n51uv/ron1n-dojo/pull/30))
 - `install.sh` cerca un backup di `cleanup.sh` (`configurazione.tar.gz` nella cartella da cui lo lanci, in una `dojo-backup-*` o nella home) e, se manca `dojo.env`, chiede se importare configurazione e password invece di rifare le domande (ROOM-005, 014) ([#29](https://github.com/1r0n51uv/ron1n-dojo/pull/29))
 - `scripts/cleanup.sh`: toglie il dojo dal PC un gruppo alla volta (avanzi delle versioni vecchie, room accesa, dati, configurazione, immagini), chiedendo conferma e, prima di tutto, se fare un backup dei file importanti (configurazione, volumi di Hermes, cartella di lavoro); stampa cosa fare a mano su Windows (ROOM-014) ([#28](https://github.com/1r0n51uv/ron1n-dojo/pull/28))
