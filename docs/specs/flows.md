@@ -23,6 +23,8 @@ Accettazione:
 - [ ] Nico Robin chiarisce la richiesta con `grilling` e crea la card per
       Shikamaru, con la chiave della issue se c'è già; non tocca il tracker.
 - [ ] Se la issue manca, Shikamaru la apre nel tracker del progetto.
+- [ ] Shikamaru non implementa (FLOW-006): codice, skill e config li fa
+      Edward.
 - [ ] Shikamaru manda prima la sua revisione del piano, con le correzioni e
       da dove vengono, e chiede solo le decisioni che il repo non dice.
 - [ ] Le domande a scelta multipla usano `clarify` con le opzioni in
@@ -56,10 +58,11 @@ Accettazione:
 - [ ] Shikamaru raccoglie nome, descrizione, stack, primo modulo e tracker
       (GitHub Issues o Jira, con la chiave del progetto Jira).
 - [ ] Dopo che l'utente ha creato il repo (e il progetto Jira, se serve),
-      Shikamaru apre la PR con il template di ron1n e le prime specifiche,
-      e quella nel repo dojo con `projects/<nome>.yaml`.
-- [ ] Apre la PR sul hub ron1n con la riga del README e lo stack
-      `infra/<app>/`.
+      Shikamaru apre la PR con le prime specifiche e quella nel repo dojo con
+      `projects/<nome>.yaml`, e passa a Edward una card per il template di
+      ron1n (FLOW-006).
+- [ ] La PR sul hub ron1n con la riga del README e lo stack `infra/<app>/`
+      la apre Edward, da una card di Shikamaru.
 
 ### FLOW-003 · Lavori ricorrenti
 
@@ -86,10 +89,71 @@ Accettazione:
       chiave della issue nel titolo (`#42` o `DOJO-42`) e il progetto.
 - [ ] Il dispatcher del gateway assegna le card; le card PR si chiudono solo
       con i check richiesti verdi.
-- [ ] Nessun plugin nostro sul Kanban: le notifiche sono quelle di Hermes.
-      Dopo la prova sul mini PC si decide se servono avvisi in più.
+- [ ] Le notifiche sono quelle di Hermes; l'unico plugin nostro sul Kanban
+      dice solo da quale bot arrivano (FLOW-005).
 - [ ] Una card bloccata o fallita lo dice nella issue, così l'utente lo
       vede anche dal tracker.
+
+### FLOW-005 · Chi si blocca te lo dice dal suo bot
+
+Stato: fatto (#PR)
+
+Quando una card si blocca, l'avviso arriva all'utente dal bot Telegram
+dell'agente che la stava lavorando, e la risposta si dà nella chat con lui.
+Hermes iscrive agli esiti solo chi ha creato la card (di solito Nico Robin) e
+un worker Kanban non ha un canale verso l'utente (`clarify` lì non c'è): senza
+questo, una domanda di Shikamaru restava ferma in silenzio.
+
+Accettazione:
+
+- [ ] Quando il dispatcher prende una card, la chat Telegram dell'utente è
+      iscritta ai suoi esiti a nome dell'agente assegnato, in modalità
+      `notify+wake`: blocco, fine e fallimenti arrivano dal suo bot e lo
+      svegliano nella sua chat. Lo fa il plugin `dojo-handoff`, acceso nel
+      profile `default` dove gira il dispatcher.
+- [ ] L'avviso arriva da un bot solo: la subscription di chi ha creato la card
+      sulla stessa chat Telegram passa all'assegnatario. Quelle su altre
+      piattaforme (WebUI) restano.
+- [ ] Un agente senza bot non cambia niente: resta la subscription di chi ha
+      creato la card.
+- [ ] Nel worker, un agente a cui manca una decisione dell'utente fa
+      `kanban_block` con la domanda e le opzioni nel motivo, invece di
+      aspettare o inventare.
+- [ ] Svegliato da un blocco, l'agente legge la card, fa la domanda nella
+      chat (`clarify` con `choices` se è una scelta), poi scrive la risposta
+      come commento sulla card e la sblocca: il dispatcher la riprende con il
+      commento. Anche una risposta scritta di getto nella chat dell'agente
+      sblocca la card allo stesso modo.
+- [ ] Si può sempre rispondere anche dal board: commento e `unblock` da
+      dashboard o CLI.
+- [ ] Un errore del plugin finisce nel log e non ferma il dispatcher.
+- [ ] La CI dell'immagine prova che la subscription passa all'assegnatario e
+      che il blocco successivo la raggiunge.
+
+### FLOW-006 · Lo Strategist non implementa
+
+Stato: fatto (#PR)
+
+Shikamaru pianifica, chiarisce con il grilling, scrive specifiche e issue e
+passa il lavoro con le card; implementare spetta a Edward, sempre.
+
+Accettazione:
+
+- [ ] Shikamaru non scrive né cambia codice, skill, config, script, template
+      o qualunque file del repo che non sia una specifica o un documento
+      (`docs/**/*.md`), il `CHANGELOG.md` o `projects/<nome>.yaml`. Le sue PR
+      sono solo di specifica.
+- [ ] Una richiesta da implementare (anche "aggiungi una skill al repo")
+      diventa una specifica o una issue e una card per Edward (`builder`),
+      con la chiave della issue e cosa fare.
+- [ ] Il SOUL di Shikamaru lo dice in chiaro.
+- [ ] Rinforzo in configurazione: nel profile strategist il plugin
+      `dojo-spec-only` rifiuta le scritture dei tool di file (`write_file`,
+      `patch`) fuori da quei percorsi, con l'invito a passare la card a
+      Edward. Il terminale resta per git e `gh`, quindi non è un confine:
+      una PR di Shikamaru con file fuori dalle specifiche non si fonde.
+- [ ] La CI dell'immagine prova che il codice è rifiutato e la specifica
+      passa.
 
 ## Note
 

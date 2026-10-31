@@ -1,7 +1,7 @@
 ---
 name: new-project
 description: 'Prepara un nuovo repo app ron1n dal template: specifica iniziale, label, stack in infra.'
-version: 0.2.0
+version: 0.3.0
 author: ron1n-dojo
 metadata:
   hermes:
@@ -25,17 +25,19 @@ amministratore li fa 1ron51uv.
    `grilling-with-docs` e chiede solo quello che manca.
 2. **Repo** (1ron51uv): crea il repo su GitHub e lo rende visibile al
    token degli agenti. Shikamaru non crea repo.
-3. **Template** (strategist): copia `templates/app/` di ron1n nel repo,
-   compila `docs/specs/README.md` e il primo `docs/specs/<modulo>.md`, apre
-   la PR.
-4. **Branch protection** (1ron51uv): PR obbligatoria, check `ci`, solo
+3. **Specifiche** (strategist): compila `docs/specs/README.md` e il primo
+   `docs/specs/<modulo>.md` e apre la PR di sola specifica. Non implementa
+   (FLOW-006): per il resto crea card per Edward (`builder`).
+4. **Template** (builder, card di Shikamaru): copia `templates/app/` di
+   ron1n nel repo e apre la PR.
+5. **Branch protection** (1ron51uv): PR obbligatoria, check `ci`, solo
    squash.
-5. **Hub** (strategist): PR su `1r0n51uv/ron1n` con la riga nella tabella
-   del README e lo stack `infra/<app>/` dal template.
-6. **Progetto nel dojo** (strategist): PR su `1r0n51uv/ron1n-dojo` con
+6. **Hub** (builder, card di Shikamaru): PR su `1r0n51uv/ron1n` con la riga
+   nella tabella del README e lo stack `infra/<app>/` dal template.
+7. **Progetto nel dojo** (strategist): PR su `1r0n51uv/ron1n-dojo` con
    `projects/<nome>.yaml` (repo, tracker, `jira_key` se Jira, i cinque stati;
    formato in `projects/README.md`). Se il suo token non arriva a quel repo,
    passa il file a 1ron51uv. Gli agenti lo usano dopo il merge e
    l'aggiornamento dell'immagine; con un progetto Jira, `dojo.sh up` apre
    l'egress verso Atlassian.
-7. Da qui ogni requisito segue il flusso `new-feature`.
+8. Da qui ogni requisito segue il flusso `new-feature`.

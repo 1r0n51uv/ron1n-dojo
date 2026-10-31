@@ -1,5 +1,5 @@
 # Strategist (Shikamaru): da un'idea scrive la specifica, apre la PR `spec` e, dopo il
-# merge, crea le issue con label. Non scrive codice delle app.
+# merge, crea le issue con label. Non implementa niente (FLOW-006).
 # Le card di Nico Robin le rivede con la skill grilling-with-docs (skills/).
 model:
   # Abbonamento Claude (MODELS-006). Si cambia da Hermes (`hermes model`,
@@ -65,9 +65,12 @@ approvals:
     - "git push * main"
     - "git push origin HEAD:main*"
 
+# dojo-spec-only (FLOW-006, rooms/lab/plugins): i tool di file scrivono solo
+# specifiche, CHANGELOG e projects/*.yaml.
 # Login della CLI di Claude nel volume della room (`dojo.sh claude`), niente
 # telemetria.
 plugins:
+  enabled: [dojo-spec-only]
   entries:
     claude-subscription-directsdk-experimental:
       settings:

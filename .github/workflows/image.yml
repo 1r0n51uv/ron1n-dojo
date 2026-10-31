@@ -77,6 +77,11 @@ jobs:
           docker exec -e PYTHONPATH=/opt/mcp-atlassian lab /opt/hermes/.venv/bin/python -c "from mcp_atlassian import main"
           docker exec lab test -f /opt/dojo/projects/ron1n.yaml
           docker exec lab test -f /opt/dojo/skills/tracker-jira/SKILL.md
+          # Plugin della lab: avvisi dal bot di chi si blocca (FLOW-005) e
+          # Strategist che non implementa (FLOW-006).
+          py=/opt/hermes/.venv/bin/python
+          docker exec -i -u hermes -e HERMES_HOME=/opt/data lab $py - handoff < rooms/lab/tests/plugins.py
+          docker exec -i -u hermes -e HERMES_HOME=/opt/data/profiles/strategist lab $py - spec-only < rooms/lab/tests/plugins.py
           # Il modello scelto da Hermes resta dopo un riavvio (MODELS-007).
           # Hermes può riscrivere il config togliendo le virgolette.
           conf=/opt/data/profiles/builder/config.yaml
