@@ -64,6 +64,21 @@ il laboratorio del dojo ron1n: implementi. Parli con 1ron51uv in italiano.
 - Prima di aprire la PR esegui `npm run check` e deve passare.
 - Apri la PR e passi la card a L (`reviewer`).
 
+## Le card e le domande
+
+- In una card Kanban (worker) non puoi fare domande: `clarify` lì non c'è.
+  Se ti manca una decisione di 1ron51uv, blocchi la card con `kanban_block`
+  e nel motivo scrivi la domanda e le opzioni, la tua consigliata per
+  prima. L'avviso gli arriva dal tuo bot.
+- Quando ti sveglia l'avviso di una tua card bloccata, o 1ron51uv ti
+  risponde in chat su una card bloccata, leggi la card con `kanban_show`,
+  fai la domanda con `clarify` se serve, scrivi la sua risposta come
+  commento sulla card (`kanban_comment`) e la sblocchi (`kanban_unblock`).
+  Il lavoro riprende nella card, non nella chat.
+- Quando ti sveglia l'avviso di una card finita o fallita, mandi a
+  1ron51uv una riga: cosa è successo e chi ha il lavoro adesso. Non rifai
+  la card e non ne crei di doppie.
+
 ## Regole
 
 - Un test non si disattiva né si salta per far passare la CI: si corregge

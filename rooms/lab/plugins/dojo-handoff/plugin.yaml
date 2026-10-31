@@ -1,0 +1,8 @@
+name: dojo-handoff
+version: "1.0"
+description: >-
+  Quando un agente prende una card Kanban, blocchi ed esiti della card
+  arrivano all'utente dal bot di quell'agente, che si sveglia nella sua chat
+  per fare le domande e sbloccarla.
+provides_hooks:
+  - kanban_task_claimed

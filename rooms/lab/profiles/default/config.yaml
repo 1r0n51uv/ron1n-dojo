@@ -28,9 +28,12 @@ approvals:
   cron_mode: deny
   unattended_mode: deny
 
+# dojo-handoff (FLOW-005, rooms/lab/plugins): il dispatcher gira qui, e quando
+# un agente prende una card gli intesta gli avvisi della chat dell'utente.
 # Login della CLI di Claude nel volume della room (`dojo.sh claude`), niente
 # telemetria.
 plugins:
+  enabled: [dojo-handoff]
   entries:
     claude-subscription-directsdk-experimental:
       settings:

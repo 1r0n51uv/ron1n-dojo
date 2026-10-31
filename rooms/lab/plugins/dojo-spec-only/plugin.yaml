@@ -1,0 +1,7 @@
+name: dojo-spec-only
+version: "1.0"
+description: >-
+  Lo Strategist scrive solo specifiche, CHANGELOG e projects/*.yaml con i
+  tool di file; il resto lo rifiuta e lo manda al Builder.
+provides_hooks:
+  - pre_tool_call

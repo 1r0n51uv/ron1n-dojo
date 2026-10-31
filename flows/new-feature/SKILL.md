@@ -1,7 +1,7 @@
 ---
 name: new-feature
 description: "Da un'idea a una PR pronta per il merge: specifica, issue nel tracker del progetto, implementazione, revisione (flusso ron1n)."
-version: 0.2.0
+version: 0.3.0
 author: ron1n-dojo
 metadata:
   hermes:
@@ -38,6 +38,8 @@ issue (con la sua chiave o il suo numero), la legge e riparte da lì.
 ## Passi
 
 1. **Specifica** (strategist)
+   - Shikamaru non implementa (FLOW-006): scrive solo specifiche, issue e
+     card. Codice, skill, config e template li fa Edward.
    - Se la richiesta arriva da una card di Nico Robin, la rivede con la
      skill `grilling-with-docs` (`skills/`): revisione del piano con le
      correzioni, poi grilling e specifica scritta durante.
@@ -78,6 +80,11 @@ issue (con la sua chiave o il suo numero), la legge e riparte da lì.
 
 - Specifica ambigua o in conflitto con un requisito esistente: blocca la
   card e chiedi.
+- Come chiedere da una card (FLOW-005): nel worker `clarify` non c'è, quindi
+  `kanban_block` con la domanda e le opzioni nel motivo. L'avviso arriva a
+  1ron51uv dal tuo bot e ti sveglia nella tua chat con lui: lì fai la
+  domanda, scrivi la risposta come commento sulla card (`kanban_comment`) e
+  la sblocchi (`kanban_unblock`).
 - CI rossa per un motivo estraneo alla PR: commenta sulla PR e avvisa,
   non correggere altro.
 - Servono permessi che il token non ha: dillo, non cercare scorciatoie.

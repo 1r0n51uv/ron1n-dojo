@@ -25,7 +25,9 @@ sopra Hermes. Il PC Windows con WSL2 serve solo per le prove.
   solo verso i domini permessi; ogni agente ha i suoi token minimi; il merge
   è sempre tuo.
 - **Poco codice nostro**: quello che Hermes fa di serie (Kanban, notifiche,
-  scelta del modello, approvazioni) non si riscrive in plugin o patch.
+  scelta del modello, approvazioni) non si riscrive in plugin o patch. I
+  due plugin di `rooms/lab/plugins/` aggiungono solo quello che manca:
+  da quale bot arrivano gli avvisi e il limite dello Strategist.
 
 ## Cosa isola davvero
 
@@ -101,13 +103,13 @@ tutti i profiles (multiplexing) e il dispatcher Kanban.
 
 ### Agenti della lab
 
-| Agente                   | Ruolo                                                                                  | Toolset                                                               | Token GitHub                                |
-| ------------------------ | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------- |
-| `concierge` (Nico Robin) | primo contatto, chiarisce con `grilling`, card a Shikamaru; non tocca il tracker       | kanban, clarify, skills, todo, memory                                 | nessuno                                     |
-| `strategist` (Shikamaru) | specifica, PR `spec`, issue nel tracker (anche quella iniziale), card a Bulma o Edward | file, terminal, kanban, clarify, skills, todo, memory                 | contents, pull requests, issues: scrittura  |
-| `designer` (Bulma)       | flows, mockup e note UI/UX in `docs/design/` e nella issue; niente codice              | file, terminal, vision, kanban, clarify, skills, todo, memory         | contents, pull requests, issues: scrittura  |
-| `builder` (Edward)       | implementazione con test, `npm run check`, PR con il riferimento alla issue            | file, terminal, code_execution, kanban, clarify, skills, todo, memory | contents, pull requests: scrittura          |
-| `reviewer` (L)           | review contro specifica e regole, commento sulla PR, card indietro o PR pronta         | terminal, kanban, clarify, skills, todo, memory                       | contents: lettura; pull requests: scrittura |
+| Agente                   | Ruolo                                                                                                  | Toolset                                                               | Token GitHub                                |
+| ------------------------ | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- | ------------------------------------------- |
+| `concierge` (Nico Robin) | primo contatto, chiarisce con `grilling`, card a Shikamaru; non tocca il tracker                       | kanban, clarify, skills, todo, memory                                 | nessuno                                     |
+| `strategist` (Shikamaru) | specifica, PR `spec`, issue nel tracker (anche quella iniziale), card a Bulma o Edward; non implementa | file, terminal, kanban, clarify, skills, todo, memory                 | contents, pull requests, issues: scrittura  |
+| `designer` (Bulma)       | flows, mockup e note UI/UX in `docs/design/` e nella issue; niente codice                              | file, terminal, vision, kanban, clarify, skills, todo, memory         | contents, pull requests, issues: scrittura  |
+| `builder` (Edward)       | implementazione con test, `npm run check`, PR con il riferimento alla issue                            | file, terminal, code_execution, kanban, clarify, skills, todo, memory | contents, pull requests: scrittura          |
+| `reviewer` (L)           | review contro specifica e regole, commento sulla PR, card indietro o PR pronta                         | terminal, kanban, clarify, skills, todo, memory                       | contents: lettura; pull requests: scrittura |
 
 ## Modelli
 
@@ -153,13 +155,22 @@ dal tool `clarify`, che su Telegram mostra le opzioni come bottoni.
 
 1. **Nuova feature**: Nico Robin → Shikamaru (specifica, issue) → Bulma
    (mockup, se c'è interfaccia) → Edward (PR) → L (review) → merge tuo.
-2. **Nuovo progetto**: Shikamaru prepara specifica, template e
-   `projects/<nome>.yaml`; repo e branch protection li crei tu.
+2. **Nuovo progetto**: Shikamaru prepara specifica e
+   `projects/<nome>.yaml`, Edward template e stack nel hub; repo e branch
+   protection li crei tu.
 3. **Personale** (room `home`), **lavoro** (room `work`), **ricorrenti**: con le rooms future.
 
-Le notifiche del Kanban sono quelle di Hermes. I plugin `handoff` e
-`kanban-telegram` della prima versione escono; se le notifiche di serie non
-bastano si decide dopo la prova sul mini PC.
+Le notifiche del Kanban sono quelle di Hermes, ma arrivano dal bot
+dell'agente che lavora la card ([FLOW-005](specs/flows.md)): quando il
+dispatcher prende una card, il plugin `dojo-handoff` intesta a quell'agente
+la subscription della tua chat Telegram. Se si blocca, il suo bot te lo dice
+e lui si sveglia nella sua chat: gli rispondi lì e lui commenta e sblocca la
+card. Il bot di un agente ti scrive solo se gli hai già scritto almeno una
+volta (`/start`).
+
+Shikamaru non implementa ([FLOW-006](specs/flows.md)): oltre al SOUL, il
+plugin `dojo-spec-only` gli rifiuta le scritture dei tool di file fuori da
+specifiche, `CHANGELOG.md` e `projects/`.
 
 ## Fasi della riscrittura
 

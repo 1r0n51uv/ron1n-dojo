@@ -153,8 +153,9 @@ Accettazione:
 Stato: rimosso
 
 Sostituito dalle notifiche di serie del Kanban di Hermes (FLOW-004). I
-plugin `handoff` e `kanban-telegram` escono; se dopo la prova sul mini PC
-non bastano, un requisito nuovo dice cosa aggiungere.
+plugin `handoff` e `kanban-telegram` escono. Le notifiche di serie non
+bastavano: FLOW-005 fa arrivare gli avvisi dal bot dell'agente che lavora la
+card.
 
 ### ROOM-008 · Agenti da un client ACP sul PC
 
