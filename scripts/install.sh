@@ -119,9 +119,6 @@ config() {
   fi
   ! restore_config || return 0
   install -m 600 "$esempio" "$f.tmp"
-  info "Il tuo user ID Telegram numerico (da @userinfobot): l'unico a cui gli agenti rispondono."
-  ask TELEGRAM_ALLOWED_USERS
-  set_value "$f.tmp" TELEGRAM_ALLOWED_USERS "$REPLY"
   info "Cartella che contiene quelle delle rooms (la lab lavora in <cartella>/lab), con i tuoi permessi."
   ask DOJO_ROOMS_DIR "$(env_get "$esempio" DOJO_ROOMS_DIR)"
   set_value "$f.tmp" DOJO_ROOMS_DIR "$REPLY"
@@ -170,7 +167,6 @@ main() {
   step "Fatto"
   info "Configurazione: $DIR/dojo.env; dopo una modifica, $DIR/scripts/dojo.sh up"
   info "WebUI: http://127.0.0.1:8787, password in $DIR/rooms/lab/webui.env"
-  info "Oppure scrivi ai bot su Telegram, per esempio a Nico Robin"
 }
 
 main "$@"

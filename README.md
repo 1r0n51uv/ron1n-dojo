@@ -2,8 +2,8 @@
 
 Il dojo è il sistema di agenti di ron1n: agenti
 [Hermes](https://github.com/NousResearch/hermes-agent) in Docker sul mini PC,
-ognuno con un ruolo e permessi stretti, con cui si parla dalla WebUI o da
-Telegram. Lavorano su richiesta o a orario e seguono flows fissi che
+ognuno con un ruolo e permessi stretti, con cui si parla dalla WebUI.
+Lavorano su richiesta o a orario e seguono flows fissi che
 ricalcano quello di ron1n: specifica → issue → PR con CI → merge → GHCR →
 Watchtower. Il merge resta sempre umano.
 
@@ -27,9 +27,8 @@ Sul mini PC, con Docker, un comando:
 curl -fsSL https://raw.githubusercontent.com/1r0n51uv/ron1n-dojo/main/scripts/install.sh | bash
 ```
 
-Clona il repo in `~/ron1n-dojo` (o `DOJO_DIR`), chiede il tuo user ID
-Telegram e, agente per agente, se accenderlo con il suo bot e token GitHub,
-e scrive le risposte in `dojo.env`. Poi scarica l'immagine da GHCR, avvia
+Clona il repo in `~/ron1n-dojo` (o `DOJO_DIR`), chiede la cartella di
+lavoro e, agente per agente, se accenderlo con il suo token GitHub, e scrive le risposte in `dojo.env`. Poi scarica l'immagine da GHCR, avvia
 la room, fa il login all'abbonamento Claude e controlla tutto con
 `scripts/dojo.sh status`.
 
@@ -37,8 +36,7 @@ la room, fa il login all'abbonamento Claude e controlla tutto con
 
 Tutto sta in un file, `dojo.env` nella radice del repo (permessi 600, non
 versionato; ogni valore è spiegato in [`dojo.env.example`](dojo.env.example)):
-agenti accesi, utente Telegram, cartella di lavoro, bot e token di ogni
-agente. Dopo una modifica:
+agenti accesi, cartella di lavoro e token di ogni agente. Dopo una modifica:
 
 ```sh
 scripts/dojo.sh up       # applica dojo.env e avvia o aggiorna la room
@@ -105,8 +103,6 @@ WebUI ha la sua password e un terminale: aprila solo su una rete tua.
 
 Per chiudere: togli `WEBUI_BIND` e rilancia `up`, poi
 `Remove-NetFirewallRule -DisplayName "dojo LAN"` (`cleanup.sh` te lo ricorda).
-
-- Telegram: un bot per agente.
 
 ## Sviluppo
 

@@ -14,7 +14,7 @@ sempre dell'utente.
 
 Stato: proposto
 
-Da una richiesta, sulla WebUI, su Telegram o come issue nel tracker, si
+Da una richiesta, sulla WebUI o come issue nel tracker, si
 arriva a una PR pronta per il merge, seguendo il flusso di
 ron1n.
 
@@ -29,7 +29,7 @@ Accettazione:
 - [ ] Shikamaru manda prima la sua revisione del piano, con le correzioni e
       da dove vengono, e chiede solo le decisioni che il repo non dice.
 - [ ] Le domande a scelta multipla usano `clarify` con le opzioni in
-      `choices` (bottoni su Telegram).
+      `choices`.
 - [ ] Shikamaru apre la PR di specifica (label `spec`, `type:docs`,
       CHANGELOG) e manda il link; non procede prima del merge.
 - [ ] Dopo il merge crea una issue per requisito nel tracker, con titolo
@@ -69,7 +69,8 @@ Accettazione:
 
 Stato: proposto
 
-Gli agenti possono lavorare a orario e mandare il risultato su Telegram.
+Gli agenti possono lavorare a orario; come arriva il risultato si decide
+con il primo lavoro a orario, senza Telegram.
 
 Accettazione:
 
@@ -90,51 +91,21 @@ Accettazione:
       chiave della issue nel titolo (`#42` o `DOJO-42`) e il progetto.
 - [ ] Il dispatcher del gateway assegna le card; le card PR si chiudono solo
       con i check richiesti verdi.
-- [ ] Le notifiche sono quelle di Hermes; l'unico plugin nostro sul Kanban
-      dice solo da quale bot arrivano (FLOW-005).
+- [ ] Le notifiche sono quelle di Hermes, nessun plugin nostro sul Kanban.
 - [ ] Una card bloccata o fallita lo dice nella issue, così l'utente lo
       vede anche dal tracker.
 
 ### FLOW-005 · Chi si blocca te lo dice dal suo bot
 
-Stato: fatto (#32)
+Stato: rimosso
 
-Quando una card si blocca, l'avviso arriva all'utente dal bot Telegram
-dell'agente che la stava lavorando, e la risposta si dà nella chat con lui.
-Hermes iscrive agli esiti solo chi ha creato la card (di solito Nico Robin) e
-un worker Kanban non ha un canale verso l'utente (`clarify` lì non c'è): senza
-questo, una domanda di Shikamaru restava ferma in silenzio.
-
-Accettazione:
-
-- [ ] Quando il dispatcher prende una card, la chat Telegram dell'utente è
-      iscritta ai suoi esiti a nome dell'agente assegnato, in modalità
-      `notify+wake`: blocco, fine e fallimenti arrivano dal suo bot e lo
-      svegliano nella sua chat. Lo fa il plugin `dojo-handoff`, acceso nel
-      profile `default` dove gira il dispatcher.
-- [ ] Una card finita non sveglia l'agente: quando si completa, il plugin
-      (acceso in ogni profile agente, perché l'hook gira nel worker) passa la
-      subscription a `notify` e l'esito arriva come messaggio passivo. Se
-      perde la corsa con il notifier l'agente si sveglia come prima.
-- [ ] L'avviso arriva da un bot solo: la subscription di chi ha creato la card
-      sulla stessa chat Telegram passa all'assegnatario. Quelle su altre
-      piattaforme (WebUI) restano.
-- [ ] Un agente senza bot non cambia niente: resta la subscription di chi ha
-      creato la card.
-- [ ] Nel worker, un agente a cui manca una decisione dell'utente fa
-      `kanban_block` con la domanda e le opzioni nel motivo, invece di
-      aspettare o inventare.
-- [ ] Svegliato da un blocco, l'agente legge la card, fa la domanda nella
-      chat (`clarify` con `choices` se è una scelta), poi scrive la risposta
-      come commento sulla card e la sblocca: il dispatcher la riprende con il
-      commento. Anche una risposta scritta di getto nella chat dell'agente
-      sblocca la card allo stesso modo.
-- [ ] Si può sempre rispondere anche dal board: commento e `unblock` da
-      dashboard o CLI.
-- [ ] Un errore del plugin finisce nel log e non ferma il dispatcher.
-- [ ] La CI dell'immagine prova che la subscription passa all'assegnatario,
-      che il blocco successivo la raggiunge e che la card finita la porta a
-      `notify`.
+Fatto con la #32, esce con Telegram (ROOM-002): non ci sono più bot da cui
+far arrivare gli avvisi, e il plugin `dojo-handoff` è stato tolto. Una card
+bloccata si vede nella WebUI, sul board o nella sessione dell'agente, e si
+sblocca da lì (commento e `unblock`, anche da dashboard o CLI). Resta la
+regola dei SOUL: nel worker, un agente a cui manca una tua decisione fa
+`kanban_block` con la domanda e le opzioni nel motivo, invece di aspettare o
+inventare.
 
 ### FLOW-006 · Lo Strategist non implementa
 
@@ -179,7 +150,7 @@ Accettazione:
       (bug o modifica chiari), a Shikamaru (idea da pensare) o a Bulma
       (interfaccia).
 - [ ] Nico Robin non fa da intermediario con gli specialisti: se l'utente
-      vuole discutere gli dice di scrivergli dal suo bot e non riassume le
+      vuole discutere gli dice di scrivergli dalla WebUI e non riassume le
       sue risposte, salvo richiesta.
 
 ### FLOW-008 · Correzione rapida

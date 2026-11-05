@@ -89,8 +89,7 @@ si ridiscute.
 
 Le domande seguono le regole della skill `grilling`: albero delle
 decisioni, frontiera, turni di al massimo tre domande, **una chiamata
-`clarify` per turno con le opzioni in `choices`** (su Telegram diventano
-bottoni), la tua risposta consigliata per prima, mai le opzioni scritte nel
+`clarify` per turno con le opzioni in `choices`**, la tua risposta consigliata per prima, mai le opzioni scritte nel
 testo della domanda.
 
 In più, rispetto a Nico Robin, tu vedi il repo:
