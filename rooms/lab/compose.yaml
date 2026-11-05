@@ -61,9 +61,13 @@ services:
     command: ["TCP-LISTEN:9119,fork,reuseaddr", "TCP:hermes:9119"]
     ports:
       - "${DASHBOARD_BIND:-127.0.0.1}:${DASHBOARD_PORT:-9119}:9119"
+    # Anche sulla rete di Caddy, che la pubblica su hermes.ron1n.space
+    # dietro Cloudflare Access (ROOM-006).
     networks:
-      - internal
-      - dashboard
+      internal: {}
+      dashboard: {}
+      proxy:
+        aliases: [dojo-dashboard]
     mem_limit: 64m
     security_opt:
       - no-new-privileges:true

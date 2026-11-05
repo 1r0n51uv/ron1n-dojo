@@ -168,14 +168,22 @@ push_env() {
 }
 
 # Il profile default e gli agenti nascono all'avvio del container
-# (dojo-seed): si aspetta che ci siano prima di copiare i .env.
+# (dojo-seed), in un ordine qualsiasi: si aspettano tutti prima di copiare
+# i .env.
 wait_seed() {
-  local _
+  local _ p manca
   for _ in $(seq 1 60); do
-    compose exec -T hermes test -f /opt/data/profiles/strategist/config.yaml 2>/dev/null && return 0
+    manca=
+    for p in default "${tutti[@]}"; do
+      compose exec -T hermes test -f "$(profile_dir "$p")/config.yaml" 2>/dev/null || {
+        manca=$p
+        break
+      }
+    done
+    [[ -n $manca ]] || return 0
     sleep 2
   done
-  die "i profiles non compaiono dopo 2 minuti: compose logs hermes"
+  die "il profile $manca non compare dopo 2 minuti: compose logs hermes"
 }
 
 # Almeno un progetto in projects/ ha il tracker Jira (TRACKER-001).
