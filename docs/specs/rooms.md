@@ -105,7 +105,8 @@ Accettazione:
 - [ ] `curl -fsSL .../scripts/install.sh | bash` clona o aggiorna il repo
       (`DOJO_DIR`, `DOJO_BRANCH`) e funziona anche lanciato da un checkout.
 - [ ] Se manca `dojo.env` lo scrive da `dojo.env.example` con le risposte:
-      cartella di lavoro e, per ogni agente, se accenderlo e i suoi token, con input nascosto. Password casuali per dashboard e
+      cartella di lavoro e, per ogni agente di `DOJO_AGENTS` in
+      `dojo.env.example`, se accenderlo e i suoi token, con input nascosto. Password casuali per dashboard e
       WebUI.
 - [ ] Crea `~/dojo/lab`, scarica l'immagine da GHCR, avvia la room e fa il
       login Claude; poi chiede se fare anche quello ChatGPT (MODELS-005).

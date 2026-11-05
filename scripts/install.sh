@@ -122,11 +122,13 @@ config() {
   info "Cartella che contiene quelle delle rooms (la lab lavora in <cartella>/lab), con i tuoi permessi."
   ask DOJO_ROOMS_DIR "$(env_get "$esempio" DOJO_ROOMS_DIR)"
   set_value "$f.tmp" DOJO_ROOMS_DIR "$REPLY"
-  for p in concierge strategist designer builder reviewer; do
+  # Si chiede solo degli agenti di DOJO_AGENTS in dojo.env.example: il
+  # reviewer, accantonato, si riaccende a mano (FLOW-001).
+  for p in $(env_get "$esempio" DOJO_AGENTS); do
     P=${p^^}
     echo >/dev/tty
     info "$(sed -n '1s/^# //p' "$DIR/rooms/lab/profiles/$p/SOUL.md")"
-    if ! ask_yes "Accendere $p?" "$([[ $p == reviewer ]] && echo n || echo s)"; then
+    if ! ask_yes "Accendere $p?" s; then
       info "$p resta spento: aggiungilo a DOJO_AGENTS in $f quando vuoi"
       continue
     fi
