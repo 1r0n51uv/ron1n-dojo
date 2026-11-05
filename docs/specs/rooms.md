@@ -108,7 +108,7 @@ Accettazione:
       cartella di lavoro e, per ogni agente, se accenderlo e i suoi token, con input nascosto. Password casuali per dashboard e
       WebUI.
 - [ ] Crea `~/dojo/lab`, scarica l'immagine da GHCR, avvia la room e fa il
-      login Claude.
+      login Claude; poi chiede se fare anche quello ChatGPT (MODELS-005).
 - [ ] Se manca `dojo.env` e trova un backup di `cleanup.sh`
       (`configurazione.tar.gz` nella cartella da cui lanci, in una
       `dojo-backup-*` lì dentro o nella home), chiede se importare

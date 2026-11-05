@@ -6,7 +6,7 @@
 #
 # Clona o aggiorna il repo, scrive dojo.env con le tue risposte (invio =
 # vuoto, token nascosti), scarica l'immagine da GHCR, avvia la room, fa il
-# login Claude e lancia `dojo.sh status`. Si può rilanciare: un dojo.env che
+# login Claude, a richiesta quello ChatGPT, e lancia `dojo.sh status`. Si può rilanciare: un dojo.env che
 # esiste già non si tocca. Spec: docs/specs/rooms.md (ROOM-005).
 #
 # Variabili: DOJO_DIR (cartella, default ~/ron1n-dojo), DOJO_BRANCH (ramo da
@@ -148,6 +148,27 @@ start() {
   step "Abbonamento Claude"
   info "Tutti gli agenti usano Claude con il tuo abbonamento (Pro o Max)."
   "$DIR/scripts/dojo.sh" claude </dev/tty
+  chatgpt
+}
+
+# Abbonamento ChatGPT (MODELS-005), facoltativo: login con codice dispositivo
+# nel profile default, vale per tutti gli agenti. Rilanciato con il login già
+# fatto non chiede nulla; si può fare anche dopo, dalla dashboard.
+chatgpt() {
+  local hermes=(docker compose --project-directory "$DIR/rooms/lab" -f "$DIR/rooms/lab/compose.yaml"
+    exec -u hermes -e HERMES_HOME=/opt/data)
+  step "Abbonamento ChatGPT"
+  if "${hermes[@]}" -T hermes hermes auth status openai-codex 2>/dev/null | grep -q 'logged in'; then
+    info "login ChatGPT già fatto"
+    return
+  fi
+  info "Facoltativo: con l'abbonamento ChatGPT (Plus o Pro) gli agenti possono passare a GPT da Hermes."
+  ask_yes "Colleghi anche ChatGPT?" n || {
+    info "saltato: si fa quando vuoi dalla dashboard (Keys › ChatGPT or Codex Subscription)"
+    return
+  }
+  "${hermes[@]}" hermes hermes auth add openai-codex --type oauth </dev/tty ||
+    info "login ChatGPT non riuscito: riprova dalla dashboard"
 }
 
 # Tutto dentro main: con `curl | bash` lo script arriva da stdin, e un
