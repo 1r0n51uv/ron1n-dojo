@@ -16,7 +16,7 @@ file nei repo.
 
 ## Come si fa
 
-1. L'agente a cui scrive risponde direttamente, dal suo bot o dalla WebUI:
+1. L'agente a cui scrive risponde direttamente, nella sua sessione della WebUI:
    Shikamaru per il parere tecnico, Bulma per grafica e UX, Edward per un
    dubbio su come implementare, Nico Robin per tutto il resto.
 2. Legge quello che serve (repo, documenti, issue), dice cosa ne pensa e cosa

@@ -30,9 +30,6 @@ services:
       HTTPS_PROXY: http://egress:3128
       HTTP_PROXY: http://egress:3128
       NO_PROXY: localhost,127.0.0.1
-      # Gli IP di riserva di Telegram scavalcano i nomi a dominio: il proxy
-      # li rifiuterebbe.
-      HERMES_TELEGRAM_DISABLE_FALLBACK_IPS: "true"
       # API del gateway per la WebUI (ROOM-009), solo sulla rete internal. La
       # chiave sta nel .env di ogni profile: senza chiave l'API non parte.
       API_SERVER_ENABLED: "true"

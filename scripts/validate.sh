@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # Valida le rooms: `docker compose config` su ogni compose.yaml e, per ogni
-# profile, la presenza di config.yaml e SOUL.md e del suo bot in
-# dojo.env.example; ogni progetto di projects/ ha i campi giusti; ogni skill
+# profile, la presenza di config.yaml e SOUL.md e nessun toolset Telegram; ogni progetto di projects/ ha i campi giusti; ogni skill
 # di flows/ e skills/ ha il frontmatter. Non serve il demone Docker.
 set -euo pipefail
 
@@ -25,9 +24,8 @@ for compose in rooms/*/compose.yaml; do
         status=1
       fi
     done
-    p=$(basename "$profile")
-    if [[ $p != default ]] && ! grep -q "^${p^^}_TELEGRAM_BOT_TOKEN=" dojo.env.example; then
-      echo "FAIL ${p^^}_TELEGRAM_BOT_TOKEN mancante in dojo.env.example"
+    if grep -q '^  telegram:' "${profile}config.yaml" 2>/dev/null; then
+      echo "FAIL ${profile}config.yaml: Telegram non fa più parte del dojo (ROOM-002)"
       status=1
     fi
   done

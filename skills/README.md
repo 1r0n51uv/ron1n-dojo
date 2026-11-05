@@ -15,5 +15,4 @@ rooms (`/opt/dojo/skills`) e ogni profile la carica con
 | [tracker-jira](tracker-jira/SKILL.md)             | strategist, designer, builder, reviewer | le stesse operazioni su Jira Cloud, con il server MCP `atlassian`                                           |
 
 Le domande a scelta multipla passano sempre dal tool `clarify`, con le
-opzioni in `choices`: su Telegram Hermes le mostra come bottoni sotto il
-messaggio, più un bottone "Altro" per rispondere a parole.
+opzioni in `choices`.

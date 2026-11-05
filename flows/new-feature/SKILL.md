@@ -81,11 +81,10 @@ obiettivo, criteri, decisioni, repo e riferimenti, mai la chat copiata.
 
 - Specifica ambigua o in conflitto con un requisito esistente: blocca la
   card e chiedi.
-- Come chiedere da una card (FLOW-005): nel worker `clarify` non c'è, quindi
-  `kanban_block` con la domanda e le opzioni nel motivo. L'avviso arriva a
-  1ron51uv dal tuo bot e ti sveglia nella tua chat con lui: lì fai la
-  domanda, scrivi la risposta come commento sulla card (`kanban_comment`) e
-  la sblocchi (`kanban_unblock`).
+- Come chiedere da una card: nel worker `clarify` non c'è, quindi
+  `kanban_block` con la domanda e le opzioni nel motivo. 1ron51uv la vede
+  nella WebUI, risponde con un commento sulla card e la sblocca: il
+  dispatcher te la ridà con il commento.
 - CI rossa per un motivo estraneo alla PR: commenta sulla PR e avvisa,
   non correggere altro.
 - Servono permessi che il token non ha: dillo, non cercare scorciatoie.

@@ -46,9 +46,9 @@ Accettazione:
 
 - [ ] L'egress apre `auth.openai.com` (login con codice dispositivo e
       rinnovo del token) e `chatgpt.com` (chiamate ai modelli).
-- [ ] Il login si fa una volta dalla dashboard (Keys › ChatGPT or Codex
-      Subscription, profile default) o con `hermes auth add openai-codex`
-      nel container; il token sta in `/opt/data/auth.json`, nel volume
+- [ ] Il login si fa una volta: `install.sh` lo propone dopo quello Claude,
+      oppure dalla dashboard (Keys › ChatGPT or Codex Subscription, profile
+      default) o con `hermes auth add openai-codex` nel container; il token sta in `/opt/data/auth.json`, nel volume
       della room, e vale per tutti i profiles.
 - [ ] Un agente passa a GPT dalla WebUI, dalla dashboard o con
       `hermes model`, e la scelta resta dopo un riavvio (ROOM-012).

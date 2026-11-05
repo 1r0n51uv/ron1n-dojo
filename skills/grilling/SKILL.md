@@ -13,7 +13,7 @@ metadata:
 
 Adattata da `grilling` di Matt Pocock
 ([mattpocock/skills](https://github.com/mattpocock/skills), licenza MIT)
-per il Concierge del dojo: si parla su Telegram, non ci sono sub-agent e
+per il Concierge del dojo: si parla dalla WebUI, non ci sono sub-agent e
 alla fine non si scrive codice ma si crea una card Kanban.
 
 ## Quando usarla
@@ -54,12 +54,9 @@ dovrebbe succedere, come si riproduce", non di un mockup.
 Lavori a **turni**. In ogni turno fai le domande della frontiera, ognuna
 con la tua risposta consigliata. Poi aspetti le risposte.
 
-- Al massimo tre domande per turno: su Telegram un muro di domande non si
-  legge. Se la frontiera è più larga, tieni le più importanti.
+- Al massimo tre domande per turno: un muro di domande non si legge. Se la frontiera è più larga, tieni le più importanti.
 - Ogni turno è **una sola chiamata** al tool `clarify`, con le domande del
-  turno in `questions`. Su Telegram ogni domanda arriva come un messaggio
-  con i bottoni delle opzioni, una dopo l'altra, come le conferme di
-  `/new`.
+  turno in `questions`.
 - Le opzioni vanno solo in `choices`, mai scritte nel testo della domanda:
   scritte nel testo non si possono toccare. Al massimo quattro, la tua
   consigliata per **prima**; Hermes aggiunge da solo il bottone "Altro"

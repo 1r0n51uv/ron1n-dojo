@@ -23,26 +23,19 @@ Accettazione:
 - [ ] Il container Hermes sta solo sulla rete `internal` (senza rotta verso
       internet); esce dal proxy `egress`.
 - [ ] Una richiesta verso un dominio fuori da `egress/allowlist.conf`
-      fallisce; verso `api.telegram.org`, `api.github.com` e
-      `api.anthropic.com` riesce; `*.atlassian.net` solo se un progetto usa
+      fallisce; verso `api.github.com` e `api.anthropic.com` riesce; `*.atlassian.net` solo se un progetto usa
       Jira.
 - [ ] Limiti di memoria, CPU e processi; `no-new-privileges`.
 - [ ] Hermes, Claude Code, plugin e WebUI a versione fissata nell'immagine.
 
 ### ROOM-002 · Un agente risponde solo a te
 
-Stato: proposto
+Stato: rimosso
 
-Ogni agente ha il suo bot Telegram con la chat completa e risponde solo
-all'utente autorizzato, su Telegram come sulla WebUI.
-
-Accettazione:
-
-- [ ] Un bot per profile; lo stesso token su due profiles è un errore.
-- [ ] Un messaggio da un utente fuori da `TELEGRAM_ALLOWED_USERS` non
-      riceve risposta.
-- [ ] Toolset, memoria e approvazioni di un agente sono gli stessi su
-      Telegram e sulla WebUI.
+Telegram esce dal dojo: niente bot, `TELEGRAM_*` in `dojo.env`, toolset
+`telegram` né `api.telegram.org` nell'egress. L'unico canale è la WebUI
+(ROOM-009), con la sua password e, fuori casa, Cloudflare Access; con
+Telegram esce anche FLOW-005.
 
 ### ROOM-003 · Permessi minimi per agente
 
@@ -53,8 +46,8 @@ Ogni agente ha solo gli strumenti e le credenziali del suo ruolo.
 Accettazione:
 
 - [ ] I toolset di ogni profile sono elencati in `platform_toolsets` per
-      `telegram`, `cli` e `api_server`, uguali fra loro; nessun toolset
-      `acp`.
+      `cli` e `api_server`, uguali fra loro; nessun toolset `acp` né
+      `telegram`.
 - [ ] Token GitHub fine-grained del tuo account, uno per agente, limitati ai
       repo dei progetti: strategist e designer con contents, pull requests e
       issues in scrittura; builder con contents, pull requests e issues in
@@ -68,7 +61,7 @@ Accettazione:
       approvazione.
 - [ ] Passano senza conferma solo i comandi sicuri: `git` senza push
       forzato, test e build (`npm`, `pytest`, `make`), `gh` in lettura,
-      lettura di file. Il resto chiede conferma su WebUI o Telegram;
+      lettura di file. Il resto chiede conferma sulla WebUI;
       `cron_mode` e `unattended_mode` sono `deny`.
 - [ ] Flows e skill sono nell'immagine, fuori dalla portata degli agenti.
 
@@ -82,15 +75,15 @@ radice del repo; `scripts/dojo.sh` ha solo i comandi che servono.
 Accettazione:
 
 - [ ] `dojo.env` (modello versionato in `dojo.env.example`, con un commento
-      per valore) contiene agenti accesi (`DOJO_AGENTS`), utente Telegram,
-      cartella di lavoro, porte e, con il prefisso dell'agente, bot e token
-      di ognuno (`BUILDER_GH_TOKEN`). Non è versionato e `dojo.sh` lo porta
+      per valore) contiene agenti accesi (`DOJO_AGENTS`), cartella di
+      lavoro, porte e, con il prefisso dell'agente, i token di ognuno
+      (`BUILDER_GH_TOKEN`). Non è versionato e `dojo.sh` lo porta
       a permessi 600.
 - [ ] `dojo.sh` legge il file senza eseguirlo.
 - [ ] `up` applica il file: avvia o aggiorna la room e scrive il `.env` di
       ogni profile (valori comuni più quelli dell'agente senza prefisso),
       poi riavvia il gateway. Si rilancia dopo ogni modifica.
-- [ ] Un agente fuori da `DOJO_AGENTS` resta senza bot né token.
+- [ ] Un agente fuori da `DOJO_AGENTS` resta senza token.
 - [ ] `down` spegne la room, i dati restano.
 - [ ] `status` mostra i container e controlla valori mancanti, login
       Claude, egress, WebUI e cartella di lavoro; per ogni problema dice
@@ -112,11 +105,10 @@ Accettazione:
 - [ ] `curl -fsSL .../scripts/install.sh | bash` clona o aggiorna il repo
       (`DOJO_DIR`, `DOJO_BRANCH`) e funziona anche lanciato da un checkout.
 - [ ] Se manca `dojo.env` lo scrive da `dojo.env.example` con le risposte:
-      utente Telegram, cartella di lavoro e, per ogni agente, se accenderlo
-      e i suoi token, con input nascosto. Password casuali per dashboard e
+      cartella di lavoro e, per ogni agente, se accenderlo e i suoi token, con input nascosto. Password casuali per dashboard e
       WebUI.
 - [ ] Crea `~/dojo/lab`, scarica l'immagine da GHCR, avvia la room e fa il
-      login Claude.
+      login Claude; poi chiede se fare anche quello ChatGPT (MODELS-005).
 - [ ] Se manca `dojo.env` e trova un backup di `cleanup.sh`
       (`configurazione.tar.gz` nella cartella da cui lanci, in una
       `dojo-backup-*` lì dentro o nella home), chiede se importare
@@ -153,24 +145,21 @@ Accettazione:
 Stato: rimosso
 
 Sostituito dalle notifiche di serie del Kanban di Hermes (FLOW-004). I
-plugin `handoff` e `kanban-telegram` escono. Le notifiche di serie non
-bastavano: FLOW-005 fa arrivare gli avvisi dal bot dell'agente che lavora la
-card.
+plugin `handoff` e `kanban-telegram` escono. Poi esce anche Telegram
+(ROOM-002).
 
 ### ROOM-008 · Agenti da un client ACP sul PC
 
 Stato: rimosso
 
-AionUi e i client ACP non fanno più parte del dojo: i canali sono la WebUI e
-Telegram.
+AionUi e i client ACP non fanno più parte del dojo: il canale è la WebUI.
 
 ### ROOM-009 · Interfaccia web per gli agenti
 
 Stato: proposto
 
-La WebUI ([hermes-webui](https://github.com/nesquena/hermes-webui)) è il
-canale principale: da casa e da fuori, con gli stessi permessi che gli
-agenti hanno su Telegram.
+La WebUI ([hermes-webui](https://github.com/nesquena/hermes-webui)) è l'unico
+canale: da casa e da fuori, con i permessi di ROOM-003.
 
 Accettazione:
 

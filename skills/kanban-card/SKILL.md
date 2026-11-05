@@ -20,25 +20,24 @@ una decisione di 1ron51uv, non inventarla e non aspettare:
 
 1. `kanban_block` con la domanda e le opzioni nel motivo, la tua consigliata
    per prima. Una domanda sola, la più utile.
-2. L'avviso gli arriva dal tuo bot e ti sveglia nella tua chat con lui.
+2. 1ron51uv la vede bloccata nella WebUI: risponde con un commento e la
+   sblocca, e il dispatcher te la ridà con il commento.
 
 ## Quando ti sveglia un blocco
 
-Succede quando 1ron51uv risponde in chat su una tua card bloccata, o dopo
-l'avviso del blocco.
+Succede quando 1ron51uv ti scrive nella WebUI su una tua card bloccata.
 
 1. Leggi la card con `kanban_show`.
 2. Se serve, fai la domanda nella chat con `clarify` e le opzioni in
-   `choices` (su Telegram sono bottoni; mai le opzioni nel testo).
+   `choices` (mai le opzioni nel testo).
 3. Scrivi la risposta di 1ron51uv come commento sulla card
    (`kanban_comment`) e sblocca (`kanban_unblock`). Il lavoro riprende
    nella card, non nella chat.
 
-## Quando ti sveglia una card fallita
+## Quando ti arriva una card fallita
 
 Una riga a 1ron51uv: cosa è successo e chi ha il lavoro adesso. Non rifai la
-card e non ne crei di doppie. Una card finita non ti sveglia: gli arriva
-come messaggio.
+card e non ne crei di doppie.
 
 ## Tentativi massimi
 

@@ -15,7 +15,6 @@ providers:
     stale_timeout_seconds: 900
 
 platform_toolsets:
-  telegram: [terminal, kanban, clarify, skills, todo, memory, mcp-atlassian]
   cli: [terminal, kanban, clarify, skills, todo, memory, mcp-atlassian]
   # WebUI (ROOM-009) via API del gateway.
   api_server: [terminal, kanban, clarify, skills, todo, memory, mcp-atlassian]
@@ -67,9 +66,7 @@ approvals:
 
 # Login della CLI di Claude nel volume della room (`dojo.sh claude`), niente
 # telemetria.
-# dojo-handoff (FLOW-005): a card finita l'esito arriva senza turno dell'agente.
 plugins:
-  enabled: [dojo-handoff]
   entries:
     claude-subscription-directsdk-experimental:
       settings:

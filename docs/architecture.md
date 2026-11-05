@@ -2,7 +2,7 @@
 
 Il dojo è un insieme di agenti Hermes (Nous Research) in Docker sul mini PC
 di ron1n. Ogni agente ha un ruolo, strumenti e credenziali minimi; si parla
-con loro dalla WebUI o da Telegram; lavorano su richiesta, a orario (cron) o
+con loro dalla WebUI; lavorano su richiesta, a orario (cron) o
 quando un altro agente gli passa una card.
 
 Questa è la versione stabile (riscrittura dell'ottobre 2026): un solo
@@ -18,21 +18,21 @@ sopra Hermes. Il PC Windows con WSL2 serve solo per le prove.
   in `DOJO_AGENTS` di `dojo.env`; un progetto si aggiunge con un file in
   `projects/`.
 - **Un file di configurazione**: `dojo.env` contiene tutto quello che
-  decidi tu (agenti, token, bot, cartelle); `dojo.sh up` lo applica. Fuori
+  decidi tu (agenti, token, cartelle); `dojo.sh up` lo applica. Fuori
   restano solo il login Claude, che è un OAuth, e il modello, che si sceglie
   da Hermes.
 - **Zero trust**: la room è un container senza porte verso internet, esce
   solo verso i domini permessi; ogni agente ha i suoi token minimi; il merge
   è sempre tuo.
 - **Poco codice nostro**: quello che Hermes fa di serie (Kanban, notifiche,
-  scelta del modello, approvazioni) non si riscrive in plugin o patch. I
-  due plugin di `rooms/lab/plugins/` aggiungono solo quello che manca:
-  da quale bot arrivano gli avvisi e il limite dello Strategist.
+  scelta del modello, approvazioni) non si riscrive in plugin o patch. Il
+  plugin di `rooms/lab/plugins/` aggiunge solo quello che manca: il limite
+  dello Strategist.
 
 ## Cosa isola davvero
 
 - Un **profile** Hermes è un agente con config, SOUL, memoria, skill, cron
-  e bot propri, ma non è una sandbox: i profiles nello stesso container
+  propri, ma non è una sandbox: i profiles nello stesso container
   condividono filesystem e processi. Un agente con `terminal` può leggere i
   file e i `.env` degli altri.
 - Il **container** è il confine. Senza `docker.sock` l'agente non esce dal
@@ -43,14 +43,14 @@ sopra Hermes. Il PC Windows con WSL2 serve solo per le prove.
   tool di Hermes.
 - Le **approvazioni** (`approvals.mode: manual`) lasciano passare da soli
   i comandi sicuri (git senza push forzato, test, build, `gh` in lettura) e
-  chiedono conferma, su WebUI o Telegram, per il resto. `cron_mode` e
+  chiedono conferma, sulla WebUI, per il resto. `cron_mode` e
   `unattended_mode: deny` negano quando nessuno può rispondere;
   `approvals.deny` blocca sempre merge, push forzati e push su `main`,
   anche con approvazione.
 - L'**egress** passa dal proxy Squid `egress` con allowlist di domini; la
   rete `internal` non ha rotta verso internet.
-- Su **Telegram** risponde solo `TELEGRAM_ALLOWED_USERS`; un bot per
-  profile.
+- La **WebUI** è l'unico canale: password in `webui.env` e, da fuori,
+  Cloudflare Access. Telegram è uscito dal dojo (ROOM-002).
 - Su **GitHub** gli agenti usano il tuo account con un token fine-grained
   per agente, limitato ai repo dei progetti. Le loro PR risultano tue,
   quindi i repo app chiedono la CI verde ma non un'approvazione: il merge
@@ -74,13 +74,13 @@ nome del ruolo in inglese.
 
 ### Lab sul mini PC
 
-| Servizio      | Cosa fa                                                                           | Reti               |
-| ------------- | --------------------------------------------------------------------------------- | ------------------ |
-| `hermes`      | gateway con i cinque profile, Telegram, Kanban, API per la WebUI                  | internal           |
-| `webui`       | hermes-webui, chat via API del gateway; il suo terminale resta confinato qui      | internal           |
-| `webui-proxy` | inoltro TCP verso Caddy di ron1n (`dojo.ron1n.space`) e verso `127.0.0.1:8787`    | internal, proxy    |
-| `dashboard`   | inoltro TCP della dashboard di Hermes su `127.0.0.1:9119`, per diagnosi           | internal           |
-| `egress`      | Squid con l'allowlist: Telegram, GitHub, npm, Anthropic, Jira (`*.atlassian.net`) | internal, external |
+| Servizio      | Cosa fa                                                                         | Reti               |
+| ------------- | ------------------------------------------------------------------------------- | ------------------ |
+| `hermes`      | gateway con i cinque profile, Kanban, API per la WebUI                          | internal           |
+| `webui`       | hermes-webui, chat via API del gateway; il suo terminale resta confinato qui    | internal           |
+| `webui-proxy` | inoltro TCP verso Caddy di ron1n (`dojo.ron1n.space`) e verso `127.0.0.1:8787`  | internal, proxy    |
+| `dashboard`   | inoltro TCP della dashboard di Hermes su `127.0.0.1:9119`, per diagnosi         | internal           |
+| `egress`      | Squid con l'allowlist: GitHub, npm, Anthropic, OpenAI, Jira (`*.atlassian.net`) | internal, external |
 
 - **Immagine**: `ghcr.io/1r0n51uv/dojo-lab`, costruita dalla CI a ogni push
   su `main` con i tag `main` e `sha-<commit>`. Contiene Hermes, Claude Code,
@@ -98,7 +98,7 @@ nome del ruolo in inglese.
 - **WebUI fuori casa**: Cloudflare Tunnel e Caddy di ron1n, dietro
   Cloudflare Access, come gli altri siti.
 
-In una room il profile `default` non ha bot: ospita il gateway che serve
+In una room il profile `default` non parla con te: ospita il gateway che serve
 tutti i profiles (multiplexing) e il dispatcher Kanban.
 
 ### Agenti della lab
@@ -130,9 +130,10 @@ LiteLLM esce dal dojo ([MODELS-006, MODELS-007](specs/models.md)).
 
 ## Canali
 
-- **WebUI**: il canale principale, da casa e da fuori.
-- **Telegram**: chat completa con ogni agente, un bot per agente.
-- **A orario**: `hermes cron` del profile, consegna su Telegram.
+- **WebUI**: l'unico canale, da casa e da fuori.
+- **A orario**: `hermes cron` del profile; la consegna del risultato si
+  decide quando arriva il primo cron.
+- Telegram esce dal dojo (ROOM-002, FLOW-005).
 - AionUi e i client ACP non fanno più parte del dojo.
 
 ## Lavoro
@@ -156,7 +157,7 @@ rispetto al tracker: dicono «sposta la issue in Review», e le skill
 [`skills/`](../skills/README.md) ha le skill di supporto: Nico Robin usa
 `grilling` per chiarire una richiesta, Shikamaru `grilling-with-docs` per
 rivederla contro i documenti del repo. Le domande a scelta multipla passano
-dal tool `clarify`, che su Telegram mostra le opzioni come bottoni.
+dal tool `clarify`.
 
 1. **Nuova feature**: Nico Robin → Shikamaru (specifica, issue) → Bulma
    (mockup, se c'è interfaccia) → Edward (PR pronta) → merge tuo.
@@ -169,14 +170,9 @@ dal tool `clarify`, che su Telegram mostra le opzioni come bottoni.
    protection li crei tu.
 5. **Personale** (room `home`), **lavoro** (room `work`), **ricorrenti**: con le rooms future.
 
-Le notifiche del Kanban sono quelle di Hermes, ma arrivano dal bot
-dell'agente che lavora la card ([FLOW-005](specs/flows.md)): quando il
-dispatcher prende una card, il plugin `dojo-handoff` intesta a quell'agente
-la subscription della tua chat Telegram. Se si blocca, il suo bot te lo dice
-e lui si sveglia nella sua chat: gli rispondi lì e lui commenta e sblocca la
-card. Una card finita ti arriva invece come messaggio e basta, senza un turno
-del modello: alla fine il plugin riporta la subscription a `notify`. Il bot di un agente ti scrive solo se gli hai già scritto almeno una
-volta (`/start`).
+Le notifiche del Kanban sono quelle di Hermes, e le vedi nella WebUI: una
+card bloccata aspetta la tua risposta lì, sul board o nella sessione
+dell'agente ([FLOW-005](specs/flows.md), rimosso con Telegram).
 
 Shikamaru non implementa ([FLOW-006](specs/flows.md)): oltre al SOUL, il
 plugin `dojo-spec-only` gli rifiuta le scritture dei tool di file fuori da
@@ -203,4 +199,4 @@ Documentazione di Hermes nel repo
 [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent),
 cartella `website/docs/user-guide/`: `docker.md`, `profiles.md`,
 `security.md`, `features/kanban.md`, `features/cron.md`,
-`egress/network-isolation.md`, `messaging/telegram.md`.
+`egress/network-isolation.md`.

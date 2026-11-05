@@ -123,7 +123,7 @@ chiavi_agente() {
 
 # Il .env di un profile: valori comuni di dojo.env (senza prefisso
 # d'agente), quelli dell'agente senza prefisso se è acceso, e l'API del
-# gateway per la WebUI. Un agente spento non ha bot né token.
+# gateway per la WebUI. Un agente spento non ha token.
 env_profile() {
   local p=$1 k altro P=${1^^}_ comune
   for k in "${!cfg[@]}"; do
@@ -289,8 +289,6 @@ status() {
   docker info >/dev/null 2>&1 || die "Docker non risponde"
   compose ps
   echo
-  verify TELEGRAM_ALLOWED_USERS "TELEGRAM_ALLOWED_USERS vuoto in $conf: gli agenti non rispondono a nessuno" \
-    has_value TELEGRAM_ALLOWED_USERS
   for p in "${tutti[@]}"; do
     if ! acceso "$p"; then
       echo "--   $p spento (non è in DOJO_AGENTS)"
@@ -316,8 +314,8 @@ status() {
     verify "servizio $p" "servizio $p fermo: docker compose logs $p in rooms/$room" running "$p"
   done
   verify "login Claude" "login Claude mancante: scripts/dojo.sh claude" claude_logged_in
-  # Egress: Telegram sì, un dominio fuori dall'allowlist no (ROOM-001).
-  verify "egress verso Telegram" "Telegram non raggiungibile: docker compose logs egress" reach https://api.telegram.org
+  # Egress: GitHub sì, un dominio fuori dall'allowlist no (ROOM-001).
+  verify "egress verso GitHub" "GitHub non raggiungibile: docker compose logs egress" reach https://api.github.com
   verify "egress chiuso fuori dall'allowlist" "example.com raggiungibile: l'allowlist non funziona" \
     not reach https://example.com
   return $male
