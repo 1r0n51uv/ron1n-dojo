@@ -1,0 +1,7 @@
+name: dojo-kanban-archive
+version: "1.0"
+description: >-
+  Tool kanban_archive per ogni agente: archivia una card del board e, a
+  richiesta, la cancella del tutto.
+provides_tools:
+  - kanban_archive
