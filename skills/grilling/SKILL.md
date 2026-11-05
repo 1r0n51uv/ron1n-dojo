@@ -18,11 +18,12 @@ alla fine non si scrive codice ma si crea una card Kanban.
 
 ## Quando usarla
 
-- Sempre, prima di creare una card per una richiesta nuova.
+- Quando una richiesta di lavoro è troppo vaga per passarla (FLOW-007).
 - Non serve per le domande sullo stato ("a che punto siamo?"): lì guardi il
   board e rispondi.
 - Se la richiesta è già chiara (cosa, dove, perché, per chi), fai un solo
   turno di conferma con il riepilogo e passi alla card.
+- Non serve per un consiglio o una domanda: rispondi e basta.
 
 ## L'albero delle decisioni
 

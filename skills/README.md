@@ -9,6 +9,7 @@ rooms (`/opt/dojo/skills`) e ogni profile la carica con
 | ------------------------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | [grilling](grilling/SKILL.md)                     | Nico Robin (`concierge`)                | intervista a turni una richiesta di lavoro vaga, finché è chiara                                            |
 | [grilling-with-docs](grilling-with-docs/SKILL.md) | Shikamaru (`strategist`)                | rivede il piano di Nico Robin contro i documenti del repo, poi grilling e specifica scritta durante         |
+| [kanban-card](kanban-card/SKILL.md)               | tutti gli agenti                        | domande dal worker, risposta a un blocco, card fallita, tentativi massimi, quando una card è finita         |
 | [handoff-brief](handoff-brief/SKILL.md)           | chi crea una card per un altro agente   | modello fisso della consegna: obiettivo, criteri, decisioni, repo e riferimenti, con il completion contract |
 | [tracker-github](tracker-github/SKILL.md)         | strategist, designer, builder, reviewer | issue di un progetto con tracker GitHub: leggere, creare, commentare, stato, assegnatario                   |
 | [tracker-jira](tracker-jira/SKILL.md)             | strategist, designer, builder, reviewer | le stesse operazioni su Jira Cloud, con il server MCP `atlassian`                                           |

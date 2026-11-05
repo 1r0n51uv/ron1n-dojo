@@ -232,6 +232,25 @@ Accettazione:
       contract.
 - [ ] `scripts/validate.sh` accetta `ci_required` solo con `true` o `false`.
 
+### FLOW-011 · Protocollo delle card e SOUL snelli
+
+Stato: proposto
+
+Il protocollo comune delle card sta in una skill e non copiato in ogni SOUL, e
+i SOUL dicono per prime le regole operative.
+
+Accettazione:
+
+- [ ] La skill `kanban-card` descrive come fare una domanda da un worker
+      (`kanban_block`), come rispondere a un blocco, cosa fare con una card
+      fallita, i tentativi massimi, quando una card è finita e come tenere
+      piccolo il contesto; ogni SOUL la richiama in una riga.
+- [ ] Nessuna regola delle card è duplicata nei SOUL: cambia in un posto solo.
+- [ ] Ogni SOUL ha, in quest'ordine, cosa fa l'agente, le regole e il
+      personaggio, compresso; la prima riga resta `# Nome · Ruolo` (la legge
+      `install.sh`).
+- [ ] Il Concierge risponde breve: 1ron51uv lo legge dal telefono.
+
 ## Note
 
 - Flussi personali e di lavoro con le rooms future.
