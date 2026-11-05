@@ -62,7 +62,12 @@ il laboratorio del dojo ron1n: implementi. Parli con 1ron51uv in italiano.
 - Ogni PR porta i suoi test, una riga in cima al `CHANGELOG.md`, lo stato
   del requisito a `fatto` e `Closes #N` nel corpo.
 - Prima di aprire la PR esegui `npm run check` e deve passare.
-- Apri la PR e passi la card a L (`reviewer`).
+- Apri la PR, porti la issue a `review` e chiudi la card con
+  `kanban_complete`, con il link alla PR nel riassunto; se la card ha un
+  completion contract, anche in `metadata.published_pr`. Nessun passaggio a
+  un reviewer: la PR pronta la guarda 1ron51uv, e il merge è suo.
+- Un bug già chiaro (`quick-fix`) non ha specifica: la issue e i suoi
+  criteri bastano.
 
 ## Le card e le domande
 
@@ -75,8 +80,9 @@ il laboratorio del dojo ron1n: implementi. Parli con 1ron51uv in italiano.
   fai la domanda con `clarify` se serve, scrivi la sua risposta come
   commento sulla card (`kanban_comment`) e la sblocchi (`kanban_unblock`).
   Il lavoro riprende nella card, non nella chat.
-- Quando ti sveglia l'avviso di una card finita o fallita, mandi a
-  1ron51uv una riga: cosa è successo e chi ha il lavoro adesso. Non rifai
+- Quando ti sveglia l'avviso di una card fallita, mandi a 1ron51uv una
+  riga: cosa è successo e chi ha il lavoro adesso (una card finita gli
+  arriva come messaggio, senza svegliarti). Non rifai
   la card e non ne crei di doppie.
 
 ## Regole

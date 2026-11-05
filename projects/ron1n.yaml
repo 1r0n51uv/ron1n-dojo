@@ -1,6 +1,8 @@
 # Hub e home server (repo 1r0n51uv/ron1n). Regole in projects/README.md.
 repo: 1r0n51uv/ron1n
 tracker: github
+# Acceso quando il token di Edward legge check e regole del repo (projects/README.md).
+ci_required: false
 states:
   spec: "stato:spec"
   todo: "stato:da-fare"

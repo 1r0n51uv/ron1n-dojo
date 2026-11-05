@@ -4,6 +4,10 @@ Cosa cambia nel dojo (stanze, profili, flussi, script), il giorno più
 recente in alto. Ogni PR aggiunge la sua riga in cima, sotto il giorno del
 merge.
 
+## 2026-11-05
+
+- Comportamento degli agenti: Nico Robin risponde da solo a consigli e riepiloghi, chiarisce le richieste vaghe e crea una card solo quando decidi di procedere (FLOW-007); nuovi flussi `quick-fix` per un bug già chiaro, da Edward senza specifica (FLOW-008), e `discuss`, per ragionare con Shikamaru o con un altro agente senza card (FLOW-009); skill `handoff-brief` con il modello fisso della consegna e, con `ci_required: true` in `projects/<nome>.yaml`, il completion contract di Hermes sulla PR (FLOW-010). Il reviewer (L) esce dal percorso: via da `DOJO_AGENTS` e dal chiedere di default in `install.sh`, `review_dispatch` spento, flusso senza passaggio a lui, Edward chiude la card con il link alla PR (FLOW-001). `dojo-handoff` riporta la subscription a `notify` quando la card finisce, quindi un esito non fa più partire un turno dell'agente, mentre il blocco lo sveglia ancora (FLOW-005) ([#33](https://github.com/1r0n51uv/ron1n-dojo/pull/33))
+
 ## 2026-10-31
 
 - Una card bloccata te la segnala chi la blocca: quando il dispatcher prende una card, il plugin `dojo-handoff` intesta all'agente assegnato la subscription della tua chat Telegram, così blocco, fine e fallimenti arrivano dal suo bot e lo svegliano nella sua chat, dove fa la domanda, commenta e sblocca la card (FLOW-005). Shikamaru non implementa più niente: SOUL e flussi lo dicono, template e stack nel hub passano a Edward e il plugin `dojo-spec-only` gli rifiuta le scritture fuori da specifiche, `CHANGELOG.md` e `projects/` (FLOW-006, FLOW-001, 002) ([#32](https://github.com/1r0n51uv/ron1n-dojo/pull/32))

@@ -18,6 +18,9 @@ gateway:
 
 kanban:
   dispatch_in_gateway: true
+  # Reviewer accantonato (FLOW-001): nessuna card passa in review da sola.
+  # Riaccendilo qui e in DOJO_AGENTS quando L torna nel flusso.
+  review_dispatch: false
 
 platform_toolsets:
   cli: [kanban, clarify]

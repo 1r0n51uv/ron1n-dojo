@@ -19,6 +19,14 @@ La subscription va creata alla presa in carico e non al blocco: Hermes fa
 partire una subscription nuova dopo l'ultimo evento della card, quindi una
 creata da ``kanban_task_blocked`` non vedrebbe il blocco che l'ha creata.
 
+Il turno dell'agente serve per fare la domanda di un blocco, non per annunciare
+una card finita: quando la card si completa (hook ``kanban_task_completed``,
+nel processo del worker, quindi il plugin è acceso in ogni profile agente) la
+subscription passa a ``notify``, e l'esito arriva come messaggio passivo senza
+turno del modello. Il passaggio è best effort e può perdere la corsa con il
+notifier: in quel caso l'agente si sveglia come prima, ed è solo un turno in
+più.
+
 In un DM di Telegram la chat ha l'ID dell'utente per ogni bot, e Hermes tiene
 una sola subscription per card e chat: quella di chi ha creato la card sulla
 stessa chat si toglie, così l'avviso arriva da un bot solo. Le subscription
@@ -39,6 +47,7 @@ logger = logging.getLogger(__name__)
 
 PLATFORM = "telegram"
 MODE = "notify+wake"
+PASSIVE_MODE = "notify"
 
 
 def _read_env(profile: str) -> dict[str, str]:
@@ -97,6 +106,35 @@ def subscribe(task_id: str, board: str | None, assignee: str, chat: str) -> None
         )
 
 
+def settle(task_id: str, board: str | None, assignee: str) -> None:
+    """Card finita: gli esiti dell'assegnatario sulla chat passano a ``notify``."""
+    from hermes_cli import kanban_db_connect as kbc
+    from hermes_cli import kanban_db_notify as kbn
+
+    with kbc.connect_closing(board=board) as conn:
+        for sub in kbn.list_notify_subs(conn, task_id):
+            if (
+                sub["platform"] == PLATFORM
+                and sub.get("notifier_profile") == assignee
+                and sub.get("delivery_mode") == MODE
+            ):
+                kbn.add_notify_sub(
+                    conn,
+                    task_id=task_id,
+                    platform=PLATFORM,
+                    chat_id=sub["chat_id"],
+                    thread_id=sub.get("thread_id") or None,
+                    delivery_mode=PASSIVE_MODE,
+                )
+
+
+def completed(task_id: str, board: str | None, assignee: str) -> None:
+    try:
+        settle(task_id, board, assignee)
+    except Exception:
+        logger.warning("dojo-handoff: card %s finita ma subscription non aggiornata", task_id, exc_info=True)
+
+
 def handoff(task_id: str, board: str | None, assignee: str) -> None:
     try:
         env = _read_env(assignee)
@@ -122,3 +160,12 @@ def register(ctx):
         ).start()
 
     ctx.register_hook("kanban_task_claimed", on_claimed)
+
+    def on_completed(task_id=None, assignee=None, board=None, **_):
+        if not task_id or not assignee or assignee == "default":
+            return
+        # Nel processo del worker, dopo il commit: un'operazione breve sul
+        # database, fatta qui perché un thread rischia di morire con il worker.
+        completed(task_id, board, assignee)
+
+    ctx.register_hook("kanban_task_completed", on_completed)

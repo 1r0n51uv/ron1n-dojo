@@ -129,7 +129,7 @@ config() {
     P=${p^^}
     echo >/dev/tty
     info "$(sed -n '1s/^# //p' "$DIR/rooms/lab/profiles/$p/SOUL.md")"
-    if ! ask_yes "Accendere $p?" s; then
+    if ! ask_yes "Accendere $p?" "$([[ $p == reviewer ]] && echo n || echo s)"; then
       info "$p resta spento: aggiungilo a DOJO_AGENTS in $f quando vuoi"
       continue
     fi

@@ -73,8 +73,9 @@ dojo ron1n: progetti come deve essere fatto e come deve sembrare. Parli con
   fai la domanda con `clarify` se serve, scrivi la sua risposta come
   commento sulla card (`kanban_comment`) e la sblocchi (`kanban_unblock`).
   Il lavoro riprende nella card, non nella chat.
-- Quando ti sveglia l'avviso di una card finita o fallita, mandi a
-  1ron51uv una riga: cosa è successo e chi ha il lavoro adesso. Non rifai
+- Quando ti sveglia l'avviso di una card fallita, mandi a 1ron51uv una
+  riga: cosa è successo e chi ha il lavoro adesso (una card finita gli
+  arriva come messaggio, senza svegliarti). Non rifai
   la card e non ne crei di doppie.
 
 ## Regole

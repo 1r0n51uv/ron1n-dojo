@@ -9,7 +9,9 @@ I flussi parlano di issue e di stati, non di un tracker: per ogni progetto
 (`projects/<nome>.yaml`) le skill `tracker-github` e `tracker-jira`
 (`skills/`) fanno le operazioni sulle issue.
 
-| Flusso                              | Chi lo avvia | Agenti                 | Stato |
-| ----------------------------------- | ------------ | ---------------------- | ----- |
-| [new-feature](new-feature/SKILL.md) | tu, Telegram | Shikamaru → Edward → L | bozza |
-| [new-project](new-project/SKILL.md) | tu, Telegram | strategist             | bozza |
+| Flusso                              | Chi lo avvia            | Agenti              | Stato |
+| ----------------------------------- | ----------------------- | ------------------- | ----- |
+| [new-feature](new-feature/SKILL.md) | tu, WebUI o Telegram    | Shikamaru → Edward  | bozza |
+| [quick-fix](quick-fix/SKILL.md)     | tu, WebUI o Telegram    | Nico Robin → Edward | bozza |
+| [discuss](discuss/SKILL.md)         | tu, con l'agente scelto | l'agente scelto     | bozza |
+| [new-project](new-project/SKILL.md) | tu, WebUI o Telegram    | strategist          | bozza |
