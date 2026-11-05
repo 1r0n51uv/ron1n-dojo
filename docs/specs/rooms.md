@@ -144,7 +144,8 @@ Accettazione:
 - [ ] Da fuori si passa da `https://hermes.ron1n.space`: Cloudflare Tunnel e
       Caddy di ron1n, che raggiunge l'inoltro sulla rete `proxy` come
       `dojo-dashboard:9119`, dietro Cloudflare Access. Nessuna porta aperta
-      verso internet.
+      verso internet. `DASHBOARD_PUBLIC_URL` in `dojo.env` dice a Hermes
+      quell'indirizzo, per i login delle app.
 
 ### ROOM-007 · Il lavoro autonomo si racconta su Telegram
 

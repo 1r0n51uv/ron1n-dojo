@@ -6,6 +6,7 @@ merge.
 
 ## 2026-11-05
 
+- `DASHBOARD_PUBLIC_URL` in `dojo.env` (default `https://hermes.ron1n.space`) diventa `HERMES_DASHBOARD_PUBLIC_URL` della dashboard, per i login delle app iOS che si collegano a Hermes; le chiavi `WEBUI_*` e `DASHBOARD_*` non finiscono più nei `.env` degli agenti (ROOM-006) ([#38](https://github.com/1r0n51uv/ron1n-dojo/pull/38))
 - La dashboard di Hermes è anche sulla rete `proxy` come `dojo-dashboard:9119`, così Caddy di ron1n la pubblica su `hermes.ron1n.space` dietro Cloudflare Access, per un'app iOS che si collega alla dashboard (ROOM-006) ([#37](https://github.com/1r0n51uv/ron1n-dojo/pull/37))
 - `dojo.sh up` aspetta che il seed abbia creato tutti i profiles, non solo lo strategist, prima di copiare i `.env`: su un'installazione nuova poteva fermarsi con "profile builder non creato" (ROOM-004) ([#37](https://github.com/1r0n51uv/ron1n-dojo/pull/37))
 - `install.sh` non chiede più del reviewer: fa le domande solo per gli agenti di `DOJO_AGENTS` in `dojo.env.example` (ROOM-005) ([#36](https://github.com/1r0n51uv/ron1n-dojo/pull/36))

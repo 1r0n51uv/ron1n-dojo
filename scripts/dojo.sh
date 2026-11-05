@@ -66,7 +66,11 @@ WEBUI_BIND=$(val WEBUI_BIND)
 DASHBOARD_BIND=$(val DASHBOARD_BIND)
 [[ -z $DASHBOARD_BIND || $DASHBOARD_BIND =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] ||
   die "DASHBOARD_BIND in $conf deve essere un indirizzo IPv4 (127.0.0.1 o 0.0.0.0), non $DASHBOARD_BIND"
-export DOJO_WORK DOJO_UID DOJO_GID WEBUI_PORT DASHBOARD_PORT WEBUI_BIND DASHBOARD_BIND
+# Indirizzo pubblico della dashboard (ROOM-006), per i login delle app.
+DASHBOARD_PUBLIC_URL=$(val DASHBOARD_PUBLIC_URL)
+[[ -z $DASHBOARD_PUBLIC_URL || $DASHBOARD_PUBLIC_URL =~ ^https?://[A-Za-z0-9.-]+(:[0-9]+)?(/[A-Za-z0-9._/-]*)?$ ]] ||
+  die "DASHBOARD_PUBLIC_URL in $conf deve essere un indirizzo come https://hermes.ron1n.space, non $DASHBOARD_PUBLIC_URL"
+export DOJO_WORK DOJO_UID DOJO_GID WEBUI_PORT DASHBOARD_PORT WEBUI_BIND DASHBOARD_BIND DASHBOARD_PUBLIC_URL
 
 compose() {
   docker compose --project-directory "$base" -f "$base/compose.yaml" "$@"
@@ -112,7 +116,7 @@ create_credentials() {
 }
 
 # Chiavi di dojo.env che non vanno agli agenti: sono per compose e dojo.sh.
-di_dojo() { [[ $1 == DOJO_* || $1 == *_PORT ]]; }
+di_dojo() { [[ $1 == DOJO_* || $1 == *_PORT || $1 == WEBUI_* || $1 == DASHBOARD_* ]]; }
 
 # Le chiavi di dojo.env.example di un agente, senza il prefisso
 # (BUILDER_GH_TOKEN -> GH_TOKEN).
