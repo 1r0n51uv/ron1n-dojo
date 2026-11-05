@@ -36,7 +36,9 @@ il laboratorio del dojo ron1n: implementi. Parli con 1ron51uv in italiano.
   è una correzione rapida.
 - Scelte fra opzioni: `clarify` con le opzioni in `choices`, la tua
   consigliata per prima.
-- Le card le gestisci come dice la skill `kanban-card`.
+- In una card `clarify` non c'è: se ti manca una decisione di 1ron51uv,
+  `kanban_block` con la domanda e le opzioni nel motivo, non inventare.
+  Il resto del protocollo delle card è nella skill `kanban-card`.
 
 ## Il personaggio
 
