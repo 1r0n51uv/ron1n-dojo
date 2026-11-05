@@ -66,11 +66,11 @@ condividono nulla.
 Il dojo ha una room per area. Ogni agente è un personaggio di un anime, con il
 nome del ruolo in inglese.
 
-| Stanza                | Agenti (ruolo · personaggio)                                                                                                                                                 | Può                                                    | Non può                               |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------- |
-| `lab`, il laboratorio | Concierge · Nico Robin (One Piece), Strategist · Shikamaru (Naruto), Designer · Bulma (Dragon Ball), Builder · Edward Elric (Fullmetal Alchemist), Reviewer · L (Death Note) | shell nel container, git, `gh`, Jira; PR sui repo app  | merge, admin dei repo, server, docker |
-| `home` (dopo)         | Companion · Chopper (One Piece)                                                                                                                                              | promemoria, note, brief del mattino; MCP di ron1nOS    | shell, GitHub, file                   |
-| `work` (dopo)         | Captain · Levi (L'attacco dei giganti)                                                                                                                                       | come la room `home`, con memoria e credenziali proprie | vedere le altre rooms                 |
+| Stanza                | Agenti (ruolo · personaggio)                                                                                                                                                              | Può                                                    | Non può                               |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------- |
+| `lab`, il laboratorio | Concierge · Nico Robin (One Piece), Strategist · Shikamaru (Naruto), Designer · Bulma (Dragon Ball), Builder · Edward Elric (Fullmetal Alchemist), Reviewer · L (Death Note, accantonato) | shell nel container, git, `gh`, Jira; PR sui repo app  | merge, admin dei repo, server, docker |
+| `home` (dopo)         | Companion · Chopper (One Piece)                                                                                                                                                           | promemoria, note, brief del mattino; MCP di ron1nOS    | shell, GitHub, file                   |
+| `work` (dopo)         | Captain · Levi (L'attacco dei giganti)                                                                                                                                                    | come la room `home`, con memoria e credenziali proprie | vedere le altre rooms                 |
 
 ### Lab sul mini PC
 
@@ -103,13 +103,13 @@ tutti i profiles (multiplexing) e il dispatcher Kanban.
 
 ### Agenti della lab
 
-| Agente                   | Ruolo                                                                                                  | Toolset                                                               | Token GitHub                                |
-| ------------------------ | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- | ------------------------------------------- |
-| `concierge` (Nico Robin) | primo contatto, chiarisce con `grilling`, card a Shikamaru; non tocca il tracker                       | kanban, clarify, skills, todo, memory                                 | nessuno                                     |
-| `strategist` (Shikamaru) | specifica, PR `spec`, issue nel tracker (anche quella iniziale), card a Bulma o Edward; non implementa | file, terminal, kanban, clarify, skills, todo, memory                 | contents, pull requests, issues: scrittura  |
-| `designer` (Bulma)       | flows, mockup e note UI/UX in `docs/design/` e nella issue; niente codice                              | file, terminal, vision, kanban, clarify, skills, todo, memory         | contents, pull requests, issues: scrittura  |
-| `builder` (Edward)       | implementazione con test, `npm run check`, PR con il riferimento alla issue                            | file, terminal, code_execution, kanban, clarify, skills, todo, memory | contents, pull requests: scrittura          |
-| `reviewer` (L)           | review contro specifica e regole, commento sulla PR, card indietro o PR pronta                         | terminal, kanban, clarify, skills, todo, memory                       | contents: lettura; pull requests: scrittura |
+| Agente                   | Ruolo                                                                                                                        | Toolset                                                               | Token GitHub                                |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------- |
+| `concierge` (Nico Robin) | primo contatto, chiarisce con `grilling`, card a Shikamaru; non tocca il tracker                                             | kanban, clarify, skills, todo, memory                                 | nessuno                                     |
+| `strategist` (Shikamaru) | specifica, PR `spec`, issue nel tracker (anche quella iniziale), card a Bulma o Edward; non implementa                       | file, terminal, kanban, clarify, skills, todo, memory                 | contents, pull requests, issues: scrittura  |
+| `designer` (Bulma)       | flows, mockup e note UI/UX in `docs/design/` e nella issue; niente codice                                                    | file, terminal, vision, kanban, clarify, skills, todo, memory         | contents, pull requests, issues: scrittura  |
+| `builder` (Edward)       | implementazione con test, `npm run check`, PR con il riferimento alla issue                                                  | file, terminal, code_execution, kanban, clarify, skills, todo, memory | contents, pull requests: scrittura          |
+| `reviewer` (L)           | accantonato, non in `DOJO_AGENTS` di default; review contro specifica e regole, commento sulla PR, card indietro o PR pronta | terminal, kanban, clarify, skills, todo, memory                       | contents: lettura; pull requests: scrittura |
 
 ## Modelli
 
@@ -145,6 +145,11 @@ Il lavoro vive su due livelli ([tracker](specs/tracker.md),
 - il **Kanban di Hermes**, la cucina interna: dice quale agente deve
   partire. Ogni card porta la chiave della issue (`#42` o `DOJO-42`).
 
+Nico Robin non fa passare tutto da una card: risponde da solo a consigli e
+riepiloghi, chiarisce le richieste vaghe e passa il lavoro solo quando decidi
+di procedere ([FLOW-007](specs/flows.md)). Le card di consegna hanno un
+modello fisso, la skill `handoff-brief` ([FLOW-010](specs/flows.md)).
+
 I flussi sono skill Hermes in [`flows/`](../flows/README.md), neutre
 rispetto al tracker: dicono «sposta la issue in Review», e le skill
 `tracker-github` e `tracker-jira` lo traducono in comandi. Accanto,
@@ -154,18 +159,23 @@ rivederla contro i documenti del repo. Le domande a scelta multipla passano
 dal tool `clarify`, che su Telegram mostra le opzioni come bottoni.
 
 1. **Nuova feature**: Nico Robin → Shikamaru (specifica, issue) → Bulma
-   (mockup, se c'è interfaccia) → Edward (PR) → L (review) → merge tuo.
-2. **Nuovo progetto**: Shikamaru prepara specifica e
+   (mockup, se c'è interfaccia) → Edward (PR pronta) → merge tuo.
+2. **Correzione rapida**: un bug già chiaro va da Nico Robin, o da te
+   direttamente, a Edward: issue, PR, merge tuo.
+3. **Discussione**: un parere lo discuti con l'agente scelto, senza card;
+   si crea una card solo quando decidi di procedere.
+4. **Nuovo progetto**: Shikamaru prepara specifica e
    `projects/<nome>.yaml`, Edward template e stack nel hub; repo e branch
    protection li crei tu.
-3. **Personale** (room `home`), **lavoro** (room `work`), **ricorrenti**: con le rooms future.
+5. **Personale** (room `home`), **lavoro** (room `work`), **ricorrenti**: con le rooms future.
 
 Le notifiche del Kanban sono quelle di Hermes, ma arrivano dal bot
 dell'agente che lavora la card ([FLOW-005](specs/flows.md)): quando il
 dispatcher prende una card, il plugin `dojo-handoff` intesta a quell'agente
 la subscription della tua chat Telegram. Se si blocca, il suo bot te lo dice
 e lui si sveglia nella sua chat: gli rispondi lì e lui commenta e sblocca la
-card. Il bot di un agente ti scrive solo se gli hai già scritto almeno una
+card. Una card finita ti arriva invece come messaggio e basta, senza un turno
+del modello: alla fine il plugin riporta la subscription a `notify`. Il bot di un agente ti scrive solo se gli hai già scritto almeno una
 volta (`/start`).
 
 Shikamaru non implementa ([FLOW-006](specs/flows.md)): oltre al SOUL, il

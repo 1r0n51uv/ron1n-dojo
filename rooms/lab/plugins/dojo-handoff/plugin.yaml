@@ -3,6 +3,8 @@ version: "1.0"
 description: >-
   Quando un agente prende una card Kanban, blocchi ed esiti della card
   arrivano all'utente dal bot di quell'agente, che si sveglia nella sua chat
-  per fare le domande e sbloccarla.
+  per fare le domande e sbloccarla. A card finita l'esito arriva senza far
+  partire un turno del modello.
 provides_hooks:
   - kanban_task_claimed
+  - kanban_task_completed

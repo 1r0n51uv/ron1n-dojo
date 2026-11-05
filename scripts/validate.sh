@@ -67,7 +67,9 @@ if campi.get("tracker") == "jira" and not re.fullmatch(r"[A-Z][A-Z0-9]+", campi.
 for stato in ("spec", "todo", "doing", "review", "done"):
     if not stati.get(stato):
         errori.append(f"states.{stato} mancante")
-for chiave in set(campi) - {"repo", "tracker", "jira_key", "states"}:
+if campi.get("ci_required", "false") not in ("true", "false"):
+    errori.append("ci_required deve essere true o false")
+for chiave in set(campi) - {"repo", "tracker", "jira_key", "ci_required", "states"}:
     errori.append(f"campo sconosciuto: {chiave}")
 for chiave in set(stati) - {"spec", "todo", "doing", "review", "done"}:
     errori.append(f"stato sconosciuto: {chiave}")

@@ -15,13 +15,14 @@ sempre dell'utente.
 Stato: proposto
 
 Da una richiesta, sulla WebUI, su Telegram o come issue nel tracker, si
-arriva a una PR revisionata, pronta per il merge, seguendo il flusso di
+arriva a una PR pronta per il merge, seguendo il flusso di
 ron1n.
 
 Accettazione:
 
-- [ ] Nico Robin chiarisce la richiesta con `grilling` e crea la card per
-      Shikamaru, con la chiave della issue se c'è già; non tocca il tracker.
+- [ ] Quando 1ron51uv decide di procedere, Nico Robin (se chiarire serve,
+      con `grilling`) crea la card per Shikamaru con la consegna di FLOW-010,
+      con la chiave della issue se c'è già; non tocca il tracker (FLOW-007).
 - [ ] Se la issue manca, Shikamaru la apre nel tracker del progetto.
 - [ ] Shikamaru non implementa (FLOW-006): codice, skill e config li fa
       Edward.
@@ -111,6 +112,10 @@ Accettazione:
       `notify+wake`: blocco, fine e fallimenti arrivano dal suo bot e lo
       svegliano nella sua chat. Lo fa il plugin `dojo-handoff`, acceso nel
       profile `default` dove gira il dispatcher.
+- [ ] Una card finita non sveglia l'agente: quando si completa, il plugin
+      (acceso in ogni profile agente, perché l'hook gira nel worker) passa la
+      subscription a `notify` e l'esito arriva come messaggio passivo. Se
+      perde la corsa con il notifier l'agente si sveglia come prima.
 - [ ] L'avviso arriva da un bot solo: la subscription di chi ha creato la card
       sulla stessa chat Telegram passa all'assegnatario. Quelle su altre
       piattaforme (WebUI) restano.
@@ -127,8 +132,9 @@ Accettazione:
 - [ ] Si può sempre rispondere anche dal board: commento e `unblock` da
       dashboard o CLI.
 - [ ] Un errore del plugin finisce nel log e non ferma il dispatcher.
-- [ ] La CI dell'immagine prova che la subscription passa all'assegnatario e
-      che il blocco successivo la raggiunge.
+- [ ] La CI dell'immagine prova che la subscription passa all'assegnatario,
+      che il blocco successivo la raggiunge e che la card finita la porta a
+      `notify`.
 
 ### FLOW-006 · Lo Strategist non implementa
 
@@ -154,6 +160,77 @@ Accettazione:
       una PR di Shikamaru con file fuori dalle specifiche non si fonde.
 - [ ] La CI dell'immagine prova che il codice è rifiutato e la specifica
       passa.
+
+### FLOW-007 · Concierge: tre strade
+
+Stato: proposto
+
+Nico Robin sceglie la strada più leggera che basta, invece di far passare ogni
+richiesta dal grilling e da una card.
+
+Accettazione:
+
+- [ ] Un consiglio, una domanda o un "a che punto siamo" ricevono risposta
+      diretta: niente grilling, niente card.
+- [ ] Una richiesta di lavoro vaga passa dal `grilling` e da una conferma
+      prima di diventare una card.
+- [ ] Una card nasce solo quando l'utente ha deciso di procedere o lo chiede
+      con una richiesta già chiara; la consegna segue FLOW-010 e va a Edward
+      (bug o modifica chiari), a Shikamaru (idea da pensare) o a Bulma
+      (interfaccia).
+- [ ] Nico Robin non fa da intermediario con gli specialisti: se l'utente
+      vuole discutere gli dice di scrivergli dal suo bot e non riassume le
+      sue risposte, salvo richiesta.
+
+### FLOW-008 · Correzione rapida
+
+Stato: proposto
+
+Un bug o una modifica già chiari arrivano a una PR pronta senza specifica.
+
+Accettazione:
+
+- [ ] La issue nel tracker ha come riprodurre e i criteri di accettazione;
+      la card per Edward segue FLOW-010.
+- [ ] Edward lavora come al passo di implementazione di FLOW-001 (branch,
+      test, CHANGELOG, `npm run check`, PR con il riferimento alla issue) e
+      chiude la card con il link alla PR.
+- [ ] Se manca o è sbagliata la specifica, Edward blocca la card con la
+      domanda e la richiesta passa a FLOW-001.
+
+### FLOW-009 · Discussione senza card
+
+Stato: proposto
+
+Un parere o una scelta si discutono con l'agente giusto e restano una
+conversazione.
+
+Accettazione:
+
+- [ ] Con Shikamaru (o con l'agente scelto) la discussione non crea card,
+      specifiche, issue né file nei repo.
+- [ ] La risposta finale è dell'agente con cui si parla.
+- [ ] Quando l'utente decide di procedere, l'agente propone il flusso
+      (FLOW-001 o FLOW-008) e passa il lavoro con FLOW-010, con le decisioni
+      prese e non la chat.
+
+### FLOW-010 · Consegna fra agenti
+
+Stato: proposto
+
+Ogni card per un altro agente ha lo stesso modello: obiettivo, criteri di
+accettazione, decisioni prese, repo e branch, ambiente, riferimenti. Lo fissa
+la skill `handoff-brief`.
+
+Accettazione:
+
+- [ ] La skill `handoff-brief` descrive il modello e l'agente che crea una
+      card la usa; la chat non si copia.
+- [ ] Un progetto con `ci_required: true` in `projects/<nome>.yaml` ha card
+      con completion contract di Hermes sul suo repo: non si chiudono se i
+      check richiesti della PR non sono verdi. Senza il campo, niente
+      contract.
+- [ ] `scripts/validate.sh` accetta `ci_required` solo con `true` o `false`.
 
 ## Note
 

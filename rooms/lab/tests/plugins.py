@@ -5,8 +5,8 @@ scrive un .env finto nel profile strategist e crea card sul board.
 
 - ``handoff`` (HERMES_HOME=/opt/data, il default con il dispatcher): una card
   creata da Nico Robin e presa da Shikamaru passa la subscription della chat
-  dell'utente al bot di Shikamaru, e il blocco successivo la raggiunge
-  (FLOW-005).
+  dell'utente al bot di Shikamaru, e il blocco successivo la raggiunge; a
+  card finita la subscription passa a ``notify`` (FLOW-005).
 - ``spec-only`` (HERMES_HOME del profile strategist): i tool di file
   rifiutano il codice e lasciano passare le specifiche (FLOW-006).
 """
@@ -55,6 +55,31 @@ def handoff() -> None:
         _, events = kbn.unseen_events_for_sub(conn, task_id=tid, platform="telegram", chat_id=CHAT)
         assert "blocked" in {e.kind for e in events}, [e.kind for e in events]
     print("ok   dojo-handoff: il blocco arriva dal bot di strategist")
+
+    # Card finita: l'esito arriva passivo, senza turno dell'agente.
+    assert plugins.has_hook("kanban_task_completed"), "dojo-handoff senza hook di fine card"
+    with kbc.connect_closing() as conn:
+        tid = kb.create_task(conn, title="#2 prova fine card", assignee="strategist", created_by="concierge")
+        kbn.add_notify_sub(
+            conn, task_id=tid, platform="telegram", chat_id=CHAT, chat_type="dm",
+            user_id=CHAT, notifier_profile="concierge", delivery_mode="notify+wake",
+        )
+        assert kb.claim_task(conn, tid), "card non presa"
+        for _ in range(50):
+            subs = kbn.list_notify_subs(conn, tid)
+            if [s.get("notifier_profile") for s in subs] == ["strategist"]:
+                break
+            time.sleep(0.1)
+        else:
+            raise AssertionError(f"subscription non passata a strategist: {subs}")
+        assert subs[0]["delivery_mode"] == "notify+wake", subs[0]
+
+        assert kb.complete_task(conn, tid, result="fatto", force=True), "card non completata"
+        sub = kbn.list_notify_subs(conn, tid)[0]
+        assert sub["delivery_mode"] == "notify", sub
+        _, events = kbn.unseen_events_for_sub(conn, task_id=tid, platform="telegram", chat_id=CHAT)
+        assert "completed" in {e.kind for e in events}, [e.kind for e in events]
+    print("ok   dojo-handoff: la card finita non sveglia l'agente")
 
 
 def spec_only() -> None:

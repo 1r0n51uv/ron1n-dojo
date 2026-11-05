@@ -1,7 +1,7 @@
 ---
 name: new-feature
-description: "Da un'idea a una PR pronta per il merge: specifica, issue nel tracker del progetto, implementazione, revisione (flusso ron1n)."
-version: 0.3.0
+description: "Da un'idea a una PR pronta per il merge: specifica, issue nel tracker del progetto, implementazione (flusso ron1n)."
+version: 0.4.0
 author: ron1n-dojo
 metadata:
   hermes:
@@ -66,15 +66,16 @@ issue (con la sua chiave o il suo numero), la legge e riparte da lì.
      Jira, `42-login` con GitHub. Codice e test, `CHANGELOG.md`, stato del
      requisito a `fatto`, `npm run check` verde.
    - PR secondo il template del repo, con `Closes #N` (GitHub) o la chiave
-     Jira nel titolo. Porta la issue a `review` e la card passa in
-     revisione.
-5. **Revisione** (reviewer)
-   - Review su GitHub. Se servono modifiche, la issue torna a `doing` e la
-     card a Edward.
-   - Se è pronta, messaggio a 1ron51uv con il link alla PR.
-6. **Merge** (1ron51uv). Con GitHub la issue si chiude alla merge; con Jira
-   il reviewer la porta a `done`. La card si chiude quando i check richiesti
-   sono verdi e la PR è mergiata.
+     Jira nel titolo. Porta la issue a `review` e chiude la card con il link
+     alla PR (`kanban_complete`, e `metadata.published_pr` se la card ha un
+     completion contract). Non c'è un passaggio a un reviewer (FLOW-001):
+     la PR pronta la guarda 1ron51uv.
+5. **Merge** (1ron51uv). Con GitHub la issue si chiude alla merge; con Jira
+   la porta a `done` Edward, su richiesta di 1ron51uv. La card si chiude
+   quando i check richiesti sono verdi, se ha un completion contract.
+
+Le card di consegna le scrive chi le crea con la skill `handoff-brief`:
+obiettivo, criteri, decisioni, repo e riferimenti, mai la chat copiata.
 
 ## Quando fermarsi
 
