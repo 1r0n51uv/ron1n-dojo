@@ -33,6 +33,9 @@ services:
       # API del gateway per la WebUI (ROOM-009), solo sulla rete internal. La
       # chiave sta nel .env di ogni profile: senza chiave l'API non parte.
       API_SERVER_ENABLED: "true"
+      # Indirizzo pubblico della dashboard (DASHBOARD_PUBLIC_URL in dojo.env,
+      # ROOM-006): Hermes lo usa per i login delle app e si fida del suo nome.
+      HERMES_DASHBOARD_PUBLIC_URL: ${DASHBOARD_PUBLIC_URL:-}
       API_SERVER_HOST: 0.0.0.0
       # CLI di Claude dell'abbonamento (MODELS-006): niente aggiornamenti
       # automatici né traffico non essenziale.
