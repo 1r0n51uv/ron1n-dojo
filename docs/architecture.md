@@ -74,13 +74,13 @@ nome del ruolo in inglese.
 
 ### Lab sul mini PC
 
-| Servizio      | Cosa fa                                                                         | Reti               |
-| ------------- | ------------------------------------------------------------------------------- | ------------------ |
-| `hermes`      | gateway con i cinque profile, Kanban, API per la WebUI                          | internal           |
-| `webui`       | hermes-webui, chat via API del gateway; il suo terminale resta confinato qui    | internal           |
-| `webui-proxy` | inoltro TCP verso Caddy di ron1n (`dojo.ron1n.space`) e verso `127.0.0.1:8787`  | internal, proxy    |
-| `dashboard`   | inoltro TCP della dashboard di Hermes su `127.0.0.1:9119`, per diagnosi         | internal           |
-| `egress`      | Squid con l'allowlist: GitHub, npm, Anthropic, OpenAI, Jira (`*.atlassian.net`) | internal, external |
+| Servizio      | Cosa fa                                                                          | Reti               |
+| ------------- | -------------------------------------------------------------------------------- | ------------------ |
+| `hermes`      | gateway con i cinque profile, Kanban, API per la WebUI                           | internal           |
+| `webui`       | hermes-webui, chat via API del gateway; il suo terminale resta confinato qui     | internal           |
+| `webui-proxy` | inoltro TCP verso Caddy di ron1n (`dojo.ron1n.space`) e verso `127.0.0.1:8787`   | internal, proxy    |
+| `dashboard`   | inoltro TCP della dashboard di Hermes su `127.0.0.1:9119` e `hermes.ron1n.space` | internal, proxy    |
+| `egress`      | Squid con l'allowlist: GitHub, npm, Anthropic, OpenAI, Jira (`*.atlassian.net`)  | internal, external |
 
 - **Immagine**: `ghcr.io/1r0n51uv/dojo-lab`, costruita dalla CI a ogni push
   su `main` con i tag `main` e `sha-<commit>`. Contiene Hermes, Claude Code,

@@ -126,7 +126,9 @@ Accettazione:
 Stato: proposto
 
 Ogni room offre la dashboard di Hermes (sessioni, configurazione, log),
-raggiungibile solo dal mini PC e protetta da password.
+protetta da password: dal mini PC e, da fuori, su `hermes.ron1n.space`
+dietro Cloudflare Access, anche per un'app iOS che si collega alla
+dashboard.
 
 Accettazione:
 
@@ -139,7 +141,10 @@ Accettazione:
       leggono.
 - [ ] Il container Hermes resta su una rete senza internet: l'ingresso è un
       piccolo inoltro TCP senza privilegi e a file system in sola lettura.
-- [ ] Da un'altra macchina si usa un tunnel SSH, non una porta aperta.
+- [ ] Da fuori si passa da `https://hermes.ron1n.space`: Cloudflare Tunnel e
+      Caddy di ron1n, che raggiunge l'inoltro sulla rete `proxy` come
+      `dojo-dashboard:9119`, dietro Cloudflare Access. Nessuna porta aperta
+      verso internet.
 
 ### ROOM-007 · Il lavoro autonomo si racconta su Telegram
 
