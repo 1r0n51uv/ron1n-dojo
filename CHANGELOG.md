@@ -6,6 +6,8 @@ merge.
 
 ## 2026-11-05
 
+- Ogni agente può togliere una card dal board quando glielo chiedi: il plugin `dojo-kanban-archive`, acceso in tutti i profiles, aggiunge il tool `kanban_archive`, che archivia la card o con `delete` la cancella (FLOW-012) ([#39](https://github.com/1r0n51uv/ron1n-dojo/pull/39))
+- Notifiche sull'app iOS Conduit: il profile `default` accende il plugin `conduit_push` e il toolset `conduit` anche dopo un riavvio o un'immagine nuova, e l'egress apre il relay `push.milim.dev` (ROOM-015) ([#39](https://github.com/1r0n51uv/ron1n-dojo/pull/39))
 - `DASHBOARD_PUBLIC_URL` in `dojo.env` (default `https://hermes.ron1n.space`) diventa `HERMES_DASHBOARD_PUBLIC_URL` della dashboard, per i login delle app iOS che si collegano a Hermes; le chiavi `WEBUI_*` e `DASHBOARD_*` non finiscono più nei `.env` degli agenti (ROOM-006) ([#38](https://github.com/1r0n51uv/ron1n-dojo/pull/38))
 - La dashboard di Hermes è anche sulla rete `proxy` come `dojo-dashboard:9119`, così Caddy di ron1n la pubblica su `hermes.ron1n.space` dietro Cloudflare Access, per un'app iOS che si collega alla dashboard (ROOM-006) ([#37](https://github.com/1r0n51uv/ron1n-dojo/pull/37))
 - `dojo.sh up` aspetta che il seed abbia creato tutti i profiles, non solo lo strategist, prima di copiare i `.env`: su un'installazione nuova poteva fermarsi con "profile builder non creato" (ROOM-004) ([#37](https://github.com/1r0n51uv/ron1n-dojo/pull/37))

@@ -92,10 +92,13 @@ RUN py=/opt/hermes/.venv/bin/python deps=/opt/mcp-atlassian \
 # Config e SOUL dei profiles, flows e skill della room (ROOM-012): di root,
 # in sola lettura per gli agenti. I .env non entrano (.dockerignore).
 COPY rooms/lab/profiles /opt/dojo/profiles
-# Il plugin nostro, fra quelli inclusi in Hermes (di root, in sola lettura
-# per gli agenti): dojo-spec-only (FLOW-006), acceso nello strategist.
+# I plugin nostri, fra quelli inclusi in Hermes (di root, in sola lettura
+# per gli agenti): dojo-spec-only (FLOW-006), acceso nello strategist, e
+# dojo-kanban-archive (FLOW-012), acceso in tutti i profiles.
 COPY rooms/lab/plugins/ /opt/hermes/plugins/
-RUN /opt/hermes/.venv/bin/python -m py_compile /opt/hermes/plugins/dojo-spec-only/__init__.py
+RUN for p in dojo-spec-only dojo-kanban-archive; do \
+      /opt/hermes/.venv/bin/python -m py_compile "/opt/hermes/plugins/$p/__init__.py"; \
+    done
 COPY flows /opt/dojo/flows
 COPY skills /opt/dojo/skills
 COPY projects /opt/dojo/projects

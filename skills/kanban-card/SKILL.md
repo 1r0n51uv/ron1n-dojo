@@ -39,6 +39,12 @@ Succede quando 1ron51uv ti scrive nella WebUI su una tua card bloccata.
 Una riga a 1ron51uv: cosa è successo e chi ha il lavoro adesso. Non rifai la
 card e non ne crei di doppie.
 
+## Togliere una card
+
+Solo se 1ron51uv lo chiede: `kanban_archive` con l'id (da `kanban_list`)
+la archivia; con `delete: true` la cancella del tutto. Se non dice
+"cancella", archivia.
+
 ## Tentativi massimi
 
 - Lo stesso comando non si ripete più di due volte con lo stesso errore: la

@@ -283,6 +283,25 @@ Accettazione:
 - [ ] Alla fine stampa cosa fare a mano: togliere il checkout, il portproxy
       e la regola del firewall su Windows, l'agente in AionUi.
 
+### ROOM-015 · Notifiche sull'app iOS Conduit
+
+Stato: proposto
+
+L'app iOS Conduit si collega alla dashboard (`hermes.ron1n.space`, ROOM-006)
+e riceve le notifiche di Hermes (approvazioni, domande, risposte, errori)
+dal plugin `conduit_push`.
+
+Accettazione:
+
+- [ ] Il plugin lo installa Conduit in `/opt/data/plugins`, nel volume
+      della room; il `config.yaml` del profile `default` lo accende
+      (`plugins.enabled`) e gli dà il toolset `conduit`, così resta acceso
+      dopo un riavvio o un'immagine nuova (ROOM-012).
+- [ ] L'egress apre solo `push.milim.dev`, il relay delle notifiche; con la
+      cifratura end-to-end il relay vede solo dati di instradamento.
+- [ ] L'abbinamento si fa dall'app; `hermes conduit-push status` nel
+      container dice se c'è.
+
 ## Note
 
 - Le rooms `home` (personale) e `work` (lavoro) arrivano dopo
@@ -291,3 +310,5 @@ Accettazione:
   si passa alla versione che lo fa, provandola prima.
 - Una room per tutti gli agenti: chi ha `terminal` può leggere `.env` e file
   degli altri. Il confine vero sono container, egress e token limitati.
+- `conduit_push` non è nell'immagine né a versione fissata: lo installa e lo
+  aggiorna Conduit nel volume. Da portare nell'immagine se diventa stabile.

@@ -222,6 +222,26 @@ Accettazione:
       `install.sh`).
 - [ ] Il Concierge risponde breve: 1ron51uv lo legge dal telefono.
 
+### FLOW-012 · Ogni agente toglie le card
+
+Stato: proposto
+
+Ogni agente può togliere una card dal board quando 1ron51uv lo chiede. Hermes
+lo fa solo da CLI e dashboard; il plugin `dojo-kanban-archive` aggiunge il
+tool `kanban_archive` al toolset `kanban`.
+
+Accettazione:
+
+- [ ] `kanban_archive` archivia la card (esce dal board, un worker che la
+      lavora si ferma, la storia resta); con `delete: true` la cancella del
+      tutto, commenti ed eventi compresi.
+- [ ] Il plugin è acceso in tutti i profiles; come `kanban_list` il tool è
+      nascosto ai worker.
+- [ ] Un agente toglie una card solo su richiesta di 1ron51uv (skill
+      `kanban-card`).
+- [ ] La CI dell'immagine prova che il tool è registrato, archivia e
+      cancella.
+
 ## Note
 
 - Flussi personali e di lavoro con le rooms future.
