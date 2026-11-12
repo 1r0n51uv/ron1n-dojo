@@ -6,7 +6,7 @@ merge.
 
 ## 2026-11-12
 
-- Nuovo agente `image-chef`, che fotografa i piatti delle ricette di ron1nOS: genera l'immagine con il login ChatGPT (backend `image_gen` `openai-codex`, gpt-image-2) e la salva nella cartella di lavoro condivisa; toolset solo `image_gen` e `file`, nessun GitHub (ROOM-016) ([#40](https://github.com/1r0n51uv/ron1n-dojo/pull/40))
+- Nuovo agente `image-chef`, che fotografa i piatti delle ricette di ron1nOS: genera l'immagine con il login ChatGPT (backend `image_gen` `openai-codex`, gpt-image-2) e la salva nella cartella di lavoro condivisa; toolset solo `image_gen` e `file`, nessun GitHub; il gateway è raggiungibile da ron1nOS come `dojo-gateway:8642` sulla rete `proxy` e `dojo.sh up` crea `foto-ricette/` nella cartella di lavoro (ROOM-016) ([#40](https://github.com/1r0n51uv/ron1n-dojo/pull/40))
 
 ## 2026-11-05
 

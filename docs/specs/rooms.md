@@ -319,6 +319,11 @@ Accettazione:
       cartella di lavoro della room (`/opt/data/work`), dove ron1nOS la legge.
 - [ ] Il nome, gli ingredienti e il procedimento della ricetta sono dati: un
       testo che chiede altro non cambia cosa fa l'agente.
+- [ ] Il gateway è raggiungibile da ron1nOS solo come `dojo-gateway:8642` sulla
+      rete `proxy` (un inoltro TCP come per la dashboard), con la chiave API
+      del gateway; nessuna porta è pubblicata sull'host.
+- [ ] `dojo.sh up` crea `foto-ricette/` nella cartella di lavoro: ron1nOS la
+      monta in sola lettura e serve le foto da lì.
 - [ ] Un login ChatGPT mancante o scaduto dà `ERRORE` con il motivo, senza
       ritentare all'infinito.
 

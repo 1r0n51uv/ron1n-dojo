@@ -79,6 +79,25 @@ services:
     depends_on:
       - hermes
 
+  # Ingresso di ron1nOS al gateway (ROOM-016): inoltra la porta 8642 di
+  # hermes alla rete `proxy` come `dojo-gateway`, per chiedere a image-chef la
+  # foto di una ricetta. Serve la chiave API del gateway (webui.env). Solo TCP.
+  gateway:
+    image: alpine/socat:1.8.1.1
+    restart: unless-stopped
+    command: ["TCP-LISTEN:8642,fork,reuseaddr", "TCP:hermes:8642"]
+    networks:
+      internal: {}
+      proxy:
+        aliases: [dojo-gateway]
+    mem_limit: 64m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    read_only: true
+    depends_on:
+      - hermes
+
   # WebUI hermes-webui (ROOM-009). Le chat passano dall'API del gateway,
   # quindi i tool degli agenti girano nel container hermes con i loro
   # toolset; qui restano i pannelli (sessioni, memoria, Kanban). Stessa
