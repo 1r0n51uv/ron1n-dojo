@@ -4,6 +4,10 @@ Cosa cambia nel dojo (stanze, profili, flussi, script), il giorno più
 recente in alto. Ogni PR aggiunge la sua riga in cima, sotto il giorno del
 merge.
 
+## 2026-11-12
+
+- Nuovo agente `image-chef`, che fotografa i piatti delle ricette di ron1nOS: genera l'immagine con il login ChatGPT (backend `image_gen` `openai-codex`, gpt-image-2) e la salva nella cartella di lavoro condivisa; toolset solo `image_gen` e `file`, nessun GitHub (ROOM-016) ([#40](https://github.com/1r0n51uv/ron1n-dojo/pull/40))
+
 ## 2026-11-05
 
 - Ogni agente può togliere una card dal board quando glielo chiedi: il plugin `dojo-kanban-archive`, acceso in tutti i profiles, aggiunge il tool `kanban_archive`, che archivia la card o con `delete` la cancella (FLOW-012) ([#39](https://github.com/1r0n51uv/ron1n-dojo/pull/39))

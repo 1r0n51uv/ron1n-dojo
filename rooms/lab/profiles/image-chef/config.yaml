@@ -1,0 +1,40 @@
+# Image Chef: fotografa i piatti delle ricette di ron1nOS. Riceve nome,
+# ingredienti e procedimento, genera una foto con l'abbonamento ChatGPT
+# (backend image_gen openai-codex, gpt-image-2) e la salva nella cartella
+# condivisa con ron1nOS. Non ha shell, GitHub né Kanban.
+model:
+  # Abbonamento Claude (MODELS-006). Si cambia da Hermes (`hermes model`,
+  # dashboard o WebUI) e l'aggiornamento dell'immagine non lo tocca
+  # (MODELS-007, ROOM-012).
+  provider: "claude-subscription-directsdk-experimental"
+  default: "sonnet"
+  context_length: 200000
+
+# Una chiamata appesa senza output non tiene ferma una richiesta per 30 minuti.
+providers:
+  claude-subscription-directsdk-experimental:
+    stale_timeout_seconds: 900
+
+# Le immagini le genera il login ChatGPT del dojo (`hermes auth add
+# openai-codex`, MODELS-005): nessuna chiave API.
+image_gen:
+  provider: openai-codex
+
+platform_toolsets:
+  cli: [image_gen, file]
+  # ron1nOS lo chiama dall'API del gateway (ROOM-016).
+  api_server: [image_gen, file]
+
+approvals:
+  mode: manual
+  cron_mode: deny
+  unattended_mode: deny
+
+# Login della CLI di Claude nel volume della room (`dojo.sh claude`), niente
+# telemetria.
+plugins:
+  entries:
+    claude-subscription-directsdk-experimental:
+      settings:
+        claude_config_dir: /opt/data/claude
+        claude_code_telemetry: false

@@ -12,12 +12,12 @@ requisiti in [`docs/specs/`](docs/specs/README.md).
 
 ## Struttura
 
-| Cartella                      | Cosa contiene                                                                     |
-| ----------------------------- | --------------------------------------------------------------------------------- |
-| [`rooms/lab/`](rooms/lab/)    | la room: `concierge`, `strategist`, `designer`, `builder`; `reviewer` accantonato |
-| [`flows/`](flows/README.md)   | skill Hermes dei flows, dentro l'immagine                                         |
-| [`skills/`](skills/README.md) | skill Hermes di supporto (`grilling`, `grilling-with-docs`, `handoff-brief`)      |
-| [`scripts/`](scripts/)        | `install.sh`, `dojo.sh` (up, down, status, claude), checks                        |
+| Cartella                      | Cosa contiene                                                                                   |
+| ----------------------------- | ----------------------------------------------------------------------------------------------- |
+| [`rooms/lab/`](rooms/lab/)    | la room: `concierge`, `strategist`, `designer`, `builder`, `image-chef`; `reviewer` accantonato |
+| [`flows/`](flows/README.md)   | skill Hermes dei flows, dentro l'immagine                                                       |
+| [`skills/`](skills/README.md) | skill Hermes di supporto (`grilling`, `grilling-with-docs`, `handoff-brief`)                    |
+| [`scripts/`](scripts/)        | `install.sh`, `dojo.sh` (up, down, status, claude), checks                                      |
 
 ## Installazione
 
