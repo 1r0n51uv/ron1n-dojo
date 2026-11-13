@@ -45,6 +45,10 @@ services:
       - data:/opt/data
       # Cartella di lavoro degli agenti, sul mini PC (ROOM-011).
       - ${DOJO_WORK:?imposta DOJO_WORK o usa scripts/dojo.sh}:/opt/data/work
+      # Le immagini di image-chef (ROOM-016) finiscono direttamente nella
+      # cartella che ron1nOS legge: `image_gen` le salva lì e non c'è altro
+      # da copiare.
+      - ${DOJO_WORK}/foto-ricette:/opt/data/profiles/image-chef/cache/generated/images
     networks:
       - internal
     mem_limit: 3g

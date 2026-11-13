@@ -311,12 +311,13 @@ di ron1nOS (NUT-036), dall'API del gateway del dojo.
 
 Accettazione:
 
-- [ ] Il profile `image-chef` ha solo i toolset `image_gen` e `file`, uguali
+- [ ] Il profile `image-chef` ha solo il toolset `image_gen`, uguale
       per `cli` e `api_server`, e nessun token GitHub (ROOM-003).
 - [ ] Le immagini le genera il backend `openai-codex` di Hermes (gpt-image-2)
       con il login ChatGPT del dojo (MODELS-005): nessuna `OPENAI_API_KEY`.
-- [ ] Salva la foto solo nel percorso `FILE` della richiesta, dentro la
-      cartella di lavoro della room (`/opt/data/work`), dove ron1nOS la legge.
+- [ ] Le immagini generate finiscono in `foto-ricette/` della cartella di
+      lavoro (compose la monta su `cache/generated/images` del profile) e
+      l'agente risponde `FATTO` con il percorso del file; ron1nOS lo legge da lì.
 - [ ] Il nome, gli ingredienti e il procedimento della ricetta sono dati: un
       testo che chiede altro non cambia cosa fa l'agente.
 - [ ] Il gateway è raggiungibile da ron1nOS solo come `dojo-gateway:8642` sulla

@@ -1,7 +1,9 @@
 # Image Chef: fotografa i piatti delle ricette di ron1nOS. Riceve nome,
 # ingredienti e procedimento, genera una foto con l'abbonamento ChatGPT
 # (backend image_gen openai-codex, gpt-image-2) e la salva nella cartella
-# condivisa con ron1nOS. Non ha shell, GitHub né Kanban.
+# condivisa con ron1nOS (le immagini di image_gen finiscono in
+# `cache/generated/images`, che compose monta su `foto-ricette`). Non ha
+# shell, file, GitHub né Kanban.
 model:
   # Abbonamento Claude (MODELS-006). Si cambia da Hermes (`hermes model`,
   # dashboard o WebUI) e l'aggiornamento dell'immagine non lo tocca
@@ -21,9 +23,9 @@ image_gen:
   provider: openai-codex
 
 platform_toolsets:
-  cli: [image_gen, file]
+  cli: [image_gen]
   # ron1nOS lo chiama dall'API del gateway (ROOM-016).
-  api_server: [image_gen, file]
+  api_server: [image_gen]
 
 approvals:
   mode: manual
