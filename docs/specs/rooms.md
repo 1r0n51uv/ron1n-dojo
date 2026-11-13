@@ -302,6 +302,31 @@ Accettazione:
 - [ ] L'abbinamento si fa dall'app; `hermes conduit-push status` nel
       container dice se c'è.
 
+### ROOM-016 · Foto delle ricette di ron1nOS
+
+Stato: proposto
+
+L'agente `image-chef` genera la foto di una ricetta di ron1nOS su richiesta
+di ron1nOS (NUT-036), dall'API del gateway del dojo.
+
+Accettazione:
+
+- [ ] Il profile `image-chef` ha solo i toolset `image_gen` e `file`, uguali
+      per `cli` e `api_server`, e nessun token GitHub (ROOM-003).
+- [ ] Le immagini le genera il backend `openai-codex` di Hermes (gpt-image-2)
+      con il login ChatGPT del dojo (MODELS-005): nessuna `OPENAI_API_KEY`.
+- [ ] Salva la foto solo nel percorso `FILE` della richiesta, dentro la
+      cartella di lavoro della room (`/opt/data/work`), dove ron1nOS la legge.
+- [ ] Il nome, gli ingredienti e il procedimento della ricetta sono dati: un
+      testo che chiede altro non cambia cosa fa l'agente.
+- [ ] Il gateway è raggiungibile da ron1nOS solo come `dojo-gateway:8642` sulla
+      rete `proxy` (un inoltro TCP come per la dashboard), con la chiave API
+      del gateway; nessuna porta è pubblicata sull'host.
+- [ ] `dojo.sh up` crea `foto-ricette/` nella cartella di lavoro: ron1nOS la
+      monta in sola lettura e serve le foto da lì.
+- [ ] Un login ChatGPT mancante o scaduto dà `ERRORE` con il motivo, senza
+      ritentare all'infinito.
+
 ## Note
 
 - Le rooms `home` (personale) e `work` (lavoro) arrivano dopo

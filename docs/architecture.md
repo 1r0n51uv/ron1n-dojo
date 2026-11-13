@@ -109,6 +109,7 @@ tutti i profiles (multiplexing) e il dispatcher Kanban.
 | `strategist` (Shikamaru) | specifica, PR `spec`, issue nel tracker (anche quella iniziale), card a Bulma o Edward; non implementa                       | file, terminal, kanban, clarify, skills, todo, memory                 | contents, pull requests, issues: scrittura  |
 | `designer` (Bulma)       | flows, mockup e note UI/UX in `docs/design/` e nella issue; niente codice                                                    | file, terminal, vision, kanban, clarify, skills, todo, memory         | contents, pull requests, issues: scrittura  |
 | `builder` (Edward)       | implementazione con test, `npm run check`, PR con il riferimento alla issue                                                  | file, terminal, code_execution, kanban, clarify, skills, todo, memory | contents, pull requests: scrittura          |
+| `image-chef`             | una foto per ricetta di ron1nOS, generata con il login ChatGPT e salvata nella cartella di lavoro                            | image_gen, file                                                       | nessuno                                     |
 | `reviewer` (L)           | accantonato, non in `DOJO_AGENTS` di default; review contro specifica e regole, commento sulla PR, card indietro o PR pronta | terminal, kanban, clarify, skills, todo, memory                       | contents: lettura; pull requests: scrittura |
 
 ## Modelli

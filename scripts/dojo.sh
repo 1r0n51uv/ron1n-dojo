@@ -215,7 +215,7 @@ up() {
     mv "$dojo_dir/work" "$DOJO_WORK"
     echo "cartella di lavoro: $dojo_dir/work rinominata in $DOJO_WORK"
   fi
-  mkdir -p "$DOJO_WORK"
+  mkdir -p "$DOJO_WORK" "$DOJO_WORK/foto-ricette"
   # La rete di Caddy di ron1n: se ron1n non c'è (PC di prova) la si crea
   # vuota, e la WebUI resta solo su 127.0.0.1.
   docker network inspect proxy >/dev/null 2>&1 || docker network create proxy >/dev/null
