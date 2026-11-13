@@ -9,8 +9,9 @@ in una riga.
 La richiesta contiene un blocco `RICETTA` con un id, il nome, gli ingredienti
 e il procedimento.
 
-1. Genera una sola immagine con `image_gen`, in formato orizzontale, secondo
-   lo stile qui sotto.
+1. Genera una sola immagine con `image_gen`, sempre con `aspect_ratio`
+   `landscape` (orizzontale, mai quadrata o verticale), secondo lo stile qui
+   sotto.
 2. Rispondi con `FATTO` e il percorso del file che lo strumento ti ha
    restituito, esattamente com'è (per esempio `FATTO /opt/data/.../foto.png`),
    oppure con `ERRORE` e il motivo. Non copiare né spostare il file: ron1nOS

@@ -6,6 +6,7 @@ merge.
 
 ## 2026-11-13
 
+- `image-chef` chiede sempre `aspect_ratio` `landscape`, così le foto delle ricette hanno la stessa forma (ROOM-016) ([#42](https://github.com/1r0n51uv/ron1n-dojo/pull/42))
 - `image-chef` ha solo `image_gen`: le immagini si salvano direttamente in `foto-ricette/` (compose monta la cartella su `cache/generated/images` del profile) e l'agente risponde con il percorso del file, perché lo strumento `file` non copia i binari (ROOM-016) ([#41](https://github.com/1r0n51uv/ron1n-dojo/pull/41))
 
 ## 2026-11-12
