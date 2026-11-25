@@ -269,6 +269,12 @@ Accettazione:
       `needs-review` e un commento col motivo.
 - [ ] Il keeper non unisce, non pubblica e non lancia workflow (ROOM-017).
 - [ ] Una PR `sync/<tag>` chiusa senza unire non viene rifatta.
+- [ ] Un fork con `mode: review` (`forks/<nome>.yaml`) non riceve merge né
+      `sync/<tag>`: per ogni release nuova di upstream, e solo per quella, il
+      keeper apre `upstream/<tag>` con un solo file `docs/upstream/<tag>.md`
+      che classifica ogni cambio (portare, riscrivere, scartare, da capire)
+      secondo le tabelle Rimosso e Riscritto del `FORK.md`; decide
+      1ron51uv, e una PR chiusa non si rifà.
 
 ## Note
 

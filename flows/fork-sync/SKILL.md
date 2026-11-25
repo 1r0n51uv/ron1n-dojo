@@ -1,6 +1,6 @@
 ---
 name: fork-sync
-description: 'Porta una release di upstream in un nostro fork: branch sync/<tag>, merge del tag, conflitti, traduzioni, versione, changelog, PR. Mai merge né release.'
+description: 'Porta una release di upstream in un nostro fork (branch sync/<tag>, merge del tag, traduzioni, versione, changelog, PR) o, con mode: review, apre una PR di confronto da decidere. Mai merge né release.'
 version: 0.1.0
 author: ron1n-dojo
 metadata:
@@ -47,6 +47,33 @@ progetto, vince il suo `FORK.md`.
    del fork decide da solo. Una PR che cambia più di traduzioni, changelog e versione resta aperta con
    l'etichetta `needs-review` e aspetta 1ron51uv. Nel riepilogo finale una riga per fork:
    `<fork> <tag>: PR #N, pulita | da rivedere (perché)`.
+
+## Fork in `mode: review`
+
+Se `forks/<nome>.yaml` ha `mode: review`, il fork è diventato un prodotto a sé: non si porta niente da
+solo. Il tuo lavoro è un **confronto** su cui decide 1ron51uv cosa portare, cosa no e cosa riscrivere. Niente
+`merge` del tag, niente `sync/<tag>`, nessun cambio di versione, traduzione o changelog.
+
+1. **Leggi** come al punto 1 (clone, `upstream`, `FORK.md`, note della release). Il `FORK.md` di un fork in
+   review ha le tabelle **Rimosso** e **Riscritto** (percorsi e cosa sono): sono il tuo metro.
+2. **Base.** L'ultimo tag di upstream già valutato: quello più alto, prima di `<tag>`, che è antenato di
+   `origin/main` o ha una PR `upstream/<tag>` sul fork. `git diff --stat <base> <tag>` ti dà cosa è cambiato.
+3. **Classifica** ogni file cambiato e ogni voce delle note, e per ognuno scrivi *cosa fa* upstream:
+   - **Scartare (proposta)**: tocca una funzione che il fork ha tolto, o un file che il fork non ha più.
+   - **Riscrivere**: tocca codice che il fork ha rifatto (interfaccia, stili, layout). Spiega l'intento
+     del cambio di upstream, così si può rifare nello stile del fork.
+   - **Portare**: indipendente dalle modifiche del fork. Verificalo (`git merge-tree --write-tree origin/main <tag>`
+     senza conflitti sui file di quella voce) e dì se servono stringhe nuove per `it-IT` e `pt-BR`.
+   - **Da capire**: se non sai a quale delle tre appartiene, dillo; non indovinare.
+4. **Branch e PR.** `git switch -c upstream/<tag> origin/main`, aggiungi **un solo file**
+   `docs/upstream/<tag>.md` con il confronto (sezioni: Novità di upstream, poi le quattro classi sopra, una
+   tabella per classe: voce | file | cosa fa | proposta) e un commit (autore `Kakashi Hatake (dojo)`).
+   `git push -u origin upstream/<tag>`, `gh pr create --repo <fork> --base main --head upstream/<tag>` con titolo
+   `Upstream <tag>: cosa portare` e in corpo il riepilogo: quante voci per classe e le tre più importanti.
+   Etichetta `needs-review`. Se il file non regge a una lettura veloce, la PR non è pronta.
+5. **Fine.** Non unire, non toccare il codice del fork, non pubblicare. 1ron51uv risponde nella PR (o a voce)
+   con le decisioni; solo allora, su sua richiesta, si fa il lavoro scelto, in PR a parte. Una riga per fork
+   nel riepilogo: `<fork> <tag>: PR #N, confronto (X da portare, Y da riscrivere, Z da scartare)`.
 
 ## Regole
 

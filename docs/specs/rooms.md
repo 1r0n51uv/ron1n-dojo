@@ -335,7 +335,8 @@ Stato: proposto
 L'agente `keeper` (Kakashi) tiene i fork di ron1n (`forks/*.yaml`: `repo` e
 `upstream`) allineati ai progetti originali: quando upstream pubblica una
 release stabile, porta la versione nel fork senza perdere le modifiche del
-fork e apre una PR. Il merge e la release li decide il workflow `fork-sync`
+fork e apre una PR (per un fork in `mode: review`, una PR di confronto da
+decidere, senza portare niente). Il merge e la release li decide il workflow `fork-sync`
 del fork, con regole fisse e a CI verde.
 
 Accettazione:

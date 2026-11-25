@@ -6,6 +6,7 @@ merge.
 
 ## 2026-11-25
 
+- `forks/*.yaml` accetta `mode: review`: il keeper non unisce il tag ma apre `upstream/<tag>` con un confronto (`docs/upstream/<tag>.md`) che dice cosa portare, riscrivere o scartare; consolemode è il primo fork in review. Il monitor guarda `upstream/<tag>` al posto di `sync/<tag>` (FLOW-013, ROOM-017)
 - Nuovo agente `keeper` (Kakashi), che tiene allineati i fork di ron1n all'upstream: un cron ogni 6 ore guarda le release dei progetti originali (`forks/*.yaml`) e fa partire l'agente solo se ce n'è una nuova; lui unisce il tag, adatta, traduce e apre la PR di sync; merge e release li decide il workflow del fork. `dojo-seed` ora copia gli script del profile e crea il job di `cron.yaml`; `validate.sh` controlla `forks/` (ROOM-017, FLOW-013) ([#43](https://github.com/1r0n51uv/ron1n-dojo/pull/43))
 
 ## 2026-11-13

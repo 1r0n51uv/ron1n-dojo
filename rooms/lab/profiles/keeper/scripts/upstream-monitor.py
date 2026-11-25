@@ -7,8 +7,11 @@ dell'agente e, se l'output non cambia, l'agente non parte. Per ogni
 release stabile di upstream:
 
 - non è già nella `main` del fork (compare upstream-commit...main);
-- non ha già una PR `sync/<tag>` sul fork, aperta, unita o chiusa: una PR
-  chiusa senza unire è un rifiuto, non si rifà da sola.
+- non ha già una PR `sync/<tag>` sul fork (`upstream/<tag>` se il fork è in
+  `mode: review`), aperta, unita o chiusa: una PR chiusa senza unire è un
+  rifiuto, non si rifà da sola.
+
+Parte quindi solo quando upstream pubblica una release nuova.
 
 L'output è stabile (niente orari): `<fork> <- <upstream> <tag> <commit>`.
 Vuoto vuol dire niente da fare. Un fork che non risponde non si stampa: meglio
@@ -56,7 +59,7 @@ def leggi(path: Path) -> dict[str, str]:
     return campi
 
 
-def da_sincronizzare(repo: str, upstream: str) -> str | None:
+def da_sincronizzare(repo: str, upstream: str, mode: str = "merge") -> str | None:
     tag = gh("api", f"repos/{upstream}/releases/latest", "--jq", ".tag_name")
     if not tag:
         return None
@@ -67,7 +70,8 @@ def da_sincronizzare(repo: str, upstream: str) -> str | None:
     stato = gh("api", f"repos/{repo}/compare/{sha}...main", "--jq", ".status")
     if stato in ("ahead", "identical"):
         return None
-    prs = gh("pr", "list", "--repo", repo, "--head", f"sync/{tag}", "--state", "all", "--json", "number")
+    prefisso = "upstream" if mode == "review" else "sync"
+    prs = gh("pr", "list", "--repo", repo, "--head", f"{prefisso}/{tag}", "--state", "all", "--json", "number")
     if prs is None or json.loads(prs or "[]"):
         return None
     return f"{repo} <- {upstream} {tag} {sha[:12]}"
@@ -79,7 +83,7 @@ def main() -> int:
         if "repo" not in c or "upstream" not in c:
             print(f"# {f.name}: mancano repo o upstream", file=sys.stderr)
             continue
-        riga = da_sincronizzare(c["repo"], c["upstream"])
+        riga = da_sincronizzare(c["repo"], c["upstream"], c.get("mode", "merge"))
         if riga:
             print(riga)
     return 0

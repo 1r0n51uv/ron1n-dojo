@@ -83,7 +83,7 @@ PY
   fi
 done
 
-# forks/*.yaml (ROOM-017): repo e upstream nella forma proprietario/nome, nessun altro campo.
+# forks/*.yaml (ROOM-017): repo e upstream nella forma proprietario/nome, `mode` facoltativo (merge | review).
 for f in forks/*.yaml; do
   if python3 - "$f" <<'PY'
 import re, sys
@@ -96,7 +96,9 @@ for riga in open(sys.argv[1], encoding="utf-8"):
         campi[m[1] if m else riga] = m[2].strip("\"'") if m else None
 errori = [f"{c} deve essere nella forma proprietario/nome" for c in ("repo", "upstream")
           if not re.fullmatch(r"[\w.-]+/[\w.-]+", campi.get(c) or "")]
-errori += [f"campo sconosciuto: {c}" for c in set(campi) - {"repo", "upstream"}]
+if campi.get("mode", "merge") not in ("merge", "review"):
+    errori.append("mode deve essere merge o review")
+errori += [f"campo sconosciuto: {c}" for c in set(campi) - {"repo", "upstream", "mode"}]
 if campi.get("repo") == campi.get("upstream"):
     errori.append("repo e upstream sono lo stesso repo")
 for e in errori:
