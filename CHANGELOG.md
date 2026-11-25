@@ -4,6 +4,10 @@ Cosa cambia nel dojo (stanze, profili, flussi, script), il giorno più
 recente in alto. Ogni PR aggiunge la sua riga in cima, sotto il giorno del
 merge.
 
+## 2026-11-25
+
+- Nuovo agente `keeper` (Kakashi), che tiene allineati i fork di ron1n all'upstream: un cron ogni 6 ore guarda le release dei progetti originali (`forks/*.yaml`) e fa partire l'agente solo se ce n'è una nuova; lui unisce il tag, adatta, traduce e apre la PR di sync; merge e release li decide il workflow del fork. `dojo-seed` ora copia gli script del profile e crea il job di `cron.yaml`; `validate.sh` controlla `forks/` (ROOM-017, FLOW-013) ([#43](https://github.com/1r0n51uv/ron1n-dojo/pull/43))
+
 ## 2026-11-13
 
 - `image-chef` chiede sempre `aspect_ratio` `landscape`, così le foto delle ricette hanno la stessa forma (ROOM-016) ([#42](https://github.com/1r0n51uv/ron1n-dojo/pull/42))

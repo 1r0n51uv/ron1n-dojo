@@ -1,0 +1,13 @@
+# Il job cron del keeper (ROOM-017): `dojo-seed` lo crea o lo aggiorna a ogni avvio della room, per
+# nome. Il monitor gira ogni 6 ore e, se non c'è niente da sincronizzare, l'agente non parte.
+name: fork-sync
+schedule: "every 6h"
+skills: [fork-sync]
+monitor_script: upstream-monitor.py
+workdir: /opt/data/work/keeper
+deliver: local
+prompt: |
+  Il monitor ha trovato fork con una release upstream non ancora allineata (le righe sopra, nel formato
+  `<fork> <- <upstream> <tag> <commit>`). Per ognuno segui la skill fork-sync: apri la PR di sync e
+  basta. Alla fine riassumi in due righe per fork cosa hai fatto. Se il monitor non ha elencato niente
+  rispondi solo `[SILENT]`.

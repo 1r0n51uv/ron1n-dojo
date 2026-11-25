@@ -102,6 +102,7 @@ RUN for p in dojo-spec-only dojo-kanban-archive; do \
 COPY flows /opt/dojo/flows
 COPY skills /opt/dojo/skills
 COPY projects /opt/dojo/projects
+COPY forks /opt/dojo/forks
 RUN find /opt/dojo/profiles -name '.env*' -delete \
   && for p in /opt/dojo/profiles/*/; do \
        test -f "${p}config.yaml" && test -f "${p}SOUL.md"; \

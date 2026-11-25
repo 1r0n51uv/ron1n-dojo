@@ -83,6 +83,34 @@ PY
   fi
 done
 
+# forks/*.yaml (ROOM-017): repo e upstream nella forma proprietario/nome, nessun altro campo.
+for f in forks/*.yaml; do
+  if python3 - "$f" <<'PY'
+import re, sys
+
+campi = {}
+for riga in open(sys.argv[1], encoding="utf-8"):
+    riga = riga.split(" #")[0].rstrip()
+    if riga.strip() and not riga.lstrip().startswith("#"):
+        m = re.match(r"^([a-z_]+):\s*(.*)$", riga)
+        campi[m[1] if m else riga] = m[2].strip("\"'") if m else None
+errori = [f"{c} deve essere nella forma proprietario/nome" for c in ("repo", "upstream")
+          if not re.fullmatch(r"[\w.-]+/[\w.-]+", campi.get(c) or "")]
+errori += [f"campo sconosciuto: {c}" for c in set(campi) - {"repo", "upstream"}]
+if campi.get("repo") == campi.get("upstream"):
+    errori.append("repo e upstream sono lo stesso repo")
+for e in errori:
+    print(f"  {e}", file=sys.stderr)
+sys.exit(1 if errori else 0)
+PY
+  then
+    echo "ok   $f"
+  else
+    echo "FAIL $f"
+    status=1
+  fi
+done
+
 for skill in flows/*/ skills/*/; do
   if ! head -1 "${skill}SKILL.md" 2>/dev/null | grep -qx -- '---'; then
     echo "FAIL ${skill}SKILL.md mancante o senza frontmatter"

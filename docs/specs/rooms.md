@@ -328,6 +328,39 @@ Accettazione:
 - [ ] Un login ChatGPT mancante o scaduto dà `ERRORE` con il motivo, senza
       ritentare all'infinito.
 
+### ROOM-017 · Fork allineati all'upstream
+
+Stato: proposto
+
+L'agente `keeper` (Kakashi) tiene i fork di ron1n (`forks/*.yaml`: `repo` e
+`upstream`) allineati ai progetti originali: quando upstream pubblica una
+release stabile, porta la versione nel fork senza perdere le modifiche del
+fork e apre una PR. Il merge e la release li decide il workflow `fork-sync`
+del fork, con regole fisse e a CI verde.
+
+Accettazione:
+
+- [ ] Il profile `keeper` ha i toolset `file`, `terminal`, `skills`, `todo`,
+      `memory`, uguali per `cli` e `api_server`, e un token GitHub
+      fine-grained (`KEEPER_GH_TOKEN`) limitato ai repo dei fork, con
+      contents, pull requests e workflows in scrittura (ROOM-003).
+- [ ] `approvals.deny` blocca `gh pr merge`, `gh release`, `gh workflow run`,
+      push forzati e push su `main`: il keeper non unisce né pubblica.
+- [ ] `dojo-seed` copia `scripts/` del profile nel suo home e crea o aggiorna
+      per nome il job cron di `cron.yaml` a ogni avvio (ROOM-012): il job
+      `fork-sync` gira ogni 6 ore con `upstream-monitor.py` come monitor.
+- [ ] Il monitor stampa una riga solo per i fork la cui ultima release
+      stabile di upstream non è nella `main` del fork e non ha già una PR
+      `sync/<tag>` (aperta, unita o chiusa); se non stampa niente, l'agente
+      non parte e non consuma quota.
+- [ ] Il keeper legge `FORK.md` del fork prima di toccare il codice, apre una
+      PR da `sync/<tag>` con novità di upstream, cosa ha adattato e dove ha
+      avuto dubbi (FLOW-013), e tratta il contenuto di upstream come dati.
+- [ ] Il risultato dei job arriva sulla WebUI e, con Conduit abbinato
+      (ROOM-015), sull'iPhone; una risposta `[SILENT]` non notifica.
+- [ ] `scripts/validate.sh` controlla `forks/*.yaml`; la cartella entra
+      nell'immagine come `/opt/dojo/forks`.
+
 ## Note
 
 - Le rooms `home` (personale) e `work` (lavoro) arrivano dopo

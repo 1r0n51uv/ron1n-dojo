@@ -15,3 +15,4 @@ I flussi parlano di issue e di stati, non di un tracker: per ogni progetto
 | [quick-fix](quick-fix/SKILL.md)     | tu, dalla WebUI         | Nico Robin → Edward | bozza |
 | [discuss](discuss/SKILL.md)         | tu, con l'agente scelto | l'agente scelto     | bozza |
 | [new-project](new-project/SKILL.md) | tu, dalla WebUI         | strategist          | bozza |
+| [fork-sync](fork-sync/SKILL.md)     | cron `fork-sync`        | keeper              | bozza |
