@@ -10,12 +10,15 @@ gateway (/etc/cont-init.d/016-dojo-seed). Per ogni profile in
   dal config.yaml che c'era le scelte fatte da Hermes: modello, provider,
   riserve e comandi approvati per sempre (CHIAVI_TENUTE); il file
   `.dojo-seed` nel profile segna il primo seed;
+- copia `scripts/` del profile (script dei cron) in `scripts/` del suo home e,
+  se c'è `cron.yaml`, crea o aggiorna per nome il job cron (ROOM-017);
 - non tocca .env, memoria e sessioni.
 
 Un errore su un profile non ferma gli altri né l'avvio della room.
 """
 
 import io
+import json
 import shutil
 import subprocess
 import sys
@@ -55,6 +58,63 @@ def scrivi(percorso: Path, testo: str) -> None:
     tmp.replace(percorso)
 
 
+def copia_scripts(nome: str, dest: Path) -> None:
+    """Gli script dei cron di questo profile: `hermes cron` li cerca in <home>/scripts/."""
+    src = SORGENTE / nome / "scripts"
+    if not src.is_dir():
+        return
+    (dest / "scripts").mkdir(exist_ok=True)
+    for f in src.iterdir():
+        if f.is_file():
+            shutil.copyfile(f, dest / "scripts" / f.name)
+            (dest / "scripts" / f.name).chmod(0o755)
+
+
+def trova_job(dest: Path, nome_job: str) -> str | None:
+    """L'id del job cron con quel nome nel profile, se c'è."""
+    store = dest / "cron" / "jobs.json"
+    if not store.is_file():
+        return None
+    dati = json.loads(store.read_text(encoding="utf-8"))
+    jobs = dati.get("jobs", []) if isinstance(dati, dict) else dati
+    for j in jobs:
+        if isinstance(j, dict) and j.get("name") == nome_job:
+            return j.get("id")
+    return None
+
+
+def semina_cron(nome: str, dest: Path) -> None:
+    """Crea o aggiorna il job di `cron.yaml`: a ogni avvio dell'immagine, per nome, così la sua
+    definizione vive nel repo e non nello stato del volume."""
+    f = SORGENTE / nome / "cron.yaml"
+    if not f.is_file():
+        return
+    c = yaml.load(f.read_text(encoding="utf-8"))
+    hermes = shutil.which("hermes") or "/opt/hermes/.venv/bin/hermes"
+    job = trova_job(dest, c["name"])
+    comune = ["--name", c["name"], "--deliver", c.get("deliver", "local")]
+    for skill in c.get("skills", []):
+        comune += ["--skill", skill]
+    if c.get("monitor_script"):
+        comune += ["--monitor-script", c["monitor_script"]]
+    if c.get("workdir"):
+        # Hermes rifiuta un workdir che non c'è ancora.
+        Path(c["workdir"]).mkdir(parents=True, exist_ok=True)
+        comune += ["--workdir", c["workdir"]]
+    prompt = str(c["prompt"]).strip()
+    if job:
+        # `--skill` in `edit` sostituisce l'elenco: il file è la verità.
+        cmd = [hermes, "-p", nome, "cron", "edit", job, "--schedule", c["schedule"], "--prompt", prompt, *comune]
+    else:
+        cmd = [hermes, "-p", nome, "cron", "create", *comune, c["schedule"], prompt]
+    if nome == "default":
+        cmd = [x for x in cmd if x not in ("-p", nome)]
+    r = subprocess.run(cmd, capture_output=True, text=True)
+    if r.returncode != 0:
+        raise RuntimeError(f"hermes cron: {(r.stderr or r.stdout).strip()[-400:]}")
+    print(f"[dojo-seed] cron {c['name']} {'aggiornato' if job else 'creato'} per {nome}")
+
+
 def semina(nome: str) -> None:
     dest = cartella(nome)
     if nome != "default" and not (dest / "config.yaml").is_file():
@@ -69,6 +129,8 @@ def semina(nome: str) -> None:
     scrivi(dest / "config.yaml", unisci(testo, dest / "config.yaml") if segno.exists() else testo)
     segno.touch()
     shutil.copyfile(SORGENTE / nome / "SOUL.md", dest / "SOUL.md")
+    copia_scripts(nome, dest)
+    semina_cron(nome, dest)
 
 
 def main() -> int:

@@ -242,6 +242,34 @@ Accettazione:
 - [ ] La CI dell'immagine prova che il tool è registrato, archivia e
       cancella.
 
+### FLOW-013 · Sincronizzare un fork
+
+Stato: proposto
+
+Un nostro fork segue le release del progetto originale. Il keeper prepara la
+PR, il workflow del fork la unisce e la pubblica solo se è pulita; il resto
+aspetta 1ron51uv.
+
+Accettazione:
+
+- [ ] Il cron `fork-sync` parte solo per i fork con una release upstream non
+      allineata (ROOM-017); il keeper segue la skill `fork-sync` e il
+      `FORK.md` del fork.
+- [ ] Il branch è `sync/<tag>`, con il tag di upstream unito (merge, mai
+      squash né rebase); sui conflitti vince il codice di upstream e si
+      riapplicano le modifiche del fork.
+- [ ] La PR porta traduzioni, versione (la più alta fra upstream e fork, o
+      quella del fork +1) e changelog come dice `FORK.md`, e un corpo con
+      novità, adattamenti e dubbi; se il lavoro non è finito è in bozza.
+- [ ] Il workflow `fork-sync.yml` del fork, a CI verde sull'ultimo commit,
+      unisce (merge commit) e lancia la release solo se: il tag di upstream
+      si unisce a `main` senza conflitti e ciò che il keeper ha cambiato
+      sopra quel merge sta nei file e nelle righe permesse (traduzioni,
+      changelog, righe di versione). Altrimenti la PR prende l'etichetta
+      `needs-review` e un commento col motivo.
+- [ ] Il keeper non unisce, non pubblica e non lancia workflow (ROOM-017).
+- [ ] Una PR `sync/<tag>` chiusa senza unire non viene rifatta.
+
 ## Note
 
 - Flussi personali e di lavoro con le rooms future.
